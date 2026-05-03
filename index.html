@@ -328,7 +328,6 @@ input,select,button{font-family:'DM Sans',sans-serif}
           <select class="course-dropdown" id="saved-courses-list" onchange="loadCourseFromDropdown(this.value)">
             <option value="">— Platz auswählen —</option>
           </select>
-          <button class="sc-del" id="delete-course-btn" onclick="deleteCourseFromDropdown()" style="display:none">🗑</button>
         </div>
       </div>
       <div class="stabs">
@@ -495,7 +494,10 @@ async function sbFetch(method,path,body){
     body:body?JSON.stringify(body):undefined
   });
   if(!res.ok) throw new Error('Supabase '+res.status);
-  return res.json();
+  // DELETE und PATCH geben oft leeren Body zurück
+  if(method==='DELETE'||res.status===204) return null;
+  const text=await res.text();
+  return text?JSON.parse(text):null;
 }
 async function sbLoadCourses(){ try{return(await sbFetch('GET','courses?select=*&order=name'))||[];}catch(e){return[];} }
 async function sbSaveCourse(c){
@@ -693,8 +695,22 @@ function openCard(id){
   const p=state.players.find(p=>p.id===id);
   if(!p) return;
   CID=id;
-  // Immer frisch aus state laden
+  // Basis: Scores aus Firebase/State
   CSCORES=[...(p.scores||Array(18).fill(null))];
+  // Lokalen Backup prüfen — falls vorhanden und der Spieler selbst ist
+  if(canEdit(id)){
+    const local=loadLocal(id);
+    if(local&&Array.isArray(local)){
+      // Lokale Version nehmen wenn sie mehr ausgefüllte Löcher hat
+      const localFilled=local.filter(s=>s!=null).length;
+      const fbFilled=CSCORES.filter(s=>s!=null).length;
+      if(localFilled>fbFilled){
+        CSCORES=[...local];
+        // Sofort zu Firebase pushen
+        setTimeout(()=>pushToFirebase(),500);
+      }
+    }
+  }
   const played=pc(CSCORES);
   const savedTab=localStorage.getItem('golf_tab_'+id);
   if(savedTab) CTAB=savedTab;
@@ -817,10 +833,8 @@ function step(idx,delta){
     :(nd!=null?'<div class="rv serif" style="color:'+dc(nd)+'">'+fmt(nd)+'</div><div class="rl" style="color:'+dc(nd)+'">'+dl(nd)+'</div>':'<span class="dash">–</span>');
   updatePills();
   refreshHalfBar(Array.from({length:9},(_,i)=>(CTAB==='front'?0:9)+i));
-  // Auto-wechsel zu Back 9 nach Loch 9
-  if(idx===8&&CTAB==='front'){
-    setTimeout(()=>{showToast('🔄 Weiter zu Löcher 10–18!');setTab('back');},400);
-  }
+  // Auto-Save nach jedem Loch
+  autoSave();
 }
 
 function refreshHalfBar(holes){
@@ -837,18 +851,109 @@ function refreshHalfBar(holes){
     ?holes.reduce((a,i)=>{const s=CSCORES[i];return s!=null?a+stblPts(nettoH(s,i,hcp),par[i]||4):a;},0):'';
 }
 
+// ═══════════════════════════════════════════
+// AUTO-SAVE & OFFLINE-HANDLING
+// ═══════════════════════════════════════════
+
+// Speichert Scores lokal (immer, als Backup)
+function saveLocal(){
+  try{
+    const key='golf_trn_scores_'+CID;
+    localStorage.setItem(key,JSON.stringify(CSCORES));
+  }catch(e){}
+}
+
+// Lädt lokale Scores falls vorhanden
+function loadLocal(id){
+  try{
+    const key='golf_trn_scores_'+id;
+    const raw=localStorage.getItem(key);
+    return raw?JSON.parse(raw):null;
+  }catch(e){return null;}
+}
+
+// Löscht lokalen Backup nach erfolgreichem Firebase-Save
+function clearLocal(id){
+  try{localStorage.removeItem('golf_trn_scores_'+id);}catch(e){}
+}
+
+// Sync-Dot Farbe: grün=online, orange=offline/pending
+function setSyncStatus(status){
+  const dot=document.querySelector('.sync-dot');
+  if(!dot)return;
+  if(status==='online')  dot.style.background='#00c853';
+  if(status==='offline') dot.style.background='#ff9800';
+  if(status==='saving')  dot.style.background='#1565c0';
+}
+
+// Ausstehende Syncs (wenn offline)
+let _pendingSync=false;
+let _autoSaveTimer=null;
+
+async function autoSave(){
+  // Immer lokal speichern
+  saveLocal();
+  // Zu Firebase: debounced (max 1x pro 2 Sekunden um nicht zu spammen)
+  clearTimeout(_autoSaveTimer);
+  _autoSaveTimer=setTimeout(()=>pushToFirebase(),2000);
+}
+
+async function pushToFirebase(){
+  if(!CID||!canEdit(CID))return;
+  if(!navigator.onLine){
+    setSyncStatus('offline');
+    _pendingSync=true;
+    return;
+  }
+  setSyncStatus('saving');
+  try{
+    state.players=state.players.map(p=>p.id===CID?{...p,scores:[...CSCORES]}:p);
+    await window._fbSet('players',state.players);
+    clearLocal(CID);
+    _pendingSync=false;
+    setSyncStatus('online');
+  }catch(e){
+    // Firebase Fehler → lokal bleibt, wird beim nächsten Versuch nochmal probiert
+    setSyncStatus('offline');
+    _pendingSync=true;
+  }
+}
+
+// Wenn Netz zurückkommt → ausstehende Syncs hochladen
+window.addEventListener('online',async()=>{
+  setSyncStatus('online');
+  if(_pendingSync) await pushToFirebase();
+});
+window.addEventListener('offline',()=>{
+  setSyncStatus('offline');
+});
+
 async function saveScore(){
   if(!canEdit(CID)){showToast('⚠️ Keine Berechtigung');return;}
   const btn=document.getElementById('savebtn');
   btn.disabled=true; btn.textContent='Speichere…';
-  state.players=state.players.map(p=>p.id===CID?{...p,scores:[...CSCORES]}:p);
+  saveLocal();
+  if(!navigator.onLine){
+    showToast('📵 Offline – lokal gespeichert');
+    setSyncStatus('offline');
+    _pendingSync=true;
+    btn.disabled=false; btn.textContent='Score speichern ✓';
+    return;
+  }
   try{
+    state.players=state.players.map(p=>p.id===CID?{...p,scores:[...CSCORES]}:p);
     await window._fbSet('players',state.players);
+    clearLocal(CID);
+    _pendingSync=false;
+    setSyncStatus('online');
     btn.textContent='✅ Gespeichert!';
     btn.style.background='linear-gradient(135deg,#1b5e20,#2e7d32)';
     setTimeout(()=>{btn.textContent='Score speichern ✓';btn.style.background='';btn.disabled=false;},2500);
   }catch(e){
-    showToast('⚠️ Fehler beim Speichern');
+    saveLocal();
+    _pendingSync=true;
+    setSyncStatus('offline');
+    showToast('⚠️ Firebase Fehler – lokal gesichert');
     btn.disabled=false; btn.textContent='Score speichern ✓';
   }
 }
