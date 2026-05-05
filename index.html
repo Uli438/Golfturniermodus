@@ -938,10 +938,9 @@ async function saveSetup(){
   }
   saveLocal({round:state.round,players:state.players,tournament:state.tournament});
   try{
-    const saves=[window._fbSet('round',state.round),fbSaveAllPlayers(state.players)];
-    if(state.tournament) saves.push(window._fbSet('tournament',state.tournament));
-    else saves.push(window._fbSet('tournament',null));
-    await Promise.all(saves);
+    await window._fbSet('round',state.round);
+    await fbSaveAllPlayers(state.players);
+    await window._fbSet('tournament',state.tournament||null);
     clearLocal();
     showToast('✓ Live synchronisiert');
   }catch(e){showToast('📶 Offline — lokal gespeichert');}
@@ -1181,10 +1180,8 @@ async function syncOffline(){
   const local=loadLocal();
   if(!local)return;
   try{
-    await Promise.all([
-      window._fbSet('round',local.round||state.round),
-      fbSaveAllPlayers(local.players||state.players)
-    ]);
+    await window._fbSet('round',local.round||state.round);
+    await fbSaveAllPlayers(local.players||state.players);
     state=local;
     clearLocal();
     showToast('📶 Offline-Scores synchronisiert!');
