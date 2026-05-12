@@ -531,7 +531,7 @@ input,select,button{font-family:'DM Sans',sans-serif}
         </label>
         <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card);border:2px solid var(--border-light);border-radius:10px;cursor:pointer">
           <input type="checkbox" id="opt-ladies" style="width:18px;height:18px;cursor:pointer;accent-color:var(--accent)">
-          <div><div style="font-size:13px;font-weight:700">🚺 Damenabschlag-Button</div><div style="font-size:10px;color:var(--txt3)">Pro Loch markieren wenn der Abschlag nicht über den Damenabschlag kam — Getränk-Schulden-Tracker 🍺</div></div>
+          <div><div style="font-size:13px;font-weight:700">🚺 Lady-Button</div><div style="font-size:10px;color:var(--txt3)">Pro Loch markieren wenn der Abschlag nicht über den Damenabschlag kam — Getränk-Schulden-Tracker 🍺</div></div>
         </label>
         <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card);border:2px solid var(--border-light);border-radius:10px;cursor:pointer">
           <input type="checkbox" id="opt-putts" style="width:18px;height:18px;cursor:pointer;accent-color:var(--accent)">
@@ -1222,7 +1222,7 @@ function renderHoles(){
     if(opts.ballverlust||opts.ladies){
       html+='<div class="extra-row">';
       if(opts.ballverlust) html+='<button class="extra-btn'+(ex.bv?' active-bv':'')+'" data-ex="bv" data-idx="'+i+'">🔴 Ballverlust'+(ex.bv?' ✓':'')+'</button>';
-      if(opts.ladies) html+='<button class="extra-btn'+(ex.la?' active-la':'')+'" data-ex="la" data-idx="'+i+'">🚺 Damenabschlag'+(ex.la?' 🍺':'')+'</button>';
+      if(opts.ladies) html+='<button class="extra-btn'+(ex.la?' active-la':'')+'" data-ex="la" data-idx="'+i+'">🚺 Lady'+(ex.la?' 🍺':'')+'</button>';
       html+='</div>';
     }
     if(opts.putts){
