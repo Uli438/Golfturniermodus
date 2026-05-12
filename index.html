@@ -28,6 +28,14 @@ input,select,button{font-family:'DM Sans',sans-serif}
 .toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(21,101,192,.96);color:#fff;padding:16px 28px;border-radius:16px;font-size:17px;font-weight:700;z-index:9999;opacity:0;transition:opacity .25s;pointer-events:none;box-shadow:0 8px 32px rgba(0,0,0,.25);text-align:center;max-width:90vw}
 .toast.show{opacity:1}
 
+/* NEWS BANNER */
+#news-banner{display:none;position:sticky;top:0;z-index:100;width:100%;padding:10px 16px;align-items:center;gap:10px;animation:slideDown .4s ease}
+#news-banner.show{display:flex}
+@keyframes slideDown{from{transform:translateY(-100%);opacity:0}to{transform:translateY(0);opacity:1}}
+.nb-icon{font-size:22px;flex-shrink:0}
+.nb-txt{flex:1;font-size:13px;font-weight:700;line-height:1.3}
+.nb-close{background:none;border:none;font-size:18px;cursor:pointer;opacity:.7;flex-shrink:0;padding:2px 4px}
+
 /* LOBBY */
 .lobby-hero{background:linear-gradient(160deg,var(--bg2) 60%,var(--bg3));padding:40px 24px 28px;border-bottom:2px solid var(--border);text-align:center}
 .lobby-icon{font-size:52px;margin-bottom:8px}
@@ -255,6 +263,13 @@ input,select,button{font-family:'DM Sans',sans-serif}
 <body>
 <div class="toast" id="toast"></div>
 
+<!-- NEWS BANNER -->
+<div id="news-banner">
+  <span class="nb-icon" id="nb-icon">⛳</span>
+  <span class="nb-txt" id="nb-txt"></span>
+  <button class="nb-close" id="nb-close">×</button>
+</div>
+
 <!-- QR MODAL -->
 <div id="qr-modal">
   <div class="qr-inner">
@@ -299,6 +314,28 @@ input,select,button{font-family:'DM Sans',sans-serif}
   <div style="padding:16px;padding-bottom:80px">
     <div style="font-size:9px;color:var(--accent);letter-spacing:2px;font-weight:700;margin-bottom:12px">AKTIVE TURNIERE IN FIREBASE</div>
     <div id="admin-list"><div style="text-align:center;padding:40px;color:var(--txt3)">⏳ Lade…</div></div>
+
+    <div style="margin-top:24px;padding-top:20px;border-top:2px solid var(--border)">
+      <div style="font-size:9px;color:var(--accent);letter-spacing:2px;font-weight:700;margin-bottom:12px">🔔 LIVE-BENACHRICHTIGUNGEN</div>
+      <div style="background:var(--card);border:2px solid var(--border);border-radius:14px;padding:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div>
+            <div style="font-size:14px;font-weight:700">Live-Meldungen</div>
+            <div style="font-size:10px;color:var(--txt3);margin-top:2px">Alle Spieler sehen Ereignisse im Banner</div>
+          </div>
+          <label style="position:relative;display:inline-block;width:48px;height:26px;flex-shrink:0">
+            <input type="checkbox" id="notif-toggle" style="opacity:0;width:0;height:0">
+            <span id="notif-slider" style="position:absolute;cursor:pointer;inset:0;background:#ccc;border-radius:26px;transition:.3s"></span>
+          </label>
+        </div>
+        <div style="font-size:10px;color:var(--txt3);line-height:1.7">
+          Gemeldet wird:<br>
+          🦅 Eagle &nbsp;·&nbsp; 🐦 Birdie &nbsp;·&nbsp; 🏌️ Hole-in-One<br>
+          😬 Bogey &nbsp;·&nbsp; 💀 Doppelbogey+ &nbsp;·&nbsp; 3-Putt (wenn Putts an)<br>
+          🔴 Ballverlust &nbsp;·&nbsp; 🚺 Lady (wenn aktiv)
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -606,6 +643,10 @@ var LBM='brutto', LBV='einzel', TM='bestball';
 var pSync=false, aTimer=null;
 var SP=[], SPAR=DPAR.slice(), SSI=DSI.slice(), SAC=null, SAT=null, CTM='manual', SDB=null, STM='none';
 
+// Benachrichtigungen
+var NOTIF_ON=false;
+var PREV_PLAYERS={}; // id → {scores, extras} snapshot für Vergleich
+
 // ═══════════════════════════════════════════════════
 // UTILS
 // ═══════════════════════════════════════════════════
@@ -696,6 +737,18 @@ function showView(name){
 // EVENT LISTENERS
 // ═══════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', function(){
+
+  // NEWS BANNER
+  document.getElementById('nb-close').addEventListener('click', function(){ hideNewsBanner(); });
+
+  // NOTIF TOGGLE (Admin)
+  var ntog=document.getElementById('notif-toggle');
+  ntog.addEventListener('change', async function(){
+    NOTIF_ON=this.checked;
+    updateNotifSlider();
+    if(CODE) try{ await fbSet(fp('notif'), NOTIF_ON); }catch(e){}
+    toast(NOTIF_ON?'🔔 Live-Meldungen AN':'🔕 Live-Meldungen AUS');
+  });
 
   // LOBBY
   document.getElementById('btn-new-trn').addEventListener('click', function(){ showView('setup'); });
@@ -790,6 +843,108 @@ document.addEventListener('DOMContentLoaded', function(){
 });
 
 // ═══════════════════════════════════════════════════
+// NEWS BANNER
+// ═══════════════════════════════════════════════════
+var BANNER_COLORS={
+  hio:    {bg:'#1a1a2e', color:'#ffd700'},
+  eagle:  {bg:'#f4c430', color:'#1a1a00'},
+  birdie: {bg:'#2e7d32', color:'#fff'},
+  par:    {bg:'#546e7a', color:'#fff'},
+  bogey:  {bg:'#e65100', color:'#fff'},
+  double: {bg:'#b71c1c', color:'#fff'},
+  bv:     {bg:'#c62828', color:'#fff'},
+  lady:   {bg:'#6a1b9a', color:'#fff'},
+  putt3:  {bg:'#37474f', color:'#fff'}
+};
+function showNewsBanner(icon, msg, type){
+  var b=document.getElementById('news-banner');
+  var col=BANNER_COLORS[type]||{bg:'#1565c0',color:'#fff'};
+  b.style.background=col.bg;
+  b.style.color=col.color;
+  document.getElementById('nb-icon').textContent=icon;
+  document.getElementById('nb-txt').textContent=msg;
+  document.getElementById('nb-close').style.color=col.color;
+  b.classList.add('show');
+}
+function hideNewsBanner(){
+  document.getElementById('news-banner').classList.remove('show');
+}
+function updateNotifSlider(){
+  var sl=document.getElementById('notif-slider');
+  if(!sl)return;
+  sl.style.background=NOTIF_ON?'#2e7d32':'#ccc';
+  sl.style.transform='';
+  // Knopf-Position simulieren
+  sl.innerHTML=NOTIF_ON
+    ?'<span style="position:absolute;right:3px;top:3px;width:20px;height:20px;background:#fff;border-radius:50%;transition:.3s"></span>'
+    :'<span style="position:absolute;left:3px;top:3px;width:20px;height:20px;background:#fff;border-radius:50%;transition:.3s"></span>';
+}
+
+// Vergleicht alten und neuen Spielerstand und löst Meldungen aus
+function checkPlayerEvents(oldP, newP){
+  if(!NOTIF_ON)return;
+  if(!newP||newP.id===CID)return; // eigene Ereignisse nicht melden
+  var par=G.round.par||DPAR;
+  var opts=G.round.options||{};
+  var oldSc=oldP?oldP.scores||[]:[];
+  var oldEx=oldP?oldP.extras||[]:[];
+  var newSc=newP.scores||[];
+  var newEx=newP.extras||[];
+  var hcp=Number(newP.handicap)||0;
+
+  for(var i=0;i<18;i++){
+    var wasNull=oldSc[i]==null, isNew=newSc[i]!=null;
+    if(!wasNull||!isNew)continue; // nur neu eingetragene Scores
+
+    var pv=par[i]||4;
+    var eff=effScore(newSc[i],i,hcp);
+    var net=netH(eff,i,hcp);
+    var diff=eff-pv; // Brutto-Differenz für Meldung
+    var name=newP.name;
+    var loch='Loch '+(i+1);
+
+    if(eff===1){
+      showNewsBanner('🏌️','HOLE IN ONE! '+name+' · '+loch,'hio'); continue;
+    }
+    if(diff<=-2){ showNewsBanner('🦅','EAGLE! '+name+' · '+loch+' · '+eff+' Schläge','eagle'); continue; }
+    if(diff===-1){ showNewsBanner('🐦','Birdie! '+name+' · '+loch,'birdie'); continue; }
+    if(diff===1){ showNewsBanner('😬','Bogey — '+name+' · '+loch,'bogey'); continue; }
+    if(diff>=2){ showNewsBanner('💀','Doppelbogey'+(diff>2?'+':'')+' — '+name+' · '+loch,'double'); continue; }
+  }
+
+  // Ballverlust — neu gesetzt?
+  if(opts.ballverlust){
+    for(var j=0;j<18;j++){
+      var oldBV=oldEx[j]&&oldEx[j].bv, newBV=newEx[j]&&newEx[j].bv;
+      if(!oldBV&&newBV){
+        showNewsBanner('🔴','Ballverlust! '+newP.name+' · Loch '+(j+1),'bv');
+        break;
+      }
+    }
+  }
+  // Lady — neu gesetzt?
+  if(opts.ladies){
+    for(var k=0;k<18;k++){
+      var oldLA=oldEx[k]&&oldEx[k].la, newLA=newEx[k]&&newEx[k].la;
+      if(!oldLA&&newLA){
+        showNewsBanner('🚺',newP.name+' · Loch '+(k+1)+' 🍺','lady');
+        break;
+      }
+    }
+  }
+  // 3-Putt — neu gesetzt?
+  if(opts.putts){
+    for(var l=0;l<18;l++){
+      var oldPu=(oldEx[l]&&oldEx[l].putts)||0, newPu=(newEx[l]&&newEx[l].putts)||0;
+      if(oldPu<3&&newPu>=3&&newSc[l]!=null){
+        showNewsBanner('🏌️‍♂️','3-Putt! '+newP.name+' · Loch '+(l+1),'putt3');
+        break;
+      }
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════
 // FIREBASE
 // ═══════════════════════════════════════════════════
 function loadScript(src){
@@ -817,20 +972,33 @@ function startListeners(){
   });
   var r2=DB.ref(fp('players')).on('value', function(snap){
     if(!snap.exists())return;
-    G.players=parsePlayers(snap.val()); renderLB(); renderResult();
+    var fresh=parsePlayers(snap.val());
+    // Vergleich für Benachrichtigungen
+    fresh.forEach(function(np){
+      var oldP=PREV_PLAYERS[np.id]?{scores:(PREV_PLAYERS[np.id].scores||[]).slice(),extras:(PREV_PLAYERS[np.id].extras||[]).slice()}:null;
+      checkPlayerEvents(oldP, np);
+      PREV_PLAYERS[np.id]={scores:(np.scores||[]).slice(),extras:(np.extras||[]).slice()};
+    });
+    G.players=fresh; renderLB(); renderResult();
     if(document.getElementById('view-card').classList.contains('active') && CID){
-      var fresh=G.players.find(function(p){ return p.id===CID; });
-      if(fresh && !aTimer){ CS=fresh.scores?fresh.scores.slice():Array(18).fill(null); renderHoles(); updatePills(); }
+      var fp2=G.players.find(function(p){ return p.id===CID; });
+      if(fp2 && !aTimer){ CS=fp2.scores?fp2.scores.slice():Array(18).fill(null); renderHoles(); updatePills(); }
     }
   });
   var r3=DB.ref(fp('tournament')).on('value', function(snap){
     if(!snap.exists())return; G.tournament=snap.val(); refreshTrnUI();
     if(document.getElementById('view-total').classList.contains('active')) renderTotal();
   });
+  var r4=DB.ref(fp('notif')).on('value', function(snap){
+    NOTIF_ON=!!snap.val();
+    var tog=document.getElementById('notif-toggle'); if(tog) tog.checked=NOTIF_ON;
+    updateNotifSlider();
+  });
   OFF=[
     function(){ DB.ref(fp('round')).off('value',r1); },
     function(){ DB.ref(fp('players')).off('value',r2); },
-    function(){ DB.ref(fp('tournament')).off('value',r3); }
+    function(){ DB.ref(fp('tournament')).off('value',r3); },
+    function(){ DB.ref(fp('notif')).off('value',r4); }
   ];
 }
 
@@ -898,6 +1066,13 @@ async function enterTournament(code){
     var tSnap=await DB.ref(fp('tournament')).get();
     G.tournament=tSnap.exists()?tSnap.val():null;
     saveRec(code, G.round.courseName||code);
+    PREV_PLAYERS={};
+    G.players.forEach(function(p){ PREV_PLAYERS[p.id]={scores:(p.scores||[]).slice(),extras:(p.extras||[]).slice()}; });
+    // Notif-Status laden
+    var nSnap=await DB.ref(fp('notif')).get();
+    NOTIF_ON=!!nSnap.val();
+    var tog=document.getElementById('notif-toggle'); if(tog) tog.checked=NOTIF_ON;
+    updateNotifSlider();
     document.getElementById('code-badge').textContent='🔑 '+code;
     startListeners(); renderLB(); refreshTrnUI();
     showView('lb'); syncDot('on'); toast('🟢 Code '+code+' verbunden');
@@ -905,7 +1080,7 @@ async function enterTournament(code){
 }
 
 function goLobby(){
-  stopListeners(); CODE=null;
+  stopListeners(); CODE=null; PREV_PLAYERS={}; NOTIF_ON=false; hideNewsBanner();
   G={ players:[], tournament:null, round:{courseName:'',par:DPAR.slice(),strokeIndex:DSI.slice(),date:tod(),mode:'stroke',maxScore:null,tee:'',teamMode:'none'} };
   showView('lobby');
 }
