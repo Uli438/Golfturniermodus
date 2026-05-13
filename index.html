@@ -752,14 +752,33 @@ function effScore(raw,idx,hcp){ return isZaehl()?capScore(raw,idx,hcp):raw; }
 
 function enrich(p){
   var sc=p.scores||Array(18).fill(null), hcp=Number(p.handicap)||0, par=G.round.par||DPAR;
-  var ext=p.extras||[], pl=pc(sc);
-  var eff=sc.map(function(s,i){ return effScore(s,i,hcp); });
-  var br=bt(eff), parP=par.slice(0,pl).reduce(function(a,b){ return a+b; },0);
+  var ext=p.extras||[];
+  // pl = Anzahl gespielter Löcher (inkl. NR=0)
+  var pl=sc.filter(function(s){ return s!=null; }).length;
+  var eff=sc.map(function(s,i){
+    if(s==null) return null;
+    if(s===0) return 0;  // NR: kein effektiver Score
+    return effScore(s,i,hcp);
+  });
+  // Brutto: nur Löcher mit Score >0
+  var br=eff.reduce(function(a,s){ return (s!=null&&s>0)?a+s:a; },0);
+  // parP: nur Par der Löcher mit Score >0 (NR-Löcher zählen nicht)
+  var parP=eff.reduce(function(a,s,i){ return (s!=null&&s>0)?a+(par[i]||4):a; },0);
+  // nvp: NR-Löcher tragen 0 bei (nicht gewertet)
+  var nvp=pl>0?eff.reduce(function(a,s,i){
+    if(s==null||s===0) return a;
+    return a+(netH(s,i,hcp)-(par[i]||4));
+  },0):null;
+  // stp: NR-Löcher = 0 Punkte
+  var stp=pl>0?eff.reduce(function(a,s,i){
+    if(s==null||s===0) return a;
+    return a+stbl(netH(s,i,hcp),(par[i]||4));
+  },0):null;
   return Object.assign({},p,{
     pl:pl,
     bvp: pl>0?br-parP:null,
-    nvp: pl>0?eff.reduce(function(a,s,i){ return s==null?a:a+(netH(s,i,hcp)-par[i]); },0):null,
-    stp: pl>0?eff.reduce(function(a,s,i){ return s==null?a:a+stbl(netH(s,i,hcp),par[i]); },0):null,
+    nvp: nvp,
+    stp: stp,
     totalPutts: ext.reduce(function(a,e){ return a+(e&&e.putts?e.putts:0); },0),
     totalBV:    ext.reduce(function(a,e){ return a+(e&&e.bv?1:0); },0),
     totalLA:    ext.reduce(function(a,e){ return a+(e&&e.la?1:0); },0)
@@ -1344,17 +1363,20 @@ function renderCard(){
 function updatePills(){
   var p=G.players.find(function(p){ return p.id===CID; }); if(!p) return;
   var par=G.round.par||DPAR, hcp=Number(p.handicap)||0, mode=G.round.mode||'stroke';
-  var pl=pc(CS);
-  var eff=CS.map(function(s,i){ return effScore(s,i,hcp); });
-  var parP=par.slice(0,pl).reduce(function(a,b){ return a+b; },0), bvp=pl>0?bt(eff)-parP:null;
+  var pl=CS.filter(function(s){ return s!=null; }).length;
+  // eff: Score 0 → null (NR ignorieren in Pills)
+  var eff=CS.map(function(s,i){ return (s!=null&&s>0)?effScore(s,i,hcp):null; });
+  var parP=eff.reduce(function(a,s,i){ return s!=null?a+(par[i]||4):a; },0);
+  var br=eff.reduce(function(a,s){ return s!=null?a+s:a; },0);
+  var bvp=pl>0?br-parP:null;
   var bEl=document.getElementById('pill-brutto');
   bEl.textContent=bvp!=null?fmt(bvp):'–'; bEl.style.color=bvp!=null?dc(bvp):'#2d4529';
   var nEl=document.getElementById('pill-netto');
   if(mode==='stableford'){
-    var sv=pl>0?eff.reduce(function(a,s,i){ return s==null?a:a+stbl(netH(s,i,hcp),par[i]); },0):null;
+    var sv=pl>0?eff.reduce(function(a,s,i){ return s==null?a:a+stbl(netH(s,i,hcp),par[i]||4); },0):null;
     nEl.textContent=sv!=null?sv:'–'; nEl.style.color=sv!=null?'#a78bfa':'#2d4529';
   } else {
-    var nvp=pl>0?eff.reduce(function(a,s,i){ return s==null?a:a+(netH(s,i,hcp)-par[i]); },0):null;
+    var nvp=pl>0?eff.reduce(function(a,s,i){ return s==null?a:a+(netH(s,i,hcp)-(par[i]||4)); },0):null;
     nEl.textContent=nvp!=null?fmt(nvp):'–'; nEl.style.color=nvp!=null?dc(nvp):'#2d4529';
   }
 }
@@ -1364,23 +1386,32 @@ function renderHoles(){
   var start=CTAB==='front'?0:9, holes=Array.from({length:9},function(_,i){ return start+i; });
   document.getElementById('sc-holes').innerHTML=holes.map(function(i){
     var pv=par[i]||4, siv=si[i]!=null&&si[i]!==''?si[i]:i+1;
-    var raw=CS[i], eff=effScore(raw,i,hcp), capped=isCapped(raw,i,hcp);
+    var raw=CS[i], isNR=(raw===0), eff=(!isNR)?effScore(raw,i,hcp):null, capped=(!isNR)&&isCapped(raw,i,hcp);
     var ex=xStr(i,hcp);
     var bd=eff!=null?eff-pv:null;
     var ns=netH(eff,i,hcp), nd=ns!=null?ns-pv:null, sv=ns!=null?stbl(ns,pv):null;
     var exH=ex!==0?'<div class="hex" style="color:'+(ex>0?'#a78bfa':'#fb923c')+'">'+(ex>0?'+'+ex:ex)+'</div>':'';
     var capH=capped?'<div style="font-size:9px;color:#e65100;font-weight:700;line-height:1">🔒'+eff+'</div>':'';
-    var c4=mode==='stableford'
-      ?(sv!=null?'<div class="stbl serif">'+sv+'</div>':'<span class="dash">–</span>')
-      :(nd!=null?'<div class="rv serif" style="color:'+dc(nd)+'">'+fmt(nd)+'</div><div class="rl" style="color:'+dc(nd)+'">'+dl(nd)+'</div>':'<span class="dash">–</span>');
-    return '<div class="hrow'+(raw!=null?' filled':'')+(capped?' capped':'')+'" id="hr-'+i+'">'
+    // Brutto-Spalte
+    var brHTML=isNR?'<div class="rv serif" style="color:#aaa">NR</div>'
+      :(bd!=null?'<div class="rv serif" style="color:'+dc(bd)+'">'+fmt(bd)+'</div><div class="rl" style="color:'+dc(bd)+'">'+dl(bd)+'</div>':'<span class="dash">–</span>');
+    // Netto/Stableford-Spalte
+    var c4=isNR
+      ?(mode==='stableford'?'<div class="stbl serif" style="color:#aaa">0</div>':'<div class="rv serif" style="color:#aaa">NR</div>')
+      :(mode==='stableford'
+        ?(sv!=null?'<div class="stbl serif">'+sv+'</div>':'<span class="dash">–</span>')
+        :(nd!=null?'<div class="rv serif" style="color:'+dc(nd)+'">'+fmt(nd)+'</div><div class="rl" style="color:'+dc(nd)+'">'+dl(nd)+'</div>':'<span class="dash">–</span>'));
+    var rowClass='hrow'+(raw!=null?' filled':'')+(capped?' capped':'');
+    var stvalClass=raw==null?'stval empty':raw===0?'stval empty':'stval';
+    var stvalTxt=raw==null?'–':raw===0?'NR':raw;
+    return '<div class="'+rowClass+'" id="hr-'+i+'">'
       +'<div class="hinfo"><div class="hnum serif">'+(i+1)+'</div><div class="hpar">P'+pv+'·SI'+siv+'</div>'+exH+capH+'</div>'
       +'<div class="stepper">'
       +'<button class="stbtn" data-idx="'+i+'" data-d="-1">−</button>'
-      +'<div class="stval'+(raw!=null?'':' empty')+'" id="sv-'+i+'">'+(raw!=null?raw:'–')+'</div>'
+      +'<div class="'+stvalClass+'" id="sv-'+i+'">'+stvalTxt+'</div>'
       +'<button class="stbtn" data-idx="'+i+'" data-d="1">+</button>'
       +'</div>'
-      +'<div class="hres" id="br-'+i+'">'+(bd!=null?'<div class="rv serif" style="color:'+dc(bd)+'">'+fmt(bd)+'</div><div class="rl" style="color:'+dc(bd)+'">'+dl(bd)+'</div>':'<span class="dash">–</span>')+'</div>'
+      +'<div class="hres" id="br-'+i+'">'+brHTML+'</div>'
       +'<div class="hres" id="ne-'+i+'">'+c4+'</div>'
       +'</div>';
   }).join('');
@@ -1429,24 +1460,45 @@ function renderHoles(){
 }
 function step(idx,delta){
   var par=G.round.par||DPAR, pv=par[idx]||4;
-  var next=CS[idx]==null?pv:CS[idx]+delta;
-  if(next<1)next=1; if(next>15)next=15;
+  var cur=CS[idx];
+  var next;
+  if(cur==null) next=delta>0?pv:0;  // erstes Antippen: + → Par, − → 0 (NR)
+  else next=cur+delta;
+  if(next<0) next=0;   // 0 = NR (Loch gestrichen)
+  if(next>15) next=15;
   CS[idx]=next;
-  var sv=document.getElementById('sv-'+idx); if(sv){ sv.textContent=next; sv.className='stval'; }
+
+  var sv=document.getElementById('sv-'+idx);
+  if(sv){
+    if(next===0){ sv.textContent='NR'; sv.className='stval empty'; }
+    else{ sv.textContent=next; sv.className='stval'; }
+  }
   var p=G.players.find(function(p){ return p.id===CID; });
   var hcp=Number(p&&p.handicap)||0, mode=G.round.mode||'stroke';
-  var eff=effScore(next,idx,hcp), capped=isCapped(next,idx,hcp);
-  var row=document.getElementById('hr-'+idx); if(row) row.className='hrow filled'+(capped?' capped':'');
-  var bd=eff-pv, ns=netH(eff,idx,hcp), nd=ns!=null?ns-pv:null, sv2=ns!=null?stbl(ns,pv):null;
+
+  // Score 0 = NR: kein Brutto/Netto berechnen, 0 Stableford
   var brEl=document.getElementById('br-'+idx);
-  if(brEl) brEl.innerHTML='<div class="rv serif" style="color:'+dc(bd)+'">'+fmt(bd)+'</div><div class="rl" style="color:'+dc(bd)+'">'+dl(bd)+'</div>';
   var neEl=document.getElementById('ne-'+idx);
-  if(neEl) neEl.innerHTML=mode==='stableford'
-    ?(sv2!=null?'<div class="stbl serif">'+sv2+'</div>':'<span class="dash">–</span>')
-    :(nd!=null?'<div class="rv serif" style="color:'+dc(nd)+'">'+fmt(nd)+'</div><div class="rl" style="color:'+dc(nd)+'">'+dl(nd)+'</div>':'<span class="dash">–</span>');
-  var hinfo=document.querySelector('#hr-'+idx+' .hinfo');
-  if(hinfo){ var old=hinfo.querySelector('.cap-icon'); if(old) old.remove();
-    if(capped){ var ci=document.createElement('div'); ci.className='cap-icon'; ci.style.cssText='font-size:9px;color:#e65100;font-weight:700;line-height:1'; ci.textContent='🔒'+eff; hinfo.appendChild(ci); } }
+  var row=document.getElementById('hr-'+idx);
+
+  if(next===0){
+    if(row) row.className='hrow filled';
+    if(brEl) brEl.innerHTML='<div class="rv serif" style="color:#aaa">NR</div>';
+    if(neEl) neEl.innerHTML=mode==='stableford'
+      ?'<div class="stbl serif" style="color:#aaa">0</div>'
+      :'<div class="rv serif" style="color:#aaa">NR</div>';
+  } else {
+    var eff=effScore(next,idx,hcp), capped=isCapped(next,idx,hcp);
+    if(row) row.className='hrow filled'+(capped?' capped':'');
+    var bd=eff-pv, ns=netH(eff,idx,hcp), nd=ns!=null?ns-pv:null, sv2=ns!=null?stbl(ns,pv):null;
+    if(brEl) brEl.innerHTML='<div class="rv serif" style="color:'+dc(bd)+'">'+fmt(bd)+'</div><div class="rl" style="color:'+dc(bd)+'">'+dl(bd)+'</div>';
+    if(neEl) neEl.innerHTML=mode==='stableford'
+      ?(sv2!=null?'<div class="stbl serif">'+sv2+'</div>':'<span class="dash">–</span>')
+      :(nd!=null?'<div class="rv serif" style="color:'+dc(nd)+'">'+fmt(nd)+'</div><div class="rl" style="color:'+dc(nd)+'">'+dl(nd)+'</div>':'<span class="dash">–</span>');
+    var hinfo=document.querySelector('#hr-'+idx+' .hinfo');
+    if(hinfo){ var old=hinfo.querySelector('.cap-icon'); if(old) old.remove();
+      if(capped){ var ci=document.createElement('div'); ci.className='cap-icon'; ci.style.cssText='font-size:9px;color:#e65100;font-weight:700;line-height:1'; ci.textContent='🔒'+eff; hinfo.appendChild(ci); } }
+  }
   updatePills();
   refreshHalf(Array.from({length:9},function(_,i){ return (CTAB==='front'?0:9)+i; }));
   trigAS();
@@ -1454,10 +1506,12 @@ function step(idx,delta){
 function refreshHalf(holes){
   var par=G.round.par||DPAR, p=G.players.find(function(p){ return p.id===CID; });
   var hcp=Number(p&&p.handicap)||0, mode=G.round.mode||'stroke';
-  var hp=holes.filter(function(i){ return CS[i]!=null; }).length, bar=document.getElementById('half-bar');
+  var hp=holes.filter(function(i){ return CS[i]!=null; }).length;
+  var bar=document.getElementById('half-bar');
   if(!hp){ bar.style.display='none'; return; }
   bar.style.display='grid';
-  var eff=CS.map(function(s,i){ return effScore(s,i,hcp); });
+  // Score 0 = NR: nicht zum Brutto zählen
+  var eff=CS.map(function(s,i){ return (s!=null&&s>0)?effScore(s,i,hcp):null; });
   document.getElementById('half-par-lbl').textContent='Par '+holes.reduce(function(a,i){ return a+(par[i]||4); },0);
   document.getElementById('half-brutto-lbl').textContent=holes.reduce(function(a,i){ return a+(eff[i]!=null?eff[i]:0); },0);
   document.getElementById('half-stbl-lbl').textContent=mode==='stableford'
@@ -1927,7 +1981,7 @@ function calcTotal(){
       played++;
       var rndMode=rnd.mode||'stroke', rndMax=rnd.maxScore||null;
       var eff=sc.map(function(raw,i){
-        if(raw==null) return null;
+        if(raw==null||raw===0) return null;  // null und NR(0) ignorieren
         if(rndMode==='zaehlen_ndb'){
           var pv=par[i]||4, siV=si[i]||i+1, h=Math.round(Math.abs(hcp))*(hcp<0?-1:1);
           var ex=h>=0?Math.floor(h/18)+(h%18>=siV?1:0):-(Math.floor(Math.abs(h)/18)+(Math.abs(h)%18>=siV?1:0));
@@ -1936,7 +1990,7 @@ function calcTotal(){
         if(rndMode==='zaehlen_fix') return Math.min(raw,rndMax||8);
         return raw;
       });
-      var br=bt(eff), parP=par.slice(0,pl).reduce(function(a,b){ return a+b; },0), bvp=br-parP;
+      var br=bt(eff), parP=eff.reduce(function(a,s,i){ return s!=null?a+(par[i]||4):a; },0), bvp=br-parP;
       var nvp=0, stp=0;
       eff.forEach(function(s,i){
         if(s==null) return;
