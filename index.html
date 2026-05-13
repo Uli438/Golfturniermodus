@@ -990,6 +990,13 @@ function startListeners(){
   stopListeners();
   var firstPlayers=true;
 
+  // ── r4 ZUERST: Notif-Status muss bekannt sein bevor Spieler-Updates kommen ──
+  var r4=DB.ref(fp('notif')).on('value',function(snap){
+    NOTIF_ON=!!snap.val();
+    var tog=document.getElementById('notif-toggle'); if(tog) tog.checked=NOTIF_ON;
+    var card=document.getElementById('notif-card'); if(card) card.classList.toggle('on',NOTIF_ON);
+  });
+
   var r1=DB.ref(fp('round')).on('value',function(snap){
     if(!snap.exists()) return;
     G.round=snap.val(); renderLB(); renderResult();
@@ -999,14 +1006,15 @@ function startListeners(){
     if(!snap.exists()) return;
     var fresh=parsePlayers(snap.val());
     if(firstPlayers){
-      // Erster Snapshot → nur Snapshots speichern, keine Meldungen
+      // Erster Snapshot → Snapshots speichern, keine Meldungen
       fresh.forEach(saveSnap);
       firstPlayers=false;
     } else {
-      // Folge-Snapshots → Vergleich + ggf. Banner
+      // Folge-Snapshots → erst Snapshot lesen, dann vergleichen, dann speichern
       fresh.forEach(function(np){
-        checkEvents(PREV_SNAP[np.id]||null, np);
-        saveSnap(np);
+        var prev=PREV_SNAP[np.id]||null;
+        checkEvents(prev, np);  // Vergleich alter vs neuer Stand
+        saveSnap(np);           // Snapshot aktualisieren
       });
     }
     G.players=fresh; renderLB(); renderResult();
@@ -1022,17 +1030,11 @@ function startListeners(){
     if(document.getElementById('view-total').classList.contains('active')) renderTotal();
   });
 
-  var r4=DB.ref(fp('notif')).on('value',function(snap){
-    NOTIF_ON=!!snap.val();
-    var tog=document.getElementById('notif-toggle'); if(tog) tog.checked=NOTIF_ON;
-    var card=document.getElementById('notif-card'); if(card) card.classList.toggle('on',NOTIF_ON);
-  });
-
   OFF=[
+    function(){ DB.ref(fp('notif')).off('value',r4); },
     function(){ DB.ref(fp('round')).off('value',r1); },
     function(){ DB.ref(fp('players')).off('value',r2); },
-    function(){ DB.ref(fp('tournament')).off('value',r3); },
-    function(){ DB.ref(fp('notif')).off('value',r4); }
+    function(){ DB.ref(fp('tournament')).off('value',r3); }
   ];
 }
 
@@ -1172,8 +1174,11 @@ async function pushFB(){
   if(!navigator.onLine){ syncDot('off'); pSync=true; return; }
   syncDot('save');
   try{
-    G.players=G.players.map(function(p){ return p.id===CID?Object.assign({},p,{scores:CS.slice(),extras:CEXT.slice()}):p; });
-    await fbSet(fp('players/'+CID),G.players.find(function(p){ return p.id===CID; }));
+    var updated=Object.assign({},G.players.find(function(p){ return p.id===CID; }),{scores:CS.slice(),extras:CEXT.slice()});
+    G.players=G.players.map(function(p){ return p.id===CID?updated:p; });
+    // Eigenen Snapshot sofort aktualisieren → verhindert false-positive Meldungen
+    saveSnap(updated);
+    await fbSet(fp('players/'+CID), updated);
     clearLoc(CID); pSync=false; syncDot('on');
   }catch(e){ syncDot('off'); pSync=true; }
 }
@@ -1479,8 +1484,10 @@ async function saveScore(){
   saveLoc(CID,CS);
   if(!navigator.onLine){ toast('📵 Offline – lokal gespeichert'); syncDot('off'); pSync=true; btn.disabled=false; btn.textContent='Score speichern ✓'; return; }
   try{
-    G.players=G.players.map(function(p){ return p.id===CID?Object.assign({},p,{scores:CS.slice(),extras:CEXT.slice()}):p; });
-    await fbSet(fp('players/'+CID),G.players.find(function(p){ return p.id===CID; }));
+    var updated=Object.assign({},G.players.find(function(p){ return p.id===CID; }),{scores:CS.slice(),extras:CEXT.slice()});
+    G.players=G.players.map(function(p){ return p.id===CID?updated:p; });
+    saveSnap(updated); // eigenen Snapshot sofort aktualisieren
+    await fbSet(fp('players/'+CID), updated);
     clearLoc(CID); pSync=false; syncDot('on');
     btn.textContent='✅ Gespeichert!'; btn.style.background='linear-gradient(135deg,#1b5e20,#2e7d32)';
     setTimeout(function(){ btn.textContent='Score speichern ✓'; btn.style.background=''; btn.disabled=false; },2500);
