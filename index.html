@@ -358,6 +358,7 @@ input,select,button{font-family:'DM Sans',sans-serif}
         🔴 Ballverlust (wenn aktiv) &nbsp;·&nbsp; 🚺 Lady (wenn aktiv)<br>
         🏌️‍♂️ 3-Putt (wenn Putts aktiv)
       </div>
+      <button id="btn-test-banner" style="margin-top:10px;width:100%;padding:10px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:700;cursor:pointer">🔔 Banner testen</button>
     </div>
 
     <div class="slabel">AKTIVE TURNIERE IN FIREBASE</div>
@@ -718,19 +719,22 @@ var BSTYLE = {
   putt3: { bg:'#263238', fg:'#ffffff' }
 };
 function showBanner(icon, msg, type){
-  var b   = document.getElementById('news-banner');
-  var s   = BSTYLE[type] || { bg:'#1565c0', fg:'#fff' };
+  var b = document.getElementById('news-banner');
+  var s = BSTYLE[type] || { bg:'#1565c0', fg:'#fff' };
+  // Farbe setzen
   b.style.background = s.bg;
   b.style.color      = s.fg;
   document.getElementById('nb-icon').textContent = icon;
   document.getElementById('nb-txt').textContent  = msg;
-  // kurz ausblenden → neue Animation
+  document.getElementById('nb-close').style.color = s.fg;
+  // Erst wegbewegen, dann einfahren (kleiner Delay damit transition läuft)
   b.classList.remove('show');
-  requestAnimationFrame(function(){
-    requestAnimationFrame(function(){ b.classList.add('show'); });
-  });
+  clearTimeout(b._bt);
+  b._bt = setTimeout(function(){ b.classList.add('show'); }, 30);
 }
-function hideBanner(){ document.getElementById('news-banner').classList.remove('show'); }
+function hideBanner(){
+  document.getElementById('news-banner').classList.remove('show');
+}
 
 // ════════════════════════════════════════════════════════════
 // GOLF MATH
@@ -783,7 +787,8 @@ function saveSnap(p){
 }
 function checkEvents(prev, np){
   if(!NOTIF_ON) return;
-  if(!np||np.id===CID) return;   // eigene Events ignorieren
+  if(!np) return;
+  if(CID && np.id===CID) return;   // eigene Events nur ignorieren wenn man selbst spielt
 
   var par  = G.round.par||DPAR;
   var opts = G.round.options||{};
@@ -856,6 +861,19 @@ document.addEventListener('DOMContentLoaded',function(){
 
   // News Banner schließen
   document.getElementById('nb-close').addEventListener('click', hideBanner);
+
+  // Banner testen (Admin)
+  document.getElementById('btn-test-banner').addEventListener('click', function(){
+    var events=[
+      {i:'🐦', m:'Birdie! Max Mustermann · Loch 7', t:'birdie'},
+      {i:'🦅', m:'Eagle! Anna Schmidt · Loch 3 (3 Schläge)', t:'eagle'},
+      {i:'😬', m:'Bogey — Klaus Müller · Loch 12', t:'bogey'},
+      {i:'💀', m:'Doppelbogey — Peter Huber · Loch 15', t:'double'},
+      {i:'🏌️', m:'HOLE IN ONE!!! Franz Bauer · Loch 5', t:'hio'}
+    ];
+    var e=events[Math.floor(Math.random()*events.length)];
+    showBanner(e.i, e.m, e.t);
+  });
 
   // LOBBY
   document.getElementById('btn-new-trn').addEventListener('click',function(){ showView('setup'); });
