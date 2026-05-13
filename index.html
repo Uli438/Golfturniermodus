@@ -338,27 +338,13 @@ input,select,button{font-family:'DM Sans',sans-serif}
   </div>
   <div style="padding:16px;padding-bottom:80px">
 
-    <!-- BENACHRICHTIGUNGEN — gut sichtbar ganz oben -->
-    <div class="slabel">🔔 LIVE-BENACHRICHTIGUNGEN</div>
-    <div class="notif-card" id="notif-card">
-      <div class="notif-row">
-        <div class="notif-texts">
-          <div class="notif-title">Live-Meldungen an/aus</div>
-          <div class="notif-sub">Zuerst Turnier öffnen → dann hier aktivieren → gilt für alle Spieler</div>
-        </div>
-        <label class="sw">
-          <input type="checkbox" id="notif-toggle">
-          <span class="sw-knob"></span>
-        </label>
+    <div class="slabel">🔔 LIVE-MELDUNGEN TESTEN</div>
+    <div style="background:var(--card);border:2px solid var(--border-light);border-radius:12px;padding:14px;margin-bottom:20px">
+      <div style="font-size:11px;color:var(--txt2);margin-bottom:10px;line-height:1.7">
+        Live-Meldungen werden im <b>Setup</b> (⚙️) pro Turnier ein/ausgeschaltet.<br>
+        Hier kannst du den Banner testen:
       </div>
-      <div class="notif-events">
-        <b>Was gemeldet wird:</b><br>
-        🏌️ Hole-in-One &nbsp;·&nbsp; 🦅 Eagle &nbsp;·&nbsp; 🐦 Birdie<br>
-        😬 Bogey &nbsp;·&nbsp; 💀 Doppelbogey+<br>
-        🔴 Ballverlust (wenn aktiv) &nbsp;·&nbsp; 🚺 Lady (wenn aktiv)<br>
-        🏌️‍♂️ 3-Putt (wenn Putts aktiv)
-      </div>
-      <button id="btn-test-banner" style="margin-top:10px;width:100%;padding:10px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:700;cursor:pointer">🔔 Banner testen</button>
+      <button id="btn-test-banner" style="width:100%;padding:12px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">🔔 Banner testen</button>
     </div>
 
     <div class="slabel">AKTIVE TURNIERE IN FIREBASE</div>
@@ -604,6 +590,10 @@ input,select,button{font-family:'DM Sans',sans-serif}
         <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card);border:2px solid var(--border-light);border-radius:10px;cursor:pointer">
           <input type="checkbox" id="opt-putts" style="width:18px;height:18px;cursor:pointer;accent-color:var(--accent)">
           <div><div style="font-size:13px;font-weight:700">🏌️ Putts pro Loch</div><div style="font-size:10px;color:var(--txt3)">Putts eintragen — Gesamt-Putts im Leaderboard als Statistik</div></div>
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card);border:2px solid var(--border-light);border-radius:10px;cursor:pointer">
+          <input type="checkbox" id="opt-notif" style="width:18px;height:18px;cursor:pointer;accent-color:var(--accent)">
+          <div><div style="font-size:13px;font-weight:700">🔔 Live-Meldungen</div><div style="font-size:10px;color:var(--txt3)">Birdie, Eagle, Bogey, Ballverlust usw. als Banner für alle Spieler</div></div>
         </label>
       </div>
     </section>
@@ -955,21 +945,6 @@ document.addEventListener('DOMContentLoaded',function(){
     el.addEventListener('click',function(){ selectTM(this.dataset.tm); });
   });
 
-  // ── NOTIF TOGGLE ──
-  document.getElementById('notif-toggle').addEventListener('change',async function(){
-    if(!CODE){
-      toast('⚠️ Zuerst ein Turnier öffnen, dann Meldungen aktivieren');
-      this.checked=NOTIF_ON; // zurücksetzen
-      return;
-    }
-    NOTIF_ON=this.checked;
-    document.getElementById('notif-card').classList.toggle('on', NOTIF_ON);
-    try{
-      await fbSet(fp('notif'),NOTIF_ON);
-      toast(NOTIF_ON?'🔔 Live-Meldungen AN — für alle Spieler':'🔕 Live-Meldungen AUS');
-    }catch(e){ toast('⚠️ Firebase Fehler'); }
-  });
-
   initFB().catch(function(){});
   renderLobby();
 });
@@ -1006,7 +981,12 @@ function startListeners(){
 
   var r1=DB.ref(fp('round')).on('value',function(snap){
     if(!snap.exists()) return;
-    G.round=snap.val(); renderLB(); renderResult();
+    G.round=snap.val();
+    // Notif-Status auch aus round.options lesen (Fallback)
+    if(G.round.options&&G.round.options.notif!==undefined){
+      NOTIF_ON=!!G.round.options.notif;
+    }
+    renderLB(); renderResult();
   });
 
   var r2=DB.ref(fp('players')).on('value',function(snap){
@@ -1139,13 +1119,6 @@ async function renderAdmin(){
   el.innerHTML='<div style="text-align:center;padding:40px;color:var(--txt3)">⏳ Lade Turniere…</div>';
   try{
     await initFB();
-    // Notif-Status direkt aus Firebase lesen (nicht lokale Variable)
-    if(CODE){
-      var nSnap=await DB.ref(fp('notif')).get();
-      NOTIF_ON=!!nSnap.val();
-      var tog=document.getElementById('notif-toggle'); if(tog) tog.checked=NOTIF_ON;
-      var card=document.getElementById('notif-card'); if(card) card.classList.toggle('on',NOTIF_ON);
-    }
     var snap=await DB.ref('turniere').get();
     if(!snap.exists()){ el.innerHTML='<div style="text-align:center;padding:40px;color:var(--txt3)">Keine Turniere gefunden</div>'; return; }
     var data=snap.val(), codes=Object.keys(data).sort();
@@ -1614,7 +1587,10 @@ function initSetup(){
   var tSel=document.getElementById('trn-rounds'); if(tSel) tSel.value=G.tournament?G.tournament.totalRounds:0;
   var opts=G.round.options||{};
   var cb=function(id,val){ var el=document.getElementById(id); if(el) el.checked=!!val; };
-  cb('opt-ballverlust',opts.ballverlust); cb('opt-ladies',opts.ladies); cb('opt-putts',opts.putts);
+  cb('opt-ballverlust',opts.ballverlust);
+  cb('opt-ladies',opts.ladies);
+  cb('opt-putts',opts.putts);
+  cb('opt-notif',opts.notif);
   selectTM(STM); renderHoleRows(); renderPList(); renderSavedCourses().catch(function(){}); switchCourseTab('manual');
 }
 function switchCourseTab(t){
@@ -1712,7 +1688,7 @@ async function saveSetup(){
   G.round={courseName:cname,par:SPAR,strokeIndex:SSI,tee:tee,
     date:document.getElementById('r-date').value||tod(),
     mode:rMode,maxScore:maxScore,teamMode:STM,
-    options:{ballverlust:gv('opt-ballverlust'),ladies:gv('opt-ladies'),putts:gv('opt-putts')}};
+    options:{ballverlust:gv('opt-ballverlust'),ladies:gv('opt-ladies'),putts:gv('opt-putts'),notif:gv('opt-notif')}};
   G.players=SP;
   var trnR=parseInt(document.getElementById('trn-rounds').value)||0;
   if(trnR>1){ if(!G.tournament||G.tournament.totalRounds!==trnR) G.tournament={totalRounds:trnR,currentRound:1,name:cname,rounds:[]}; }
@@ -1726,6 +1702,9 @@ async function saveSetup(){
     await fbSet(fp('round'),G.round);
     await Promise.all(G.players.map(function(p){ return fbSet(fp('players/'+p.id),p); }));
     await fbSet(fp('tournament'),G.tournament||null);
+    // Notif-Status direkt in Firebase schreiben — alle Geräte synchronisieren sich
+    await fbSet(fp('notif'), gv('opt-notif'));
+    NOTIF_ON = gv('opt-notif');
     toast('✓ Turnier '+CODE+' gestartet');
     startListeners();
   }catch(e){ toast('⚠️ Firebase nicht erreichbar'); }
