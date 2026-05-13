@@ -344,7 +344,7 @@ input,select,button{font-family:'DM Sans',sans-serif}
       <div class="notif-row">
         <div class="notif-texts">
           <div class="notif-title">Live-Meldungen an/aus</div>
-          <div class="notif-sub">Alle Spieler sehen Ereignisse im Banner</div>
+          <div class="notif-sub">Zuerst Turnier öffnen → dann hier aktivieren → gilt für alle Spieler</div>
         </div>
         <label class="sw">
           <input type="checkbox" id="notif-toggle">
@@ -957,10 +957,17 @@ document.addEventListener('DOMContentLoaded',function(){
 
   // ── NOTIF TOGGLE ──
   document.getElementById('notif-toggle').addEventListener('change',async function(){
+    if(!CODE){
+      toast('⚠️ Zuerst ein Turnier öffnen, dann Meldungen aktivieren');
+      this.checked=NOTIF_ON; // zurücksetzen
+      return;
+    }
     NOTIF_ON=this.checked;
     document.getElementById('notif-card').classList.toggle('on', NOTIF_ON);
-    if(CODE) try{ await fbSet(fp('notif'),NOTIF_ON); }catch(e){}
-    toast(NOTIF_ON?'🔔 Live-Meldungen AN':'🔕 Live-Meldungen AUS');
+    try{
+      await fbSet(fp('notif'),NOTIF_ON);
+      toast(NOTIF_ON?'🔔 Live-Meldungen AN — für alle Spieler':'🔕 Live-Meldungen AUS');
+    }catch(e){ toast('⚠️ Firebase Fehler'); }
   });
 
   initFB().catch(function(){});
@@ -1130,10 +1137,15 @@ function showQR(){
 async function renderAdmin(){
   var el=document.getElementById('admin-list');
   el.innerHTML='<div style="text-align:center;padding:40px;color:var(--txt3)">⏳ Lade Turniere…</div>';
-  var tog=document.getElementById('notif-toggle'); if(tog) tog.checked=NOTIF_ON;
-  var card=document.getElementById('notif-card'); if(card) card.classList.toggle('on',NOTIF_ON);
   try{
     await initFB();
+    // Notif-Status direkt aus Firebase lesen (nicht lokale Variable)
+    if(CODE){
+      var nSnap=await DB.ref(fp('notif')).get();
+      NOTIF_ON=!!nSnap.val();
+      var tog=document.getElementById('notif-toggle'); if(tog) tog.checked=NOTIF_ON;
+      var card=document.getElementById('notif-card'); if(card) card.classList.toggle('on',NOTIF_ON);
+    }
     var snap=await DB.ref('turniere').get();
     if(!snap.exists()){ el.innerHTML='<div style="text-align:center;padding:40px;color:var(--txt3)">Keine Turniere gefunden</div>'; return; }
     var data=snap.val(), codes=Object.keys(data).sort();
