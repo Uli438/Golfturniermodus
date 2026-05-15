@@ -463,8 +463,10 @@ input,select,button{font-family:'DM Sans',sans-serif}
 <div id="view-setup" class="view">
   <div class="hdr">
     <button class="back-btn" id="setup-back">←</button>
-    <div class="hdr-title serif">Einstellungen</div>
+    <div class="hdr-title serif" id="setup-title">Einstellungen</div>
   </div>
+  <!-- Turnier-Kontext Banner — nur sichtbar wenn Turnier aktiv -->
+  <div id="setup-trn-hint" style="display:none;padding:10px 16px;background:#fff8e1;border-bottom:2px solid #ffa000;font-size:12px;color:#e65100;font-weight:700;line-height:1.5"></div>
   <div class="setup-body">
 
     <section>
@@ -1461,6 +1463,32 @@ function initSetup(){
   SP=G.players.map(function(p){return Object.assign({},p);});
   SPAR=(G.round.par||DPAR).slice();SSI=(G.round.strokeIndex||DSI).slice();
   SAC=null;SAT=null;STM=G.round.teamMode||'none';
+
+  // Turnier-Kontext anzeigen
+  var hint=document.getElementById('setup-trn-hint');
+  var titleEl=document.getElementById('setup-title');
+  if(G.tournament&&G.tournament.totalRounds>1){
+    var cur=G.tournament.currentRound||1;
+    var total=G.tournament.totalRounds;
+    var doneNums=(G.tournament.rounds||[]).map(function(r){return r.roundNum;});
+    var isDone=doneNums.indexOf(cur)>=0;
+    if(titleEl) titleEl.textContent='Einstellungen · R'+cur;
+    if(hint){
+      hint.style.display='block';
+      if(isDone){
+        hint.innerHTML='📋 Runde '+cur+' ist bereits abgeschlossen. Diese Einstellungen gelten für <b>Runde '+(cur<total?cur+1:cur)+'</b>.';
+        hint.style.background='#e8f5e9';hint.style.borderColor='#4caf50';hint.style.color='#2e7d32';
+      }else{
+        hint.innerHTML='🏆 Turnier · <b>Runde '+cur+' von '+total+'</b>'
+          +(cur>1?' · Neuen Platz und Datum für diese Runde eingeben':'')
+          +'<br><span style="font-weight:400;font-size:11px">Platz, Datum und Wertung können pro Runde geändert werden. Spieler und Vorgaben bleiben erhalten.</span>';
+        hint.style.background='#fff8e1';hint.style.borderColor='#ffa000';hint.style.color='#e65100';
+      }
+    }
+  }else{
+    if(titleEl) titleEl.textContent='Einstellungen';
+    if(hint) hint.style.display='none';
+  }
   document.getElementById('man-name').value=G.round.courseName||'';
   document.getElementById('r-date').value=G.round.date||tod();
   document.getElementById('r-mode').value=G.round.mode||'stroke';
