@@ -35,6 +35,22 @@ input,select,button{font-family:'DM Sans',sans-serif}
 .nb-txt{flex:1;font-size:14px;font-weight:700;line-height:1.35}
 .nb-close{background:rgba(255,255,255,.22);border:2px solid rgba(255,255,255,.35);border-radius:8px;color:inherit;font-size:15px;font-weight:900;cursor:pointer;flex-shrink:0;padding:4px 10px;line-height:1}
 
+/* SCORE LOG */
+#score-log-bar{display:none;position:fixed;left:0;right:0;z-index:790;background:rgba(21,101,192,.97);border-bottom:2px solid rgba(255,255,255,.2);transition:top .4s cubic-bezier(.175,.885,.32,1.1)}
+#score-log-bar.visible{display:block}
+.sl-header{display:flex;align-items:center;justify-content:space-between;padding:7px 14px;cursor:pointer;user-select:none}
+.sl-title{font-size:10px;font-weight:700;color:rgba(255,255,255,.9);letter-spacing:1px}
+.sl-toggle{font-size:11px;color:rgba(255,255,255,.7);font-weight:600}
+.sl-entries{max-height:160px;overflow-y:auto;border-top:1px solid rgba(255,255,255,.15)}
+.sl-entry{display:flex;align-items:center;gap:10px;padding:7px 14px;border-bottom:1px solid rgba(255,255,255,.08)}
+.sl-entry:last-child{border-bottom:none}
+.sl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.sl-name{font-size:12px;font-weight:700;color:#fff;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sl-hole{font-size:11px;color:rgba(255,255,255,.7);flex-shrink:0}
+.sl-score{font-size:13px;font-weight:900;font-family:'Cormorant Garamond',serif;color:#fff;flex-shrink:0;min-width:28px;text-align:right}
+.sl-diff{font-size:10px;font-weight:700;flex-shrink:0;min-width:32px;text-align:right}
+.sl-time{font-size:9px;color:rgba(255,255,255,.5);flex-shrink:0}
+
 /* LOBBY */
 .lobby-hero{background:linear-gradient(160deg,var(--bg2) 60%,var(--bg3));padding:40px 24px 28px;border-bottom:2px solid var(--border);text-align:center}
 .lobby-icon{font-size:52px;margin-bottom:8px}
@@ -276,6 +292,15 @@ input,select,button{font-family:'DM Sans',sans-serif}
   <span class="nb-icon" id="nb-icon">⛳</span>
   <span class="nb-txt" id="nb-txt"></span>
   <button class="nb-close" id="nb-close">✕</button>
+</div>
+
+<!-- SCORE LOG — aufklappbar unter Banner -->
+<div id="score-log-bar">
+  <div class="sl-header" id="sl-header">
+    <span class="sl-title">📋 LIVE SCORE-LOG</span>
+    <span class="sl-toggle" id="sl-toggle">▾ aufklappen</span>
+  </div>
+  <div id="sl-entries" class="sl-entries" style="display:none"></div>
 </div>
 
 <div id="qr-modal">
@@ -589,6 +614,9 @@ input,select,button{font-family:'DM Sans',sans-serif}
           <label class="notif-sub-label"><input type="checkbox" id="notif-bv" checked> 🔴 Ballverlust</label>
           <label class="notif-sub-label"><input type="checkbox" id="notif-lady" checked> 🚺 Lady</label>
           <label class="notif-sub-label"><input type="checkbox" id="notif-putt3" checked> 🏌️‍♂️ 3-Putt</label>
+          <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border-light)">
+            <label class="notif-sub-label"><input type="checkbox" id="notif-scorelog" checked> 📋 Score-Log anzeigen<br><span style="font-size:10px;color:var(--txt3);font-weight:400;margin-left:23px">Zeigt wer wann welchen Score gespeichert hat</span></label>
+          </div>
         </div>
       </div>
     </section>
@@ -649,6 +677,9 @@ var LBM='brutto',LBV='einzel',TM='bestball';
 var pSync=false,aTimer=null;
 var SP=[],SPAR=DPAR.slice(),SSI=DSI.slice(),SAC=null,SAT=null,CTM='manual',SDB=null,STM='none';
 var NOTIF_ON=false,PREV_SNAP={};
+// Score-Log: max. 30 Einträge, neueste zuerst
+var SCORE_LOG=[];
+var LOG_OPEN=false;
 
 // ════════════════════════════════════════════════════
 // UTILS
@@ -687,9 +718,77 @@ function showBanner(icon,msg,type){
   document.getElementById('nb-txt').textContent=msg;
   document.getElementById('nb-close').style.color=s.fg;
   b.classList.remove('show');clearTimeout(b._bt);
-  b._bt=setTimeout(function(){b.classList.add('show');},30);
+  b._bt=setTimeout(function(){
+    b.classList.add('show');
+    // Score-Log nach unten schieben wenn Banner sichtbar
+    var bar=document.getElementById('score-log-bar');
+    if(bar.classList.contains('visible'))bar.style.top='58px';
+  },30);
 }
-function hideBanner(){document.getElementById('news-banner').classList.remove('show');}
+function hideBanner(){
+  document.getElementById('news-banner').classList.remove('show');
+  // Score-Log wieder nach oben
+  var bar=document.getElementById('score-log-bar');
+  if(bar&&bar.classList.contains('visible'))bar.style.top='0px';
+}
+
+// ════════════════════════════════════════════════════
+// SCORE LOG
+// ════════════════════════════════════════════════════
+function scoreLogEnabled(){
+  var opts=G.round.options||{};
+  return !!(opts.notif&&opts.notifSettings&&opts.notifSettings.scorelog!==false);
+}
+function addLogEntry(name,holeIdx,score,par){
+  var now=new Date(),hh=String(now.getHours()).padStart(2,'0'),mm=String(now.getMinutes()).padStart(2,'0');
+  var diff=score>0?score-par:null;
+  SCORE_LOG.unshift({name:name,hole:holeIdx+1,score:score,diff:diff,time:hh+':'+mm});
+  if(SCORE_LOG.length>30)SCORE_LOG.pop();
+  renderScoreLog();
+}
+function renderScoreLog(){
+  if(!scoreLogEnabled()){
+    document.getElementById('score-log-bar').classList.remove('visible');
+    return;
+  }
+  var bar=document.getElementById('score-log-bar');
+  bar.classList.add('visible');
+  // Position: unter news-banner wenn sichtbar, sonst ganz oben
+  var bannerH=document.getElementById('news-banner').classList.contains('show')?58:0;
+  bar.style.top=bannerH+'px';
+  if(!SCORE_LOG.length){
+    document.getElementById('sl-entries').innerHTML=
+      '<div style="padding:10px 14px;font-size:11px;color:rgba(255,255,255,.5);text-align:center">Noch keine Scores gespeichert</div>';
+    return;
+  }
+  var par=G.round.par||DPAR;
+  document.getElementById('sl-entries').innerHTML=SCORE_LOG.map(function(e){
+    var diffTxt=e.diff!=null?(e.diff>0?'+'+e.diff:e.diff===0?'E':e.diff):'NR';
+    var diffColor=e.diff==null?'#aaa':e.diff<=-2?'#f4c430':e.diff===-1?'#4ade80':e.diff===0?'#94a3b8':e.diff===1?'#fb923c':'#f87171';
+    var dotColor=diffColor;
+    return'<div class="sl-entry">'
+      +'<div class="sl-dot" style="background:'+dotColor+'"></div>'
+      +'<div class="sl-name">'+esc(e.name)+'</div>'
+      +'<div class="sl-hole">L'+e.hole+'</div>'
+      +'<div class="sl-score">'+(e.score>0?e.score:'NR')+'</div>'
+      +'<div class="sl-diff" style="color:'+diffColor+'">'+diffTxt+'</div>'
+      +'<div class="sl-time">'+e.time+'</div>'
+      +'</div>';
+  }).join('');
+}
+function toggleScoreLog(){
+  LOG_OPEN=!LOG_OPEN;
+  document.getElementById('sl-entries').style.display=LOG_OPEN?'block':'none';
+  document.getElementById('sl-toggle').textContent=LOG_OPEN?'▴ zuklappen':'▾ aufklappen';
+}
+function resetScoreLog(){
+  SCORE_LOG=[];LOG_OPEN=false;
+  var bar=document.getElementById('score-log-bar');
+  bar.classList.remove('visible');
+  var entries=document.getElementById('sl-entries');
+  if(entries){entries.innerHTML='';entries.style.display='none';}
+  var tog=document.getElementById('sl-toggle');if(tog)tog.textContent='▾ aufklappen';
+}
 
 // ════════════════════════════════════════════════════
 // GOLF MATH
@@ -765,17 +864,25 @@ function saveSnap(p){
   };
 }
 function checkEvents(prev,np){
-  if(!NOTIF_ON||!np)return;
+  if(!np)return;
   if(CID&&np.id===CID)return;
   var par=G.round.par||DPAR,opts=G.round.options||{},ns=opts.notifSettings||{};
   var on=function(k){return ns[k]!==false;};
   var oSc=prev?prev.scores:[],oEx=prev?prev.extras:[];
   var nSc=np.scores||[],nEx=np.extras||[];
   var hcp=Number(np.handicap)||0,name=np.name;
+
   for(var i=0;i<18;i++){
     var ov=oSc[i]!=null?oSc[i]:null,nv=nSc[i]!=null?nSc[i]:null;
-    if(nv===null||nv===ov||nv===0)continue;
-    var pv=par[i]||4,eff=effScore(nv,i,hcp),diff=eff-pv,loch='Loch '+(i+1);
+    if(nv===null||nv===ov)continue; // unverändert
+    var pv=par[i]||4,loch='Loch '+(i+1);
+
+    // Score-Log: immer eintragen (wenn aktiviert), unabhängig von Ereignis-Häkchen
+    if(scoreLogEnabled())addLogEntry(name,i,nv,pv);
+
+    // Ereignis-Banner: nur wenn NOTIF_ON und Score > 0
+    if(!NOTIF_ON||nv===0)continue;
+    var eff=effScore(nv,i,hcp),diff=eff-pv;
     if(eff===1&&on('hio')){showBanner('🏌️','HOLE IN ONE!!! '+name+' · '+loch,'hio');continue;}
     if(diff<=-2&&on('eagle')){showBanner('🦅','Eagle! '+name+' · '+loch+' ('+eff+' Schläge)','eagle');continue;}
     if(diff===-1&&on('birdie')){showBanner('🐦','Birdie! '+name+' · '+loch,'birdie');continue;}
@@ -816,6 +923,7 @@ function showView(name){
 // ════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('nb-close').addEventListener('click',hideBanner);
+  document.getElementById('sl-header').addEventListener('click',toggleScoreLog);
   document.getElementById('btn-new-trn').addEventListener('click',function(){showView('setup');});
   document.getElementById('btn-join').addEventListener('click',joinByCode);
   document.getElementById('join-code').addEventListener('keydown',function(e){if(e.key==='Enter')joinByCode();});
@@ -991,7 +1099,7 @@ async function enterTournament(code){
   }catch(e){toast('⚠️ Verbindungsfehler');CODE=null;}
 }
 function goLobby(){
-  stopListeners();CODE=null;PREV_SNAP={};NOTIF_ON=false;hideBanner();
+  stopListeners();CODE=null;PREV_SNAP={};NOTIF_ON=false;hideBanner();resetScoreLog();
   G={players:[],tournament:null,round:{courseName:'',par:DPAR.slice(),strokeIndex:DSI.slice(),date:tod(),mode:'stroke',maxScore:null,tee:'',teamMode:'none',options:{}}};
   showView('lobby');
 }
@@ -1490,6 +1598,8 @@ function initSetup(){
   var nDef=function(id,def){var el=document.getElementById(id);if(el)el.checked=(id.replace('notif-','') in ns)?ns[id.replace('notif-','')]:def;};
   nDef('notif-hio',true);nDef('notif-eagle',true);nDef('notif-birdie',true);nDef('notif-par',false);
   nDef('notif-bogey',true);nDef('notif-double',true);nDef('notif-bv',true);nDef('notif-lady',true);nDef('notif-putt3',true);
+  var slEl=document.getElementById('notif-scorelog');
+  if(slEl)slEl.checked=ns.scorelog!==false; // default: an
   document.getElementById('notif-submenu').style.display=opts.notif?'block':'none';
   selectTM(STM);renderHoleRows();renderPList();renderSavedCourses().catch(function(){});switchCourseTab('manual');
 }
@@ -1592,7 +1702,8 @@ async function saveSetup(){
   var gv=function(id){var el=document.getElementById(id);return el?el.checked:false;};
   var notifSettings={
     hio:gv('notif-hio'),eagle:gv('notif-eagle'),birdie:gv('notif-birdie'),par:gv('notif-par'),
-    bogey:gv('notif-bogey'),double:gv('notif-double'),bv:gv('notif-bv'),lady:gv('notif-lady'),putt3:gv('notif-putt3')
+    bogey:gv('notif-bogey'),double:gv('notif-double'),bv:gv('notif-bv'),lady:gv('notif-lady'),
+    putt3:gv('notif-putt3'),scorelog:gv('notif-scorelog')
   };
   G.round={courseName:cname,par:SPAR,strokeIndex:SSI,tee:tee,
     date:document.getElementById('r-date').value||tod(),
