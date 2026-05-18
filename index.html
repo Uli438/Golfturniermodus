@@ -35,7 +35,18 @@ input,select,button{font-family:'DM Sans',sans-serif}
 .nb-txt{flex:1;font-size:14px;font-weight:700;line-height:1.35}
 .nb-close{background:rgba(255,255,255,.22);border:2px solid rgba(255,255,255,.35);border-radius:8px;color:inherit;font-size:15px;font-weight:900;cursor:pointer;flex-shrink:0;padding:4px 10px;line-height:1}
 
-/* SCORE LOG */
+/* SCORECARD DETAIL in Ergebnis */
+.sc-detail{display:none;background:var(--bg2);border-top:1px solid var(--border-light)}
+.sc-detail.open{display:block}
+.sc-detail-grid{display:grid;grid-template-columns:repeat(9,1fr);gap:1px;background:var(--border-light);margin:8px}
+.sc-cell{background:var(--card);text-align:center;padding:5px 2px;font-size:10px}
+.sc-cell.head{background:var(--bg3);font-size:9px;color:var(--txt3);font-weight:700;letter-spacing:.5px}
+.sc-cell.par-row{color:var(--txt3);font-size:9px}
+.sc-cell.score-val{font-size:13px;font-weight:900;font-family:'Cormorant Garamond',serif}
+.sc-cell.nr{color:#aaa;font-size:10px}
+.sc-detail-sum{display:flex;justify-content:space-around;padding:6px 12px 10px;font-size:11px;font-weight:700;color:var(--txt2)}
+.sc-detail-sum span{text-align:center}
+.sc-detail-sum b{display:block;font-size:15px;font-family:'Cormorant Garamond',serif}
 #score-log-bar{display:none;position:fixed;left:0;right:0;z-index:790;background:#0d2a4a;border-bottom:3px solid rgba(255,255,255,.15);transition:top .4s cubic-bezier(.175,.885,.32,1.1)}
 #score-log-bar.visible{display:block}
 .sl-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;cursor:pointer;user-select:none}
@@ -1546,6 +1557,57 @@ async function saveScore(){
   }
 }
 
+// Baut Loch-für-Loch Scorecard HTML für Ergebnis-Detailansicht
+function buildScDetail(sc,hcp,par,mode,rnd){
+  var si=rnd.strokeIndex||DSI;
+  // Zwei Hälften: Front 9 + Back 9
+  function half(start){
+    var holes=Array.from({length:9},function(_,i){return start+i;});
+    // Kopfzeile: Loch-Nummern
+    var rowH='',rowP='',rowS='',rowN='';
+    holes.forEach(function(i){
+      var pv=par[i]||4;
+      var raw=sc[i];
+      var isNR=(raw===0);
+      var ndbCap=(isNR&&mode==='zaehlen_ndb')?capScore(999,i,hcp):null;
+      var eff=ndbCap!=null?ndbCap:(!isNR&&raw!=null)?effScore(raw,i,hcp):null;
+      var diff=eff!=null?eff-pv:null;
+      var bgColor=raw==null?'':isNR&&!ndbCap?'background:#f5f5f5':diff==null?'':diff<=-2?'background:#fef9e7':diff===-1?'background:#f0fff4':diff===0?'':diff===1?'background:#fff8f0':'background:#fff0f0';
+      var scoreDisplay=raw==null?'–':isNR&&!ndbCap?'NR':(ndbCap||raw);
+      var scoreCss=diff==null?'color:#aaa':diff<=-2?'color:#c8960a':diff===-1?'color:#2e7d32':diff===0?'color:#546e7a':diff===1?'color:#bf360c':'color:#7f0000';
+      rowH+='<div class="sc-cell head">'+(i+1)+'</div>';
+      rowP+='<div class="sc-cell par-row">'+pv+'</div>';
+      rowS+='<div class="sc-cell score-val'+(raw==null?' nr':'')+'" style="'+bgColor+';'+scoreCss+'">'+scoreDisplay+'</div>';
+    });
+    // Summen
+    var sumBrutto=holes.reduce(function(a,i){var e=sc[i];if(e==null)return a;if(e===0&&mode==='zaehlen_ndb')return a+capScore(999,i,hcp);if(e===0)return a;return a+effScore(e,i,hcp);},0);
+    var sumPar=holes.reduce(function(a,i){return a+(par[i]||4);},0);
+    return{rowH:rowH,rowP:rowP,rowS:rowS,sumBrutto:sumBrutto,sumPar:sumPar};
+  }
+  var f=half(0),b=half(9);
+  var totalBrutto=f.sumBrutto+b.sumBrutto;
+  var totalPar=f.sumPar+b.sumPar;
+  // Netto-Summe
+  var netv=sc.reduce(function(a,s,i){
+    if(s==null)return a;
+    var e=s===0&&mode==='zaehlen_ndb'?capScore(999,i,hcp):s===0?null:effScore(s,i,hcp);
+    if(e==null)return a;
+    return a+(netH(e,i,hcp)-(par[i]||4));
+  },0);
+
+  var html='<div style="padding:8px 8px 4px;font-size:9px;color:var(--accent);font-weight:700;letter-spacing:1px">FRONT 9</div>'
+    +'<div class="sc-detail-grid">'+f.rowH+f.rowP+f.rowS+'</div>'
+    +'<div style="padding:4px 8px;font-size:10px;color:var(--txt3)">Par '+f.sumPar+' &nbsp;|&nbsp; Brutto: '+(f.sumBrutto||'–')+'</div>'
+    +'<div style="padding:8px 8px 4px;font-size:9px;color:var(--accent);font-weight:700;letter-spacing:1px">BACK 9</div>'
+    +'<div class="sc-detail-grid">'+b.rowH+b.rowP+b.rowS+'</div>'
+    +'<div class="sc-detail-sum">'
+    +'<span><div style="font-size:9px;color:var(--txt3)">GESAMT PAR</div><b>'+totalPar+'</b></span>'
+    +'<span><div style="font-size:9px;color:var(--txt3)">BRUTTO</div><b style="color:'+(totalBrutto-totalPar>=0?dc(totalBrutto-totalPar):'#4ade80')+'">'+totalBrutto+' ('+fmt(totalBrutto-totalPar)+')</b></span>'
+    +'<span><div style="font-size:9px;color:var(--txt3)">NETTO</div><b style="color:'+dc(netv)+'">'+fmt(netv)+'</b></span>'
+    +'</div>';
+  return html;
+}
+
 // ════════════════════════════════════════════════════
 // ERGEBNIS
 // ════════════════════════════════════════════════════
@@ -1575,8 +1637,31 @@ function renderResult(){
     if(ropts.putts)       row+='<td style="color:var(--txt2);font-weight:700">'+(p.totalPutts||0)+'</td>';
     if(ropts.ballverlust) row+='<td style="color:var(--red);font-weight:700">'+(p.totalBV||0)+'</td>';
     if(ropts.ladies)      row+='<td style="color:#e65100;font-weight:700">'+(p.totalLA||0)+'</td>';
-    return'<tr>'+row+'</tr>';
+
+    // Loch-für-Loch Scorecard (aufklappbar)
+    var sc=p.scores||Array(18).fill(null),hcp=Number(p.handicap)||0;
+    var scDetail=buildScDetail(sc,hcp,par,r.mode,r);
+    var colSpan=6+(ropts.putts?1:0)+(ropts.ballverlust?1:0)+(ropts.ladies?1:0);
+    return'<tr class="res-player-row" data-pid="'+esc(p.id)+'" style="cursor:pointer">'
+      +row
+      +'</tr>'
+      +'<tr><td colspan="'+colSpan+'" style="padding:0">'
+      +'<div class="sc-detail" id="scd-'+esc(p.id)+'">'+scDetail+'</div>'
+      +'</td></tr>';
   }).join('');
+
+  // Click-Handler zum Aufklappen
+  document.querySelectorAll('.res-player-row').forEach(function(row){
+    row.addEventListener('click',function(){
+      var pid=this.dataset.pid;
+      var detail=document.getElementById('scd-'+pid);
+      if(!detail)return;
+      var isOpen=detail.classList.contains('open');
+      // Alle anderen zuklappen
+      document.querySelectorAll('.sc-detail.open').forEach(function(d){d.classList.remove('open');});
+      if(!isOpen)detail.classList.add('open');
+    });
+  });
 }
 function buildShareText(){
   var r=G.round,par=r.par||DPAR,sopts=r.options||{};
