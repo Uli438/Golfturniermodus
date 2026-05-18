@@ -740,10 +740,7 @@ function scoreLogEnabled(){
   return !!(opts.notif&&opts.notifSettings&&opts.notifSettings.scorelog!==false);
 }
 function addLogEntry(name,holeIdx,score,par){
-  var now=new Date(),hh=String(now.getHours()).padStart(2,'0'),mm=String(now.getMinutes()).padStart(2,'0');
-  var diff=score>0?score-par:null;
-  SCORE_LOG.unshift({name:name,hole:holeIdx+1,score:score,diff:diff,time:hh+':'+mm});
-  if(SCORE_LOG.length>30)SCORE_LOG.pop();
+  // Nicht mehr als Chronik — Score-Log zeigt immer aktuellen Stand
   renderScoreLog();
 }
 function renderScoreLog(){
@@ -753,26 +750,53 @@ function renderScoreLog(){
   }
   var bar=document.getElementById('score-log-bar');
   bar.classList.add('visible');
-  // Position: unter news-banner wenn sichtbar, sonst ganz oben
-  var bannerH=document.getElementById('news-banner').classList.contains('show')?58:0;
-  bar.style.top=bannerH+'px';
-  if(!SCORE_LOG.length){
+  bar.style.top='0px';
+
+  var par=G.round.par||DPAR;
+
+  // Aktives Loch des aktuellen Spielers (falls Scorecard offen)
+  var activeLoch=null;
+  if(CID){
+    // Letztes eingetragenes Loch des aktuellen Spielers finden
+    var myScores=(G.players.find(function(p){return p.id===CID;})||{}).scores||[];
+    for(var h=17;h>=0;h--){if(myScores[h]!=null){activeLoch=h;break;}}
+  }
+
+  // Alle Spieler mit ihrem zuletzt gespielten Loch zusammenstellen
+  var rows=G.players.map(function(p){
+    var sc=p.scores||[];
+    var lastH=null;
+    for(var h2=17;h2>=0;h2--){if(sc[h2]!=null){lastH=h2;break;}}
+    return{p:p,loch:lastH,score:lastH!=null?sc[lastH]:null};
+  }).filter(function(r){return r.loch!=null;});
+
+  // Wenn aktueller Spieler ein Loch offen hat: nur Spieler auf demselben oder ±1 Loch
+  if(activeLoch!=null){
+    rows=rows.filter(function(r){return Math.abs(r.loch-activeLoch)<=1;});
+  }
+
+  // Sortieren: nach Loch aufsteigend, dann Name
+  rows.sort(function(a,b){return a.loch!==b.loch?a.loch-b.loch:a.p.name.localeCompare(b.p.name);});
+
+  if(!rows.length){
     document.getElementById('sl-entries').innerHTML=
-      '<div style="padding:10px 14px;font-size:11px;color:rgba(255,255,255,.5);text-align:center">Noch keine Scores gespeichert</div>';
+      '<div style="padding:10px 14px;font-size:11px;color:rgba(255,255,255,.5);text-align:center">Noch keine Scores eingetragen</div>';
     return;
   }
-  var par=G.round.par||DPAR;
-  document.getElementById('sl-entries').innerHTML=SCORE_LOG.map(function(e){
-    var diffTxt=e.diff!=null?(e.diff>0?'+'+e.diff:e.diff===0?'E':e.diff):'NR';
-    var diffColor=e.diff==null?'#aaa':e.diff<=-2?'#f4c430':e.diff===-1?'#4ade80':e.diff===0?'#94a3b8':e.diff===1?'#fb923c':'#f87171';
-    var dotColor=diffColor;
-    return'<div class="sl-entry">'
-      +'<div class="sl-dot" style="background:'+dotColor+'"></div>'
-      +'<div class="sl-name">'+esc(e.name)+'</div>'
-      +'<div class="sl-hole">L'+e.hole+'</div>'
-      +'<div class="sl-score">'+(e.score>0?e.score:'NR')+'</div>'
+
+  document.getElementById('sl-entries').innerHTML=rows.map(function(r){
+    var pv=par[r.loch]||4;
+    var sc=r.score;
+    var diff=sc!=null&&sc>0?sc-pv:null;
+    var diffTxt=sc===0?'NR':(diff!=null?(diff>0?'+'+diff:diff===0?'E':String(diff)):'–');
+    var diffColor=sc===0?'#aaa':diff==null?'#aaa':diff<=-2?'#f4c430':diff===-1?'#4ade80':diff===0?'#94a3b8':diff===1?'#fb923c':'#f87171';
+    var isSelf=(r.p.id===CID);
+    return'<div class="sl-entry"'+(isSelf?' style="background:rgba(255,255,255,.08)"':'')+'>'
+      +'<div class="sl-dot" style="background:'+diffColor+'"></div>'
+      +'<div class="sl-name">'+esc(r.p.name)+(isSelf?' ✎':'')+'</div>'
+      +'<div class="sl-hole">L'+(r.loch+1)+'</div>'
+      +'<div class="sl-score">'+(sc!=null&&sc>0?sc:'NR')+'</div>'
       +'<div class="sl-diff" style="color:'+diffColor+'">'+diffTxt+'</div>'
-      +'<div class="sl-time">'+e.time+'</div>'
       +'</div>';
   }).join('');
 }
@@ -782,7 +806,7 @@ function toggleScoreLog(){
   document.getElementById('sl-toggle').textContent=LOG_OPEN?'▴ zuklappen':'▾ aufklappen';
 }
 function resetScoreLog(){
-  SCORE_LOG=[];LOG_OPEN=false;
+  LOG_OPEN=false;
   var bar=document.getElementById('score-log-bar');
   bar.classList.remove('visible');
   var entries=document.getElementById('sl-entries');
@@ -1026,6 +1050,7 @@ function startListeners(){
     if(firstPlayers){fresh.forEach(saveSnap);firstPlayers=false;}
     else{fresh.forEach(function(np){checkEvents(PREV_SNAP[np.id]||null,np);saveSnap(np);});}
     G.players=fresh;renderLB();renderResult();
+    if(scoreLogEnabled())renderScoreLog();
     if(document.getElementById('view-card').classList.contains('active')&&CID){
       var p2=G.players.find(function(p){return p.id===CID;});
       if(p2&&!aTimer){CS=p2.scores?p2.scores.slice():Array(18).fill(null);renderHoles();updatePills();}
@@ -1484,6 +1509,7 @@ async function saveScore(){
     saveSnap(updated);
     await fbSet(fp('players/'+CID),updated);
     clearLoc(CID);pSync=false;syncDot('on');
+    if(scoreLogEnabled())renderScoreLog();
     btn.textContent='✅ Gespeichert!';btn.style.background='linear-gradient(135deg,#1b5e20,#2e7d32)';
     setTimeout(function(){btn.textContent='Score speichern ✓';btn.style.background='';btn.disabled=false;},2500);
   }catch(e){
