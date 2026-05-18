@@ -417,6 +417,8 @@ input,select,button{font-family:'DM Sans',sans-serif}
 
 <!-- SCORECARD -->
 <div id="view-card" class="view">
+  <!-- Spacer: schiebt Inhalt unter Banner/Log wenn Live-Meldungen aktiv -->
+  <div id="card-top-spacer" style="height:0;transition:height .3s"></div>
   <div class="hdr">
     <button class="back-btn" id="card-back">←</button>
     <div style="flex:1;min-width:0">
@@ -720,16 +722,29 @@ function showBanner(icon,msg,type){
   b.classList.remove('show');clearTimeout(b._bt);
   b._bt=setTimeout(function(){
     b.classList.add('show');
-    // Score-Log nach unten schieben wenn Banner sichtbar
+    updateCardSpacer();
     var bar=document.getElementById('score-log-bar');
-    if(bar.classList.contains('visible'))bar.style.top='58px';
+    if(bar&&bar.classList.contains('visible'))bar.style.top='58px';
   },30);
 }
 function hideBanner(){
   document.getElementById('news-banner').classList.remove('show');
-  // Score-Log wieder nach oben
   var bar=document.getElementById('score-log-bar');
   if(bar&&bar.classList.contains('visible'))bar.style.top='0px';
+  setTimeout(updateCardSpacer,50);
+}
+
+// Berechnet wie viel Platz Banner + Log oben brauchen
+function updateCardSpacer(){
+  var spacer=document.getElementById('card-top-spacer');
+  if(!spacer)return;
+  if(!scoreLogEnabled()){spacer.style.height='0px';return;}
+  var total=0;
+  var banner=document.getElementById('news-banner');
+  if(banner&&banner.classList.contains('show'))total+=banner.offsetHeight||58;
+  var log=document.getElementById('score-log-bar');
+  if(log&&log.classList.contains('visible'))total+=log.offsetHeight||36;
+  spacer.style.height=total>0?(total+4)+'px':'0px';
 }
 
 // ════════════════════════════════════════════════════
@@ -751,6 +766,7 @@ function renderScoreLog(){
   var bar=document.getElementById('score-log-bar');
   bar.classList.add('visible');
   bar.style.top='0px';
+  setTimeout(updateCardSpacer,30);
 
   var par=G.round.par||DPAR;
 
@@ -804,6 +820,7 @@ function toggleScoreLog(){
   LOG_OPEN=!LOG_OPEN;
   document.getElementById('sl-entries').style.display=LOG_OPEN?'block':'none';
   document.getElementById('sl-toggle').textContent=LOG_OPEN?'▴ zuklappen':'▾ aufklappen';
+  setTimeout(updateCardSpacer,50);
 }
 function resetScoreLog(){
   LOG_OPEN=false;
@@ -1336,6 +1353,7 @@ function openCard(id){
   if(loc&&Array.isArray(loc)&&loc.length===18&&loc.filter(function(s){return s!=null;}).length>CS.filter(function(s){return s!=null;}).length){CS=loc.slice();setTimeout(pushFB,300);}
   CTAB=localStorage.getItem(LS_TAB+id)||(pc(CS)>=9?'back':'front');
   showView('card');renderCard();
+  setTimeout(updateCardSpacer,100);
 }
 function setTab(t){
   CTAB=t;if(CID)localStorage.setItem(LS_TAB+CID,t);
