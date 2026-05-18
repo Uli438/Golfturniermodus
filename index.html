@@ -788,8 +788,8 @@ function renderScoreLog(){
     for(var h=17;h>=0;h--){if(myScores[h]!=null){activeLoch=h;break;}}
   }
 
-  // Alle Spieler mit ihrem zuletzt gespielten Loch zusammenstellen
-  var rows=G.players.map(function(p){
+  // Alle Spieler AUSSER dem eigenen
+  var rows=G.players.filter(function(p){return p.id!==CID;}).map(function(p){
     var sc=p.scores||[];
     var lastH=null;
     for(var h2=17;h2>=0;h2--){if(sc[h2]!=null){lastH=h2;break;}}
@@ -816,10 +816,9 @@ function renderScoreLog(){
     var diff=sc!=null&&sc>0?sc-pv:null;
     var diffTxt=sc===0?'NR':(diff!=null?(diff>0?'+'+diff:diff===0?'E':String(diff)):'–');
     var diffColor=sc===0?'#aaa':diff==null?'#aaa':diff<=-2?'#f4c430':diff===-1?'#4ade80':diff===0?'#94a3b8':diff===1?'#fb923c':'#f87171';
-    var isSelf=(r.p.id===CID);
-    return'<div class="sl-entry"'+(isSelf?' style="background:rgba(255,255,255,.08)"':'')+'>'
+    return'<div class="sl-entry">'
       +'<div class="sl-dot" style="background:'+diffColor+'"></div>'
-      +'<div class="sl-name">'+esc(r.p.name)+(isSelf?' ✎':'')+'</div>'
+      +'<div class="sl-name">'+esc(r.p.name)+'</div>'
       +'<div class="sl-hole">L'+(r.loch+1)+'</div>'
       +'<div class="sl-score">'+(sc!=null&&sc>0?sc:'NR')+'</div>'
       +'<div class="sl-diff" style="color:'+diffColor+'">'+diffTxt+'</div>'
