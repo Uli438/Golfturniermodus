@@ -348,7 +348,7 @@ input,select,button{font-family:'DM Sans',sans-serif}
     </div>
     <div class="lcard">
       <div class="lcard-title">TURNIER BEITRETEN</div>
-      <input class="code-inp" id="join-code" placeholder="000" maxlength="3" type="number">
+      <input class="code-inp" id="join-code" placeholder="000" maxlength="5" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
       <button class="lbtn lbtn-blue" id="btn-join">Beitreten →</button>
     </div>
     <div class="lcard" id="recent-card" style="display:none">
@@ -663,6 +663,68 @@ input,select,button{font-family:'DM Sans',sans-serif}
   </div>
 </div>
 
+<!-- DEV VIEW -->
+<div id="view-dev" class="view">
+  <div class="hdr">
+    <button class="back-btn" id="dev-back">←</button>
+    <div class="hdr-title serif">🛠 Entwickler</div>
+  </div>
+  <div style="padding:20px 16px;display:flex;flex-direction:column;gap:16px">
+
+    <div style="background:#1a1a2e;border-radius:14px;padding:16px">
+      <div style="font-size:9px;color:#ffd700;letter-spacing:2px;font-weight:700;margin-bottom:4px">ENTWICKLER-BEREICH</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.6);line-height:1.5">Golf Turniermodus · Entwickler-Einstellungen</div>
+    </div>
+
+    <div class="lcard">
+      <div class="lcard-title">🔐 ADMIN-PIN</div>
+      <div style="font-size:11px;color:var(--txt2);margin-bottom:12px;line-height:1.5">
+        Der Admin-PIN wird beim Turnier beitreten (Code 999) und beim Abschließen einer Runde abgefragt.
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+        <input class="inp" id="dev-pin-display" type="text" readonly
+          style="font-size:28px;font-weight:900;letter-spacing:6px;text-align:center;background:var(--bg2);cursor:default">
+        <button id="dev-pin-show" style="background:var(--card);border:2px solid var(--border);border-radius:10px;padding:10px 14px;font-size:18px;cursor:pointer;flex-shrink:0">👁</button>
+      </div>
+      <div style="font-size:9px;color:var(--txt3);margin-bottom:12px">Aktueller Admin-PIN (tippe 👁 zum Ein-/Ausblenden)</div>
+      <div style="font-size:9px;color:var(--accent);letter-spacing:2px;font-weight:700;margin-bottom:8px">PIN ÄNDERN</div>
+      <div style="display:flex;gap:8px">
+        <input class="inp" id="dev-pin-new" placeholder="Neuer PIN" autocomplete="off" autocorrect="off" autocapitalize="off"
+          style="font-size:20px;font-weight:900;letter-spacing:4px;text-align:center">
+        <button id="dev-pin-save" style="background:linear-gradient(135deg,var(--green),#43a047);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;padding:0 16px;cursor:pointer;flex-shrink:0">Speichern</button>
+      </div>
+    </div>
+
+    <div class="lcard">
+      <div class="lcard-title">💾 PLATZ-SPEICHER-PIN</div>
+      <div style="font-size:11px;color:var(--txt2);margin-bottom:12px;line-height:1.5">
+        Wird abgefragt wenn ein Platz gespeichert oder gelöscht wird.
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+        <input class="inp" id="dev-coursepin-display" type="password"
+          style="font-size:28px;font-weight:900;letter-spacing:6px;text-align:center;background:var(--bg2);cursor:default" readonly>
+        <button id="dev-coursepin-show" style="background:var(--card);border:2px solid var(--border);border-radius:10px;padding:10px 14px;font-size:18px;cursor:pointer;flex-shrink:0">👁</button>
+      </div>
+      <div style="font-size:9px;color:var(--txt3);margin-bottom:12px">Aktueller Platz-PIN</div>
+      <div style="font-size:9px;color:var(--accent);letter-spacing:2px;font-weight:700;margin-bottom:8px">PIN ÄNDERN</div>
+      <div style="display:flex;gap:8px">
+        <input class="inp" id="dev-coursepin-new" placeholder="Neuer PIN" autocomplete="off" autocorrect="off" autocapitalize="off"
+          style="font-size:20px;font-weight:900;letter-spacing:4px;text-align:center">
+        <button id="dev-coursepin-save" style="background:linear-gradient(135deg,var(--green),#43a047);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;padding:0 16px;cursor:pointer;flex-shrink:0">Speichern</button>
+      </div>
+    </div>
+      <div style="font-size:12px;color:var(--txt2);line-height:2">
+        <div>Firebase: <b>ulis-golfscore</b></div>
+        <div>Supabase: <b>pukixlbdbdbbsmqobfhj</b></div>
+        <div>LS-Prefix: <b>gtm_</b></div>
+        <div>Admin-Code: <b>999</b></div>
+        <div>Dev-Code: <b>Uli</b></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <script>
 // ════════════════════════════════════════════════════
 // KONSTANTEN
@@ -674,7 +736,9 @@ var ABASE='https://api.golfcourseapi.com/v1';
 var TCOLS={black:'#222',blue:'#1e6fd9',white:'#e0e0e0',yellow:'#e6c510',red:'#d93030',gold:'#c8a020',green:'#2d7a2d',silver:'#aaa'};
 var TC=['#1565c0','#c62828'];
 var AMROT=[[[0,1],[2,3]],[[1,2],[3,0]],[[0,2],[1,3]]];
-var ADMIN_PIN='999';
+var ADMIN_PIN='999'; // wird aus localStorage geladen falls gesetzt
+var DEV_CODE='Uli';
+var LS_PIN='gtm_admin_pin';
 var FB_CFG={
   apiKey:'AIzaSyDWzTqMaEa2U9MF_k84MBvbHj1wK30LuuA',
   authDomain:'ulis-golfscore.firebaseapp.com',
@@ -687,6 +751,11 @@ var FB_CFG={
 var SBU='https://pukixlbdbdbbsmqobfhj.supabase.co';
 var SBK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1a2l4bGJkYmRiYnNtcW9iZmhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNDEyNzksImV4cCI6MjA5MjgxNzI3OX0.DPTM9aJmVIQaa_Csu0wEvzcgGc7pstM5M0K3GGTgXgk';
 var LS_TAB='gtm_tab_',LS_LOC='gtm_loc_',LS_REC='gtm_rec';
+var ADMIN_PIN='999';
+var DEV_CODE='Uli';
+var COURSE_PIN='platz';
+var LS_PIN='gtm_admin_pin';
+var LS_COURSE_PIN='gtm_course_pin';
 
 // ════════════════════════════════════════════════════
 // STATE
@@ -977,6 +1046,7 @@ function showView(name){
   if(name==='result')renderResult();
   if(name==='total')renderTotal();
   if(name==='admin')renderAdmin();
+  if(name==='dev')initDevView();
 }
 
 // ════════════════════════════════════════════════════
@@ -1051,6 +1121,43 @@ document.addEventListener('DOMContentLoaded',function(){
     var e=ev[Math.floor(Math.random()*ev.length)];
     showBanner(e.i,e.m,e.t);
   });
+  // PINs aus localStorage laden
+  var storedPin=localStorage.getItem(LS_PIN);
+  if(storedPin)ADMIN_PIN=storedPin;
+  var storedCoursePin=localStorage.getItem(LS_COURSE_PIN);
+  if(storedCoursePin)COURSE_PIN=storedCoursePin;
+
+  // DEV VIEW
+  document.getElementById('dev-back').addEventListener('click',function(){showView('lobby');});
+  document.getElementById('dev-pin-show').addEventListener('click',function(){
+    var inp=document.getElementById('dev-pin-display');
+    if(inp.type==='password'){inp.type='text';this.textContent='🙈';}
+    else{inp.type='password';this.textContent='👁';}
+  });
+  document.getElementById('dev-pin-save').addEventListener('click',function(){
+    var newPin=document.getElementById('dev-pin-new').value.trim();
+    if(!newPin){toast('⚠️ Bitte neuen PIN eingeben');return;}
+    ADMIN_PIN=newPin;
+    localStorage.setItem(LS_PIN,newPin);
+    document.getElementById('dev-pin-display').value=newPin;
+    document.getElementById('dev-pin-new').value='';
+    toast('✅ Admin-PIN geändert: '+newPin);
+  });
+  document.getElementById('dev-coursepin-show').addEventListener('click',function(){
+    var inp=document.getElementById('dev-coursepin-display');
+    if(inp.type==='password'){inp.type='text';this.textContent='🙈';}
+    else{inp.type='password';this.textContent='👁';}
+  });
+  document.getElementById('dev-coursepin-save').addEventListener('click',function(){
+    var newPin=document.getElementById('dev-coursepin-new').value.trim();
+    if(!newPin){toast('⚠️ Bitte neuen PIN eingeben');return;}
+    COURSE_PIN=newPin;
+    localStorage.setItem(LS_COURSE_PIN,newPin);
+    document.getElementById('dev-coursepin-display').value=newPin;
+    document.getElementById('dev-coursepin-new').value='';
+    toast('✅ Platz-PIN geändert: '+newPin);
+  });
+
   initFB().catch(function(){});
   renderLobby();
 });
@@ -1135,6 +1242,9 @@ function renderLobby(){
 async function joinByCode(){
   var code=String(document.getElementById('join-code').value).trim();
   if(!code){toast('⚠️ Bitte Code eingeben');return;}
+  // Dev-Code
+  if(code===DEV_CODE){showView('dev');return;}
+  // Admin
   if(code===ADMIN_PIN){await initFB();showView('admin');return;}
   if(!/^\d{3}$/.test(code)){toast('⚠️ Bitte 3-stellige Zahl eingeben');return;}
   await enterTournament(code);
@@ -1170,6 +1280,22 @@ function showQR(){if(!CODE)return;document.getElementById('qr-code-txt').textCon
 // ════════════════════════════════════════════════════
 // ADMIN
 // ════════════════════════════════════════════════════
+function initDevView(){
+  var disp=document.getElementById('dev-pin-display');
+  if(disp){disp.value=ADMIN_PIN;disp.type='password';}
+  var showBtn=document.getElementById('dev-pin-show');
+  if(showBtn)showBtn.textContent='👁';
+  var newInp=document.getElementById('dev-pin-new');
+  if(newInp)newInp.value='';
+
+  var cDisp=document.getElementById('dev-coursepin-display');
+  if(cDisp){cDisp.value=COURSE_PIN;cDisp.type='password';}
+  var cShowBtn=document.getElementById('dev-coursepin-show');
+  if(cShowBtn)cShowBtn.textContent='👁';
+  var cNewInp=document.getElementById('dev-coursepin-new');
+  if(cNewInp)cNewInp.value='';
+}
+
 async function renderAdmin(){
   var el=document.getElementById('admin-list');
   el.innerHTML='<div style="text-align:center;padding:40px;color:var(--txt3)">⏳ Lade Turniere…</div>';
@@ -1889,6 +2015,9 @@ async function sbSave(c){
 }
 async function sbDel(name){try{await sbF('DELETE','courses?name=eq.'+encodeURIComponent(name));return true;}catch(e){return false;}}
 async function saveCourse(){
+  var pin=prompt('Platz-PIN eingeben:');
+  if(pin===null)return;
+  if(pin.trim()!==COURSE_PIN){toast('⚠️ Falscher PIN');return;}
   for(var i=0;i<18;i++){var pe=document.getElementById('par-'+i),se=document.getElementById('si-'+i);if(pe)SPAR[i]=parseInt(pe.value)||4;if(se)SSI[i]=parseInt(se.value)||i+1;}
   var name='';
   if(CTM==='api'&&SAC)name=SAC.club_name||SAC.name||'';
@@ -1906,7 +2035,11 @@ async function loadCourse(name){
   SAC=null;SAT=null;switchCourseTab('manual');
   document.getElementById('man-name').value=c.name;renderHoleRows();toast('✓ '+c.name+' geladen');
 }
-async function delCourse(name){if(!confirm('"'+name+'" wirklich löschen?'))return;var ok=await sbDel(name);if(ok){toast('🗑 '+name+' gelöscht');await renderSavedCourses();}}
+async function delCourse(name){
+  var pin=prompt('Platz-PIN eingeben:');
+  if(pin===null)return;
+  if(pin.trim()!==COURSE_PIN){toast('⚠️ Falscher PIN');return;}
+  if(!confirm('"'+name+'" wirklich löschen?'))return;var ok=await sbDel(name);if(ok){toast('🗑 '+name+' gelöscht');await renderSavedCourses();}}
 async function renderSavedCourses(){
   var sec=document.getElementById('saved-courses-section'),sel=document.getElementById('saved-courses-list');
   if(!sec||!sel)return;
