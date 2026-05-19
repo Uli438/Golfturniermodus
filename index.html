@@ -723,6 +723,21 @@ input,select,button{font-family:'DM Sans',sans-serif}
     </div>
 
     <div class="lcard">
+      <div class="lcard-title">🔒 TURNIER SPERREN / ENTSPERREN</div>
+      <div style="font-size:11px;color:var(--txt2);margin-bottom:12px;line-height:1.5">
+        Gesperrte Turniere können über die Admin-Seite (Code 999) nicht mehr geöffnet oder gelöscht werden.
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <input class="inp" id="dev-lock-code" placeholder="Turnier-Code (z.B. 123)" maxlength="3" autocomplete="off" style="text-align:center;font-size:24px;font-weight:900;letter-spacing:6px">
+        <div style="display:flex;gap:8px">
+          <button id="dev-lock-btn" style="flex:1;padding:12px;background:linear-gradient(135deg,#b71c1c,#e53935);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">🔒 Sperren</button>
+          <button id="dev-unlock-btn" style="flex:1;padding:12px;background:linear-gradient(135deg,var(--green),#43a047);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">🔓 Entsperren</button>
+        </div>
+        <div id="dev-lock-status" style="font-size:11px;color:var(--txt3);text-align:center;min-height:16px"></div>
+      </div>
+    </div>
+
+    <div class="lcard">
       <div class="lcard-title">🔓 RUNDE EINFRIEREN RÜCKGÄNGIG</div>
       <div style="font-size:11px;color:var(--txt2);margin-bottom:12px;line-height:1.5">
         Macht das Abschließen einer Runde rückgängig — Scores bleiben erhalten, die Runde wird wieder als offen markiert.
@@ -1176,6 +1191,8 @@ document.addEventListener('DOMContentLoaded',function(){
     toast('✅ Platz-PIN geändert: '+newPin);
   });
   document.getElementById('dev-unfreeze-btn').addEventListener('click',unfreezeRound);
+  document.getElementById('dev-lock-btn').addEventListener('click',function(){setTournamentLock(true);});
+  document.getElementById('dev-unlock-btn').addEventListener('click',function(){setTournamentLock(false);});
 
   initFB().catch(function(){});
   renderLobby();
@@ -1280,6 +1297,11 @@ async function enterTournament(code){
     var snap=await DB.ref(fp('round')).get();
     if(!snap.exists()){toast('⚠️ Turnier "'+code+'" nicht gefunden');CODE=null;return;}
     G.round=snap.val();
+    // Gesperrte Turniere können nicht über Admin geöffnet werden
+    var lockSnap=await DB.ref(fp('locked')).get();
+    if(lockSnap.val()===true&&code===String(ADMIN_PIN)){
+      toast('🔒 Dieses Turnier ist gesperrt');CODE=null;return;
+    }
     var pSnap=await DB.ref(fp('players')).get();
     G.players=pSnap.exists()?parsePlayers(pSnap.val()):[];
     var tSnap=await DB.ref(fp('tournament')).get();
@@ -1309,6 +1331,22 @@ function showQR(){if(!CODE)return;document.getElementById('qr-code-txt').textCon
 // ════════════════════════════════════════════════════
 // ADMIN
 // ════════════════════════════════════════════════════
+async function setTournamentLock(lock){
+  var statusEl=document.getElementById('dev-lock-status');
+  var code=String(document.getElementById('dev-lock-code').value).trim();
+  if(!code||!/^\d{3}$/.test(code)){statusEl.textContent='⚠️ Bitte gültigen 3-stelligen Code eingeben';statusEl.style.color='var(--red)';return;}
+  statusEl.textContent='⏳ ...';statusEl.style.color='var(--txt3)';
+  try{
+    await initFB();
+    var snap=await DB.ref('turniere/'+code+'/round').get();
+    if(!snap.exists()){statusEl.textContent='⚠️ Turnier "'+code+'" nicht gefunden';statusEl.style.color='var(--red)';return;}
+    await DB.ref('turniere/'+code+'/locked').set(lock?true:null);
+    statusEl.textContent=lock?'🔒 Turnier '+code+' gesperrt':'🔓 Turnier '+code+' entsperrt';
+    statusEl.style.color=lock?'var(--red)':'var(--green)';
+    toast(lock?'🔒 '+code+' gesperrt':'🔓 '+code+' entsperrt');
+  }catch(e){statusEl.textContent='⚠️ Fehler: '+e.message;statusEl.style.color='var(--red)';}
+}
+
 function initDevView(){
   var disp=document.getElementById('dev-pin-display');
   if(disp){disp.value=ADMIN_PIN;disp.type='password';}
@@ -1381,11 +1419,16 @@ async function renderAdmin(){
     var data=snap.val(),codes=Object.keys(data).sort();
     el.innerHTML=codes.map(function(c){
       var trn=data[c],r=trn.round||{},pc2=trn.players?Object.keys(trn.players).length:0;
-      return'<div class="admin-item"><div class="admin-code">'+esc(c)+'</div>'
+      var locked=!!trn.locked;
+      return'<div class="admin-item">'
+        +'<div class="admin-code">'+esc(c)+(locked?' 🔒':'')+'</div>'
         +'<div class="admin-info"><div class="admin-name">'+esc(r.courseName||'–')+'</div>'
-        +'<div class="admin-sub">'+esc(r.date||'')+'  ·  '+pc2+' Spieler  ·  '+esc(modeName(r))+'</div></div>'
-        +'<button class="admin-open" data-code="'+esc(c)+'">Öffnen</button>'
-        +'<button class="admin-del" data-code="'+esc(c)+'">🗑</button></div>';
+        +'<div class="admin-sub">'+esc(r.date||'')+'  ·  '+pc2+' Spieler  ·  '+esc(modeName(r))+(locked?' · <b style="color:var(--red)">GESPERRT</b>':'')+'</div></div>'
+        +(locked
+          ?'<div style="font-size:11px;color:var(--red);font-weight:700;padding:4px 8px">🔒</div>'
+          :'<button class="admin-open" data-code="'+esc(c)+'">Öffnen</button>'
+          +'<button class="admin-del" data-code="'+esc(c)+'">🗑</button>')
+        +'</div>';
     }).join('');
     el.querySelectorAll('.admin-open').forEach(function(btn){btn.addEventListener('click',function(){enterTournament(this.dataset.code);});});
     el.querySelectorAll('.admin-del').forEach(function(btn){
