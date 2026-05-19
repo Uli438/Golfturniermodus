@@ -2268,37 +2268,47 @@ async function closeRound(){
   var cur=t.currentRound||1;
   if(!confirm('Runde '+cur+' von '+t.totalRounds+' abschließen und Scores einfrieren?'))return;
   var scores={},handicaps={};
-  G.players.forEach(function(p){
+  // Scores und Vorgaben aus LIVE-Spielern (nicht G.players, falls eingefrorene Runde angezeigt wird)
+  var livePlayers=LIVE_PLAYERS||G.players;
+  livePlayers.forEach(function(p){
     scores[p.id]=(p.scores||Array(18).fill(null)).slice();
     handicaps[p.id]=Number(p.handicap)||0;
   });
+  var liveRound=LIVE_ROUND||G.round;
   var entry={
     roundNum:cur,
-    date:G.round.date||tod(),
-    courseName:G.round.courseName||'–',
-    tee:G.round.tee||'',
-    par:(G.round.par||DPAR).slice(),
-    si:(G.round.strokeIndex||DSI).slice(),
-    mode:G.round.mode||'stroke',
-    maxScore:G.round.maxScore||null,
-    teamMode:G.round.teamMode||'none',
-    options:G.round.options||{},
+    date:liveRound.date||tod(),
+    courseName:liveRound.courseName||'–',
+    tee:liveRound.tee||'',
+    par:(liveRound.par||DPAR).slice(),
+    si:(liveRound.strokeIndex||DSI).slice(),
+    mode:liveRound.mode||'stroke',
+    maxScore:liveRound.maxScore||null,
+    teamMode:liveRound.teamMode||'none',
+    options:liveRound.options||{},
     scores:scores,
     handicaps:handicaps
   };
-  var rounds=(t.rounds||[]).slice();
+  // Aktuelles rounds-Array direkt aus Firebase lesen um nichts zu verlieren
+  var tSnap=await DB.ref(fp('tournament')).get();
+  var freshTrn=tSnap.exists()?tSnap.val():t;
+  var rounds=(freshTrn.rounds||[]).slice();
   var idx=rounds.findIndex(function(x){return x.roundNum===cur;});
   if(idx>=0)rounds[idx]=entry;else rounds.push(entry);
   var next=cur<t.totalRounds?cur+1:cur;
-  G.tournament=Object.assign({},t,{rounds:rounds,currentRound:next});
+  G.tournament=Object.assign({},freshTrn,{rounds:rounds,currentRound:next});
   if(next!==cur){
     // Nächste Runde: Scores leeren, Vorgaben und Spielerdaten behalten
-    G.players=G.players.map(function(p){
+    var resetPlayers=livePlayers.map(function(p){
       return Object.assign({},p,{scores:Array(18).fill(null)});
     });
-    await Promise.all(G.players.map(function(p){return fbSet(fp('players/'+p.id),p);}));
+    await Promise.all(resetPlayers.map(function(p){return fbSet(fp('players/'+p.id),p);}));
   }
   await fbSet(fp('tournament'),G.tournament);
+  // Zurück zur aktuellen (nächsten) Runde
+  VIEW_RND=null;
+  if(LIVE_PLAYERS)G.players=next!==cur?livePlayers.map(function(p){return Object.assign({},p,{scores:Array(18).fill(null)});}):(LIVE_PLAYERS||G.players);
+  if(LIVE_ROUND)G.round=LIVE_ROUND;
   toast('✅ Runde '+cur+' gespeichert und eingefroren!');
   renderLB();refreshTrnUI();
 }
@@ -2319,14 +2329,14 @@ async function unfreezeRound(){
     var idx=rounds.findIndex(function(r){return r.roundNum===rNum;});
     if(idx<0){statusEl.textContent='⚠️ Runde '+rNum+' war nicht eingefroren';statusEl.style.color='var(--red)';return;}
     var entry=rounds[idx];
-    // Scores + Vorgaben + Platz wiederherstellen
+
+    // 1. Scores + Vorgaben der eingefrorenen Runde in Spieler zurückschreiben
     var frozenScores=entry.scores||{};
     var frozenHcp=entry.handicaps||{};
     var pSnap=await DB.ref('turniere/'+code+'/players').get();
     if(pSnap.exists()){
       var updates={};
-      var players=pSnap.val();
-      Object.keys(players).forEach(function(pid){
+      Object.keys(pSnap.val()).forEach(function(pid){
         if(frozenScores[pid])
           updates['turniere/'+code+'/players/'+pid+'/scores']=frozenScores[pid];
         if(frozenHcp[pid]!=null)
@@ -2334,8 +2344,9 @@ async function unfreezeRound(){
       });
       if(Object.keys(updates).length)await DB.ref().update(updates);
     }
-    // Platz + Modus der eingefrorenen Runde als aktive round wiederherstellen
-    var roundData={
+
+    // 2. Platz + Modus der eingefrorenen Runde als aktive round wiederherstellen
+    await DB.ref('turniere/'+code+'/round').set({
       courseName:entry.courseName||'–',
       tee:entry.tee||'',
       par:entry.par||DPAR,
@@ -2345,13 +2356,15 @@ async function unfreezeRound(){
       maxScore:entry.maxScore||null,
       teamMode:entry.teamMode||'none',
       options:entry.options||{}
-    };
-    await DB.ref('turniere/'+code+'/round').set(roundData);
-    // Runde aus rounds-Array entfernen, currentRound zurücksetzen
-    rounds.splice(idx,1);
-    await DB.ref('turniere/'+code+'/tournament/rounds').set(rounds);
+    });
+
+    // 3. Runde aus rounds entfernen UND currentRound zurücksetzen
+    //    WICHTIG: nur diesen einen Entry entfernen, alle anderen bleiben!
+    var newRounds=rounds.filter(function(r){return r.roundNum!==rNum;});
+    await DB.ref('turniere/'+code+'/tournament/rounds').set(newRounds.length>0?newRounds:null);
     await DB.ref('turniere/'+code+'/tournament/currentRound').set(rNum);
-    statusEl.textContent='✅ Runde '+rNum+' von Turnier '+code+' freigegeben!';
+
+    statusEl.textContent='✅ Runde '+rNum+' von Turnier '+code+' freigegeben! ('+newRounds.length+' andere Runden bleiben erhalten)';
     statusEl.style.color='var(--green)';
     toast('🔓 R'+rNum+' ('+code+') wieder offen');
     if(CODE===code)await enterTournament(code);
