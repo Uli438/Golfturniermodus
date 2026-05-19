@@ -438,9 +438,9 @@ input,select,button{font-family:'DM Sans',sans-serif}
 
 <!-- SCORECARD -->
 <div id="view-card" class="view">
-  <!-- Spacer: schiebt Inhalt unter Banner/Log wenn Live-Meldungen aktiv -->
-  <div id="card-top-spacer" style="height:0;transition:height .3s"></div>
-  <div class="hdr">
+  <!-- Spacer schiebt den GESAMTEN Inhalt (inkl. Header) unter Banner/Log -->
+  <div id="card-top-spacer" style="height:0;transition:height .3s;flex-shrink:0"></div>
+  <div class="hdr" id="card-hdr">
     <button class="back-btn" id="card-back">←</button>
     <div style="flex:1;min-width:0">
       <div class="hdr-title serif" id="sc-pname"></div>
@@ -860,14 +860,17 @@ function hideBanner(){
 // Berechnet wie viel Platz Banner + Log oben brauchen
 function updateCardSpacer(){
   var spacer=document.getElementById('card-top-spacer');
+  var hdr=document.getElementById('card-hdr');
   if(!spacer)return;
-  if(!scoreLogEnabled()){spacer.style.height='0px';return;}
   var total=0;
   var banner=document.getElementById('news-banner');
   if(banner&&banner.classList.contains('show'))total+=banner.offsetHeight||58;
   var log=document.getElementById('score-log-bar');
   if(log&&log.classList.contains('visible'))total+=log.offsetHeight||36;
-  spacer.style.height=total>0?(total+4)+'px':'0px';
+  var h=total>0?(total+2)+'px':'0px';
+  spacer.style.height=h;
+  // Sticky Header muss auch unter Banner/Log kleben
+  if(hdr)hdr.style.top=h;
 }
 
 // ════════════════════════════════════════════════════
@@ -1110,7 +1113,10 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('tmt-bb').addEventListener('click',function(){setTM('bestball');});
   document.getElementById('tmt-agg').addEventListener('click',function(){setTM('aggregat');});
   document.getElementById('admin-back').addEventListener('click',function(){showView('lobby');});
-  document.getElementById('card-back').addEventListener('click',function(){showView('lb');});
+  document.getElementById('card-back').addEventListener('click',function(){
+    var hdr=document.getElementById('card-hdr');if(hdr)hdr.style.top='0px';
+    showView('lb');
+  });
   document.getElementById('result-back').addEventListener('click',function(){showView('lb');});
   document.getElementById('total-back').addEventListener('click',function(){showView('lb');});
   document.getElementById('setup-back').addEventListener('click',function(){showView(CODE?'lb':'lobby');});
