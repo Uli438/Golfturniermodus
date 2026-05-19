@@ -778,6 +778,9 @@ var LS_COURSE_PIN='gtm_course_pin';
 var CODE=null,DB=null,OFF=[];
 var fbSet=function(){return Promise.resolve();};
 var G={players:[],tournament:null,round:{courseName:'',par:DPAR.slice(),strokeIndex:DSI.slice(),date:tod(),mode:'stroke',maxScore:null,tee:'',teamMode:'none',options:{}}};
+// Echte Firebase-Werte — werden nie durch goToRound überschrieben
+var LIVE_ROUND=null,LIVE_PLAYERS=null;
+var VIEW_RND=null; // null = aktuelle Runde, sonst Rundennummer der Anzeige
 var CID=null,CS=Array(18).fill(null),CTAB='front';
 var CEXT=Array(18).fill(null).map(function(){return{bv:false,la:false,putts:0};});
 var LBM='brutto',LBV='einzel',TM='bestball';
@@ -1200,20 +1203,25 @@ function startListeners(){
   var r4=DB.ref(fp('notif')).on('value',function(snap){NOTIF_ON=!!snap.val();});
   var r1=DB.ref(fp('round')).on('value',function(snap){
     if(!snap.exists())return;
-    G.round=snap.val();
-    if(G.round.options&&G.round.options.notif!==undefined)NOTIF_ON=!!G.round.options.notif;
-    renderLB();renderResult();
+    LIVE_ROUND=snap.val();
+    if(LIVE_ROUND.options&&LIVE_ROUND.options.notif!==undefined)NOTIF_ON=!!LIVE_ROUND.options.notif;
+    // Nur G.round updaten wenn wir die aktuelle Runde ansehen
+    if(VIEW_RND===null){G.round=LIVE_ROUND;renderLB();renderResult();}
   });
   var r2=DB.ref(fp('players')).on('value',function(snap){
     if(!snap.exists())return;
     var fresh=parsePlayers(snap.val());
+    LIVE_PLAYERS=fresh;
     if(firstPlayers){fresh.forEach(saveSnap);firstPlayers=false;}
     else{fresh.forEach(function(np){checkEvents(PREV_SNAP[np.id]||null,np);saveSnap(np);});}
-    G.players=fresh;renderLB();renderResult();
-    if(scoreLogEnabled())renderScoreLog();
-    if(document.getElementById('view-card').classList.contains('active')&&CID){
-      var p2=G.players.find(function(p){return p.id===CID;});
-      if(p2&&!aTimer){CS=p2.scores?p2.scores.slice():Array(18).fill(null);renderHoles();updatePills();}
+    // Nur G.players updaten wenn wir die aktuelle Runde ansehen
+    if(VIEW_RND===null){
+      G.players=fresh;renderLB();renderResult();
+      if(scoreLogEnabled())renderScoreLog();
+      if(document.getElementById('view-card').classList.contains('active')&&CID){
+        var p2=G.players.find(function(p){return p.id===CID;});
+        if(p2&&!aTimer){CS=p2.scores?p2.scores.slice():Array(18).fill(null);renderHoles();updatePills();}
+      }
     }
   });
   var r3=DB.ref(fp('tournament')).on('value',function(snap){
@@ -1279,6 +1287,10 @@ async function enterTournament(code){
     var nSnap=await DB.ref(fp('notif')).get();
     NOTIF_ON=!!nSnap.val();
     if(G.round.options&&G.round.options.notif!==undefined)NOTIF_ON=!!G.round.options.notif;
+    // Live-Snapshots merken
+    LIVE_ROUND=G.round;
+    LIVE_PLAYERS=G.players.slice();
+    VIEW_RND=null;
     PREV_SNAP={};G.players.forEach(saveSnap);
     saveRec(code,G.round.courseName||code);
     document.getElementById('code-badge').textContent='🔑 '+code;
@@ -1288,6 +1300,7 @@ async function enterTournament(code){
 }
 function goLobby(){
   stopListeners();CODE=null;PREV_SNAP={};NOTIF_ON=false;hideBanner();resetScoreLog();
+  LIVE_ROUND=null;LIVE_PLAYERS=null;VIEW_RND=null;
   G={players:[],tournament:null,round:{courseName:'',par:DPAR.slice(),strokeIndex:DSI.slice(),date:tod(),mode:'stroke',maxScore:null,tee:'',teamMode:'none',options:{}}};
   showView('lobby');
 }
@@ -2204,39 +2217,48 @@ function refreshTrnUI(){
     return'<button class="round-tab'+(active?' active':done?' done':'')+'" data-r="'+r+'">R'+r+(done?' ✓':'')+'</button>';
   }).join('');
   bar.querySelectorAll('.round-tab').forEach(function(el){el.addEventListener('click',function(){goToRound(parseInt(this.dataset.r));});});
-  document.getElementById('trn-info-txt').textContent='Turnier · Runde '+cur+'/'+t.totalRounds+' · '+doneNums.length+' abgeschlossen';
+  var doneNums2=(t.rounds||[]).map(function(r){return r.roundNum;});
+  var viewingFrozen=VIEW_RND!==null&&doneNums2.indexOf(VIEW_RND)>=0;
+  document.getElementById('trn-info-txt').textContent=viewingFrozen
+    ?'📋 Ansicht: eingefrorene Runde '+VIEW_RND+' · live Daten unverändert'
+    :'Turnier · Runde '+cur+'/'+t.totalRounds+' · '+doneNums.length+' abgeschlossen';
 }
 function goToRound(r){
   var t=G.tournament;if(!t)return;
   G.tournament.currentRound=r;
-  var saved=(t.rounds||[]).find(function(x){return x.roundNum===r;});
-  if(saved){
-    // Platz + Modus aus eingefrorener Runde laden
-    G.round={
-      courseName:saved.courseName,
-      par:saved.par||DPAR,
-      strokeIndex:saved.si||DSI,
-      date:saved.date||tod(),
-      mode:saved.mode||'stroke',
-      maxScore:saved.maxScore||null,
-      tee:saved.tee||'',
-      teamMode:saved.teamMode||'none',
-      options:saved.options||{}
-    };
-    // Scores UND Vorgaben aus eingefrorener Runde laden
-    var sc=saved.scores||{};
-    var hcp=saved.handicaps||{};
-    G.players=G.players.map(function(p){
-      return Object.assign({},p,{
-        scores:sc[p.id]||Array(18).fill(null),
-        handicap:hcp[p.id]!=null?hcp[p.id]:p.handicap
-      });
-    });
+  var curRnd=t.currentRound||1;
+  // Ist das die aktuelle (nicht eingefrorene) Runde?
+  var doneNums=(t.rounds||[]).map(function(x){return x.roundNum;});
+  var isLive=doneNums.indexOf(r)<0; // nicht eingefroren = live
+  if(isLive){
+    // Zurück zur aktuellen Runde: live Daten wiederherstellen
+    VIEW_RND=null;
+    if(LIVE_ROUND)G.round=LIVE_ROUND;
+    if(LIVE_PLAYERS)G.players=LIVE_PLAYERS;
   }else{
-    // Neue Runde: leere Scores, aktuelle Vorgaben behalten
-    G.players=G.players.map(function(p){
-      return Object.assign({},p,{scores:Array(18).fill(null)});
-    });
+    // Eingefrorene Runde anzeigen
+    VIEW_RND=r;
+    var saved=(t.rounds||[]).find(function(x){return x.roundNum===r;});
+    if(saved){
+      G.round={
+        courseName:saved.courseName,
+        par:saved.par||DPAR,
+        strokeIndex:saved.si||DSI,
+        date:saved.date||tod(),
+        mode:saved.mode||'stroke',
+        maxScore:saved.maxScore||null,
+        tee:saved.tee||'',
+        teamMode:saved.teamMode||'none',
+        options:saved.options||{}
+      };
+      var sc=saved.scores||{},hcp=saved.handicaps||{};
+      G.players=G.players.map(function(p){
+        return Object.assign({},p,{
+          scores:sc[p.id]||Array(18).fill(null),
+          handicap:hcp[p.id]!=null?hcp[p.id]:p.handicap
+        });
+      });
+    }
   }
   renderLB();refreshTrnUI();
 }
