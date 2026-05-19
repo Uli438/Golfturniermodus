@@ -722,6 +722,21 @@ input,select,button{font-family:'DM Sans',sans-serif}
       </div>
     </div>
 
+    <div class="lcard">
+      <div class="lcard-title">🔓 RUNDE EINFRIEREN RÜCKGÄNGIG</div>
+      <div style="font-size:11px;color:var(--txt2);margin-bottom:12px;line-height:1.5">
+        Macht das Abschließen einer Runde rückgängig — Scores bleiben erhalten, die Runde wird wieder als offen markiert.
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="row2">
+          <input class="inp" id="dev-unfreeze-code" placeholder="Code (z.B. 123)" maxlength="3" autocomplete="off" style="text-align:center;font-size:20px;font-weight:900;letter-spacing:4px">
+          <input class="inp" id="dev-unfreeze-round" type="number" placeholder="Runde" min="1" max="7" style="text-align:center;font-size:20px;font-weight:900;letter-spacing:4px">
+        </div>
+        <button id="dev-unfreeze-btn" style="width:100%;padding:12px;background:linear-gradient(135deg,#e65100,#f57c00);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">🔓 Runde freigeben</button>
+        <div id="dev-unfreeze-status" style="font-size:11px;color:var(--txt3);text-align:center;min-height:16px"></div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -1157,6 +1172,7 @@ document.addEventListener('DOMContentLoaded',function(){
     document.getElementById('dev-coursepin-new').value='';
     toast('✅ Platz-PIN geändert: '+newPin);
   });
+  document.getElementById('dev-unfreeze-btn').addEventListener('click',unfreezeRound);
 
   initFB().catch(function(){});
   renderLobby();
@@ -1294,6 +1310,50 @@ function initDevView(){
   if(cShowBtn)cShowBtn.textContent='👁';
   var cNewInp=document.getElementById('dev-coursepin-new');
   if(cNewInp)cNewInp.value='';
+}
+
+async function unfreezeRound(){
+  var statusEl=document.getElementById('dev-unfreeze-status');
+  var code=String(document.getElementById('dev-unfreeze-code').value).trim();
+  var rNum=parseInt(document.getElementById('dev-unfreeze-round').value);
+  if(!code||!/^\d{3}$/.test(code)){statusEl.textContent='⚠️ Bitte gültigen 3-stelligen Code eingeben';statusEl.style.color='var(--red)';return;}
+  if(!rNum||rNum<1||rNum>7){statusEl.textContent='⚠️ Bitte Rundennummer (1–7) eingeben';statusEl.style.color='var(--red)';return;}
+  statusEl.textContent='⏳ Lade Turnier...';statusEl.style.color='var(--txt3)';
+  try{
+    await initFB();
+    var snap=await DB.ref('turniere/'+code+'/tournament').get();
+    if(!snap.exists()){statusEl.textContent='⚠️ Turnier "'+code+'" nicht gefunden';statusEl.style.color='var(--red)';return;}
+    var trn=snap.val();
+    var rounds=(trn.rounds||[]);
+    var idx=rounds.findIndex(function(r){return r.roundNum===rNum;});
+    if(idx<0){statusEl.textContent='⚠️ Runde '+rNum+' war nicht eingefroren';statusEl.style.color='var(--red)';return;}
+    // Scores dieser Runde zurück in die Spieler-Scores schreiben
+    var frozenScores=rounds[idx].scores||{};
+    var pSnap=await DB.ref('turniere/'+code+'/players').get();
+    if(pSnap.exists()){
+      var players=pSnap.val();
+      var updates={};
+      Object.keys(players).forEach(function(pid){
+        if(frozenScores[pid]){
+          updates['turniere/'+code+'/players/'+pid+'/scores']=frozenScores[pid];
+        }
+      });
+      if(Object.keys(updates).length)await DB.ref().update(updates);
+    }
+    // Runde aus rounds-Array entfernen, currentRound zurücksetzen
+    rounds.splice(idx,1);
+    var newCur=rNum; // Runde wieder als aktuelle setzen
+    await DB.ref('turniere/'+code+'/tournament/rounds').set(rounds);
+    await DB.ref('turniere/'+code+'/tournament/currentRound').set(newCur);
+    statusEl.textContent='✅ Runde '+rNum+' von Turnier '+code+' freigegeben!';
+    statusEl.style.color='var(--green)';
+    toast('🔓 R'+rNum+' ('+code+') wieder offen');
+    // Falls das aktuelle Turnier betroffen ist, neu laden
+    if(CODE===code)await enterTournament(code);
+  }catch(e){
+    statusEl.textContent='⚠️ Fehler: '+e.message;
+    statusEl.style.color='var(--red)';
+  }
 }
 
 async function renderAdmin(){
