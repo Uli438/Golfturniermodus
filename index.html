@@ -2211,16 +2211,36 @@ function goToRound(r){
   G.tournament.currentRound=r;
   var saved=(t.rounds||[]).find(function(x){return x.roundNum===r;});
   if(saved){
-    G.round={courseName:saved.courseName,par:saved.par||DPAR,strokeIndex:saved.si||DSI,
-      date:saved.date||tod(),mode:saved.mode||'stroke',maxScore:saved.maxScore||null,
-      tee:'',teamMode:saved.teamMode||'none',options:saved.options||{}};
+    // Platz + Modus aus eingefrorener Runde laden
+    G.round={
+      courseName:saved.courseName,
+      par:saved.par||DPAR,
+      strokeIndex:saved.si||DSI,
+      date:saved.date||tod(),
+      mode:saved.mode||'stroke',
+      maxScore:saved.maxScore||null,
+      tee:saved.tee||'',
+      teamMode:saved.teamMode||'none',
+      options:saved.options||{}
+    };
+    // Scores UND Vorgaben aus eingefrorener Runde laden
     var sc=saved.scores||{};
-    G.players=G.players.map(function(p){return Object.assign({},p,{scores:sc[p.id]||Array(18).fill(null)});});
+    var hcp=saved.handicaps||{};
+    G.players=G.players.map(function(p){
+      return Object.assign({},p,{
+        scores:sc[p.id]||Array(18).fill(null),
+        handicap:hcp[p.id]!=null?hcp[p.id]:p.handicap
+      });
+    });
   }else{
-    G.players=G.players.map(function(p){return Object.assign({},p,{scores:Array(18).fill(null)});});
+    // Neue Runde: leere Scores, aktuelle Vorgaben behalten
+    G.players=G.players.map(function(p){
+      return Object.assign({},p,{scores:Array(18).fill(null)});
+    });
   }
   renderLB();refreshTrnUI();
 }
+
 async function closeRound(){
   var t=G.tournament;if(!t)return;
   var cur=t.currentRound||1;
@@ -2228,20 +2248,32 @@ async function closeRound(){
   var scores={},handicaps={};
   G.players.forEach(function(p){
     scores[p.id]=(p.scores||Array(18).fill(null)).slice();
-    handicaps[p.id]=Number(p.handicap)||0;  // Vorgaben mitspeichern
+    handicaps[p.id]=Number(p.handicap)||0;
   });
-  var entry={roundNum:cur,date:G.round.date||tod(),courseName:G.round.courseName||'–',
-    par:(G.round.par||DPAR).slice(),si:(G.round.strokeIndex||DSI).slice(),
-    mode:G.round.mode||'stroke',maxScore:G.round.maxScore||null,
-    teamMode:G.round.teamMode||'none',options:G.round.options||{},
-    scores:scores,handicaps:handicaps};  // handicaps im entry
+  var entry={
+    roundNum:cur,
+    date:G.round.date||tod(),
+    courseName:G.round.courseName||'–',
+    tee:G.round.tee||'',
+    par:(G.round.par||DPAR).slice(),
+    si:(G.round.strokeIndex||DSI).slice(),
+    mode:G.round.mode||'stroke',
+    maxScore:G.round.maxScore||null,
+    teamMode:G.round.teamMode||'none',
+    options:G.round.options||{},
+    scores:scores,
+    handicaps:handicaps
+  };
   var rounds=(t.rounds||[]).slice();
   var idx=rounds.findIndex(function(x){return x.roundNum===cur;});
   if(idx>=0)rounds[idx]=entry;else rounds.push(entry);
   var next=cur<t.totalRounds?cur+1:cur;
   G.tournament=Object.assign({},t,{rounds:rounds,currentRound:next});
   if(next!==cur){
-    G.players=G.players.map(function(p){return Object.assign({},p,{scores:Array(18).fill(null)});});
+    // Nächste Runde: Scores leeren, Vorgaben und Spielerdaten behalten
+    G.players=G.players.map(function(p){
+      return Object.assign({},p,{scores:Array(18).fill(null)});
+    });
     await Promise.all(G.players.map(function(p){return fbSet(fp('players/'+p.id),p);}));
   }
   await fbSet(fp('tournament'),G.tournament);
@@ -2249,8 +2281,63 @@ async function closeRound(){
   renderLB();refreshTrnUI();
 }
 
-// ════════════════════════════════════════════════════
-// GESAMTAUSWERTUNG
+async function unfreezeRound(){
+  var statusEl=document.getElementById('dev-unfreeze-status');
+  var code=String(document.getElementById('dev-unfreeze-code').value).trim();
+  var rNum=parseInt(document.getElementById('dev-unfreeze-round').value);
+  if(!code||!/^\d{3}$/.test(code)){statusEl.textContent='⚠️ Bitte gültigen 3-stelligen Code eingeben';statusEl.style.color='var(--red)';return;}
+  if(!rNum||rNum<1||rNum>7){statusEl.textContent='⚠️ Bitte Rundennummer (1–7) eingeben';statusEl.style.color='var(--red)';return;}
+  statusEl.textContent='⏳ Lade Turnier...';statusEl.style.color='var(--txt3)';
+  try{
+    await initFB();
+    var snap=await DB.ref('turniere/'+code+'/tournament').get();
+    if(!snap.exists()){statusEl.textContent='⚠️ Turnier "'+code+'" nicht gefunden';statusEl.style.color='var(--red)';return;}
+    var trn=snap.val();
+    var rounds=(trn.rounds||[]);
+    var idx=rounds.findIndex(function(r){return r.roundNum===rNum;});
+    if(idx<0){statusEl.textContent='⚠️ Runde '+rNum+' war nicht eingefroren';statusEl.style.color='var(--red)';return;}
+    var entry=rounds[idx];
+    // Scores + Vorgaben + Platz wiederherstellen
+    var frozenScores=entry.scores||{};
+    var frozenHcp=entry.handicaps||{};
+    var pSnap=await DB.ref('turniere/'+code+'/players').get();
+    if(pSnap.exists()){
+      var updates={};
+      var players=pSnap.val();
+      Object.keys(players).forEach(function(pid){
+        if(frozenScores[pid])
+          updates['turniere/'+code+'/players/'+pid+'/scores']=frozenScores[pid];
+        if(frozenHcp[pid]!=null)
+          updates['turniere/'+code+'/players/'+pid+'/handicap']=frozenHcp[pid];
+      });
+      if(Object.keys(updates).length)await DB.ref().update(updates);
+    }
+    // Platz + Modus der eingefrorenen Runde als aktive round wiederherstellen
+    var roundData={
+      courseName:entry.courseName||'–',
+      tee:entry.tee||'',
+      par:entry.par||DPAR,
+      strokeIndex:entry.si||DSI,
+      date:entry.date||tod(),
+      mode:entry.mode||'stroke',
+      maxScore:entry.maxScore||null,
+      teamMode:entry.teamMode||'none',
+      options:entry.options||{}
+    };
+    await DB.ref('turniere/'+code+'/round').set(roundData);
+    // Runde aus rounds-Array entfernen, currentRound zurücksetzen
+    rounds.splice(idx,1);
+    await DB.ref('turniere/'+code+'/tournament/rounds').set(rounds);
+    await DB.ref('turniere/'+code+'/tournament/currentRound').set(rNum);
+    statusEl.textContent='✅ Runde '+rNum+' von Turnier '+code+' freigegeben!';
+    statusEl.style.color='var(--green)';
+    toast('🔓 R'+rNum+' ('+code+') wieder offen');
+    if(CODE===code)await enterTournament(code);
+  }catch(e){
+    statusEl.textContent='⚠️ Fehler: '+e.message;
+    statusEl.style.color='var(--red)';
+  }
+}
 // ════════════════════════════════════════════════════
 function calcTotal(){
   var t=G.tournament;if(!t||!t.rounds||!t.rounds.length)return[];
@@ -2258,7 +2345,7 @@ function calcTotal(){
     var bSum=0,nSum=0,sSum=0,played=0,details=[];
     (t.rounds||[]).forEach(function(rnd){
       var sc=(rnd.scores&&rnd.scores[p.id])||Array(18).fill(null);
-      // Eingefrorene Vorgabe nutzen falls vorhanden, sonst aktuelle
+      // Eingefrorene Vorgabe nutzen — so wird jede Runde mit der richtigen HCP berechnet
       var hcp=Number((rnd.handicaps&&rnd.handicaps[p.id]!=null)?rnd.handicaps[p.id]:p.handicap)||0;
       var par=rnd.par||DPAR,si=rnd.si||DSI;
       var pl=sc.filter(function(s){return s!=null;}).length;
