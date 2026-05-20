@@ -1233,6 +1233,12 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('dev-lock-btn').addEventListener('click',function(){setTournamentLock(true);});
   document.getElementById('dev-unlock-btn').addEventListener('click',function(){setTournamentLock(false);});
 
+  // PINs aus localStorage laden
+  var storedPin=localStorage.getItem(LS_PIN);
+  if(storedPin)ADMIN_PIN=storedPin;
+  var storedCoursePin=localStorage.getItem(LS_COURSE_PIN);
+  if(storedCoursePin)COURSE_PIN=storedCoursePin;
+
   initFB().catch(function(){});
   renderLobby();
 });
