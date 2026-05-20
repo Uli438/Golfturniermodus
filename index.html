@@ -676,7 +676,18 @@ input,select,button{font-family:'DM Sans',sans-serif}
   </div>
 </div>
 
-<!-- DEV VIEW -->
+<!-- PIN MODAL -->
+<div id="pin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;align-items:center;justify-content:center">
+  <div style="background:var(--card);border-radius:20px;padding:24px;width:88%;max-width:320px;text-align:center">
+    <div style="font-size:9px;color:var(--accent);letter-spacing:2px;font-weight:700;margin-bottom:8px" id="pin-modal-title">PIN EINGEBEN</div>
+    <input id="pin-modal-inp" type="password" autocomplete="off" autocorrect="off" autocapitalize="off"
+      style="width:100%;font-size:28px;font-weight:900;letter-spacing:8px;text-align:center;padding:12px;border:3px solid var(--border);border-radius:12px;outline:none;font-family:'Cormorant Garamond',serif;margin-bottom:16px;background:var(--bg2)">
+    <div style="display:flex;gap:10px">
+      <button id="pin-modal-cancel" style="flex:1;padding:13px;background:var(--bg2);border:2px solid var(--border);border-radius:10px;font-size:15px;font-weight:700;cursor:pointer">Abbrechen</button>
+      <button id="pin-modal-ok" style="flex:1;padding:13px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:700;cursor:pointer">OK ✓</button>
+    </div>
+  </div>
+</div>
 <div id="view-dev" class="view">
   <div class="hdr">
     <button class="back-btn" id="dev-back">←</button>
@@ -1132,8 +1143,8 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('btn-total').addEventListener('click',function(){showView('total');});
   document.getElementById('btn-setup').addEventListener('click',function(){showView('setup');});
   document.getElementById('btn-home').addEventListener('click',goLobby);
-  document.getElementById('btn-close-round').addEventListener('click',function(){
-    var pin=prompt('Admin-PIN eingeben:');
+  document.getElementById('btn-close-round').addEventListener('click',async function(){
+    var pin=await askPin('ADMIN-PIN EINGEBEN');
     if(pin===null)return;
     if(pin.trim()===ADMIN_PIN)closeRound();else toast('⚠️ Falsche PIN');
   });
@@ -1242,6 +1253,32 @@ document.addEventListener('DOMContentLoaded',function(){
   initFB().catch(function(){});
   renderLobby();
 });
+
+// PIN-Modal (ersetzt prompt() — funktioniert auch im PWA-Modus auf iPhone)
+function askPin(title){
+  return new Promise(function(resolve){
+    var modal=document.getElementById('pin-modal');
+    var inp=document.getElementById('pin-modal-inp');
+    var titleEl=document.getElementById('pin-modal-title');
+    titleEl.textContent=title||'PIN EINGEBEN';
+    inp.value='';
+    modal.style.display='flex';
+    setTimeout(function(){inp.focus();},100);
+    function done(val){
+      modal.style.display='none';
+      inp.removeEventListener('keydown',onKey);
+      document.getElementById('pin-modal-ok').removeEventListener('click',onOk);
+      document.getElementById('pin-modal-cancel').removeEventListener('click',onCancel);
+      resolve(val);
+    }
+    function onOk(){done(inp.value);}
+    function onCancel(){done(null);}
+    function onKey(e){if(e.key==='Enter')done(inp.value);if(e.key==='Escape')done(null);}
+    document.getElementById('pin-modal-ok').addEventListener('click',onOk);
+    document.getElementById('pin-modal-cancel').addEventListener('click',onCancel);
+    inp.addEventListener('keydown',onKey);
+  });
+}
 
 // ════════════════════════════════════════════════════
 // FIREBASE
@@ -2578,7 +2615,7 @@ async function sbSave(c){
 }
 async function sbDel(name){try{await sbF('DELETE','courses?name=eq.'+encodeURIComponent(name));return true;}catch(e){return false;}}
 async function saveCourse(){
-  var pin=prompt('Platz-PIN eingeben:');
+  var pin=await askPin('PLATZ-PIN EINGEBEN');
   if(pin===null)return;
   if(pin.trim()!==COURSE_PIN){toast('⚠️ Falscher PIN');return;}
   for(var i=0;i<18;i++){var pe=document.getElementById('par-'+i),se=document.getElementById('si-'+i);if(pe)SPAR[i]=parseInt(pe.value)||4;if(se)SSI[i]=parseInt(se.value)||i+1;}
@@ -2599,10 +2636,12 @@ async function loadCourse(name){
   document.getElementById('man-name').value=c.name;renderHoleRows();toast('✓ '+c.name+' geladen');
 }
 async function delCourse(name){
-  var pin=prompt('Platz-PIN eingeben:');
+  var pin=await askPin('PLATZ-PIN EINGEBEN');
   if(pin===null)return;
   if(pin.trim()!==COURSE_PIN){toast('⚠️ Falscher PIN');return;}
-  if(!confirm('"'+name+'" wirklich löschen?'))return;var ok=await sbDel(name);if(ok){toast('🗑 '+name+' gelöscht');await renderSavedCourses();}}
+  if(!confirm('"'+name+'" wirklich löschen?'))return;
+  var ok=await sbDel(name);if(ok){toast('🗑 '+name+' gelöscht');await renderSavedCourses();}
+}
 async function renderSavedCourses(){
   var sec=document.getElementById('saved-courses-section'),sel=document.getElementById('saved-courses-list');
   if(!sec||!sel)return;
