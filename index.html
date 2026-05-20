@@ -688,6 +688,17 @@ input,select,button{font-family:'DM Sans',sans-serif}
     </div>
   </div>
 </div>
+
+<!-- CONFIRM MODAL -->
+<div id="confirm-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;align-items:center;justify-content:center">
+  <div style="background:var(--card);border-radius:20px;padding:24px;width:88%;max-width:320px;text-align:center">
+    <div style="font-size:15px;font-weight:700;margin-bottom:20px;line-height:1.4" id="confirm-modal-txt"></div>
+    <div style="display:flex;gap:10px">
+      <button id="confirm-modal-cancel" style="flex:1;padding:13px;background:var(--bg2);border:2px solid var(--border);border-radius:10px;font-size:15px;font-weight:700;cursor:pointer">Abbrechen</button>
+      <button id="confirm-modal-ok" style="flex:1;padding:13px;background:var(--red);border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:700;cursor:pointer">OK</button>
+    </div>
+  </div>
+</div>
 <div id="view-dev" class="view">
   <div class="hdr">
     <button class="back-btn" id="dev-back">←</button>
@@ -1280,6 +1291,28 @@ function askPin(title){
   });
 }
 
+// Confirm-Modal (ersetzt confirm())
+function askConfirm(msg,okLabel,okColor){
+  return new Promise(function(resolve){
+    var modal=document.getElementById('confirm-modal');
+    document.getElementById('confirm-modal-txt').textContent=msg;
+    var okBtn=document.getElementById('confirm-modal-ok');
+    okBtn.textContent=okLabel||'OK';
+    okBtn.style.background=okColor||'var(--red)';
+    modal.style.display='flex';
+    function done(val){
+      modal.style.display='none';
+      okBtn.removeEventListener('click',onOk);
+      document.getElementById('confirm-modal-cancel').removeEventListener('click',onCancel);
+      resolve(val);
+    }
+    function onOk(){done(true);}
+    function onCancel(){done(false);}
+    okBtn.addEventListener('click',onOk);
+    document.getElementById('confirm-modal-cancel').addEventListener('click',onCancel);
+  });
+}
+
 // ════════════════════════════════════════════════════
 // FIREBASE
 // ════════════════════════════════════════════════════
@@ -1477,10 +1510,10 @@ async function unfreezeRound(){
       });
       if(Object.keys(updates).length)await DB.ref().update(updates);
     }
-    // Runde aus rounds-Array entfernen, currentRound zurücksetzen
-    rounds.splice(idx,1);
-    var newCur=rNum; // Runde wieder als aktuelle setzen
-    await DB.ref('turniere/'+code+'/tournament/rounds').set(rounds);
+    // Runde aus rounds-Array entfernen (filter statt splice damit andere Runden erhalten bleiben)
+    var newRounds=rounds.filter(function(r){return r.roundNum!==rNum;});
+    var newCur=rNum;
+    await DB.ref('turniere/'+code+'/tournament/rounds').set(newRounds.length>0?newRounds:null);
     await DB.ref('turniere/'+code+'/tournament/currentRound').set(newCur);
     statusEl.textContent='✅ Runde '+rNum+' von Turnier '+code+' freigegeben!';
     statusEl.style.color='var(--green)';
@@ -1518,7 +1551,8 @@ async function renderAdmin(){
     el.querySelectorAll('.admin-del').forEach(function(btn){
       btn.addEventListener('click',async function(){
         var c=this.dataset.code;
-        if(!confirm('Turnier "'+c+'" löschen?'))return;
+        var ok=await askConfirm('Turnier "'+c+'" wirklich löschen?');
+        if(!ok)return;
         try{await DB.ref('turniere/'+c).remove();delRec(c);toast('🗑 '+c+' gelöscht');renderAdmin();}
         catch(e){toast('⚠️ Fehler beim Löschen');}
       });
@@ -2527,7 +2561,8 @@ function renderPList(){
   document.querySelectorAll('[data-rmid]').forEach(function(el){
     el.addEventListener('click',async function(){
       var id=this.dataset.rmid,pl=SP.find(function(p){return p.id===id;});
-      if(!confirm((pl&&pl.name||'Spieler')+' wirklich löschen?'))return;
+      var ok=await askConfirm((pl&&pl.name||'Spieler')+' wirklich löschen?','Löschen','var(--red)');
+      if(!ok)return;
       SP=SP.filter(function(p){return p.id!==id;});renderPList();
       if(CODE)try{await fbSet(fp('players/'+id),null);}catch(e){}
     });
@@ -2547,7 +2582,8 @@ function addPlayer(){
   renderPList();
 }
 async function resetScores(){
-  if(!confirm('Alle Scores zurücksetzen?'))return;
+  var ok=await askConfirm('Alle Scores zurücksetzen?','Zurücksetzen','var(--red)');
+  if(!ok)return;
   SP=SP.map(function(p){return Object.assign({},p,{scores:Array(18).fill(null)});});renderPList();
   if(CODE)try{await Promise.all(SP.map(function(p){return fbSet(fp('players/'+p.id),p);}));toast('✅ Scores zurückgesetzt');}
   catch(e){toast('📶 Lokal zurückgesetzt');}
@@ -2639,7 +2675,8 @@ async function delCourse(name){
   var pin=await askPin('PLATZ-PIN EINGEBEN');
   if(pin===null)return;
   if(pin.trim()!==COURSE_PIN){toast('⚠️ Falscher PIN');return;}
-  if(!confirm('"'+name+'" wirklich löschen?'))return;
+  var ok2=await askConfirm('"'+name+'" wirklich löschen?','Löschen','var(--red)');
+  if(!ok2)return;
   var ok=await sbDel(name);if(ok){toast('🗑 '+name+' gelöscht');await renderSavedCourses();}
 }
 async function renderSavedCourses(){
@@ -2793,7 +2830,8 @@ function goToRound(r){
 async function closeRound(){
   var t=G.tournament;if(!t)return;
   var cur=t.currentRound||1;
-  if(!confirm('Runde '+cur+' von '+t.totalRounds+' abschließen und Scores einfrieren?'))return;
+  var ok=await askConfirm('Runde '+cur+' von '+t.totalRounds+' abschließen und Scores einfrieren?','Einfrieren','#e65100');
+  if(!ok)return;
   var scores={},handicaps={};
   // Scores und Vorgaben aus LIVE-Spielern (nicht G.players, falls eingefrorene Runde angezeigt wird)
   var livePlayers=LIVE_PLAYERS||G.players;
