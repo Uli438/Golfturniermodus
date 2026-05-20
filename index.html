@@ -1779,10 +1779,10 @@ function renderHoles(){
         +'<div class="putt-stepper"><button class="putt-btn" data-pu="-1" data-idx="'+i+'">−</button>'
         +'<div class="putt-val" id="pv-'+i+'">'+(ex.putts||0)+'</div>'
         +'<button class="putt-btn" data-pu="1" data-idx="'+i+'">+</button></div>'
-        +(showAnalyse?'<button class="extra-btn" id="btn-analyse-open" style="margin-left:auto;background:#e3f2fd;border-color:var(--accent);color:var(--accent);font-weight:700">📊 Analyse</button>':'')
+        +(showAnalyse?'<button class="extra-btn btn-analyse-open" data-pid="'+esc(CID)+'" style="margin-left:auto;background:#e3f2fd;border-color:var(--accent);color:var(--accent);font-weight:700">📊 Analyse</button>':'')
         +'</div>';
     } else if(opts.analyse&&CS.filter(function(s){return s!=null;}).length>0){
-      html+='<div class="putt-row"><button class="extra-btn" id="btn-analyse-open" style="background:#e3f2fd;border-color:var(--accent);color:var(--accent);font-weight:700">📊 Spielanalyse</button></div>';
+      html+='<div class="putt-row"><button class="extra-btn btn-analyse-open" data-pid="'+esc(CID)+'" style="background:#e3f2fd;border-color:var(--accent);color:var(--accent);font-weight:700">📊 Spielanalyse</button></div>';
     }
     if(opts.analyse&&CS[i]!=null){
       var ab=ex.absch||null,ad=ex.annDist||'',at=!!ex.annTref;
@@ -1845,8 +1845,9 @@ function renderHoles(){
       trigAS();
     });
   });
-  var analyseBtn=document.getElementById('btn-analyse-open');
-  if(analyseBtn)analyseBtn.addEventListener('click',function(){openAnalyse(CID);});
+  document.querySelectorAll('.btn-analyse-open').forEach(function(btn){
+    btn.addEventListener('click',function(){openAnalyse(this.dataset.pid||CID);});
+  });
 
   refreshHalf(holes);
 }
