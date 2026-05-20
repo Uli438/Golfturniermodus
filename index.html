@@ -202,7 +202,7 @@ input,select,button{font-family:'DM Sans',sans-serif}
 .putt-lbl{font-size:10px;color:var(--txt3);font-weight:600;min-width:50px}
 .putt-stepper{display:flex;align-items:center;gap:6px}
 .putt-btn{width:32px;height:32px;border-radius:50%;border:2px solid var(--border-light);background:var(--card);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--accent);font-weight:700;line-height:1}
-.putt-val{font-size:16px;font-weight:700;min-width:24px;text-align:center;font-family:'Cormorant Garamond',serif}
+.putt-val{font-size:32px;font-weight:900;min-width:32px;text-align:center;font-family:'Cormorant Garamond',serif;line-height:1}
 
 /* RESULT TABLE */
 .result-body{padding:16px;padding-bottom:100px}
@@ -1015,7 +1015,7 @@ function enrich(p){
   return Object.assign({},p,{
     pl:pl,bvp:pl>0?br-parP:null,nvp:nvp,stp:stp,stpB:stpB,
     totalPutts:ext.reduce(function(a,e){return a+(e&&e.putts?e.putts:0);},0),
-    totalBV:   ext.reduce(function(a,e){return a+(e&&e.bv?1:0);},0),
+    totalBV:   ext.reduce(function(a,e){return a+(Number(e&&e.bv)||0);},0),
     totalLA:   ext.reduce(function(a,e){return a+(e&&e.la?1:0);},0)
   });
 }
@@ -1026,7 +1026,7 @@ function enrich(p){
 function saveSnap(p){
   PREV_SNAP[p.id]={
     scores:(p.scores||[]).slice(),
-    extras:(p.extras||[]).map(function(e){return e?{bv:!!e.bv,la:!!e.la,putts:Number(e.putts)||0}:{bv:false,la:false,putts:0};})
+    extras:(p.extras||[]).map(function(e){return e?{bv:Number(e.bv)||0,la:!!e.la,putts:Number(e.putts)||0}:{bv:0,la:false,putts:0};})
   };
 }
 function checkEvents(prev,np){
@@ -1057,7 +1057,10 @@ function checkEvents(prev,np){
     if(diff>=2&&on('double')){showBanner('💀','Doppelbogey'+(diff>2?'+ ('+diff+')':'')+' — '+name+' · '+loch,'double');continue;}
   }
   if(opts.ballverlust&&on('bv')){
-    for(var j=0;j<18;j++){if(!(oEx[j]&&oEx[j].bv)&&(nEx[j]&&nEx[j].bv)){showBanner('🔴','Ballverlust! '+name+' · Loch '+(j+1),'bv');break;}}
+    for(var j=0;j<18;j++){
+      var obv=Number((oEx[j]&&oEx[j].bv)||0),nbv=Number((nEx[j]&&nEx[j].bv)||0);
+      if(nbv>obv){showBanner('🔴','Ballverlust'+(nbv>1?' ×'+nbv:'')+' — '+name+' · Loch '+(j+1),'bv');break;}
+    }
   }
   if(opts.ladies&&on('lady')){
     for(var k=0;k<18;k++){if(!(oEx[k]&&oEx[k].la)&&(nEx[k]&&nEx[k].la)){showBanner('🚺',name+' · Loch '+(k+1)+' — Lady 🍺','lady');break;}}
@@ -1620,7 +1623,7 @@ function renderTeamView(){
 function openCard(id){
   var p=G.players.find(function(p){return p.id===id;});if(!p)return;
   CID=id;CS=p.scores?p.scores.slice():Array(18).fill(null);
-  CEXT=Array(18).fill(null).map(function(_,i){var ex=(p.extras&&p.extras[i])||{};return{bv:!!ex.bv,la:!!ex.la,putts:Number(ex.putts)||0};});
+  CEXT=Array(18).fill(null).map(function(_,i){var ex=(p.extras&&p.extras[i])||{};return{bv:Number(ex.bv)||0,la:!!ex.la,putts:Number(ex.putts)||0};});
   var loc=loadLoc(id);
   if(loc&&Array.isArray(loc)&&loc.length===18&&loc.filter(function(s){return s!=null;}).length>CS.filter(function(s){return s!=null;}).length){CS=loc.slice();setTimeout(pushFB,300);}
   CTAB=localStorage.getItem(LS_TAB+id)||(pc(CS)>=9?'back':'front');
@@ -1712,7 +1715,15 @@ function renderHoles(){
     var html='';
     if(opts.ballverlust||opts.ladies){
       html+='<div class="extra-row">';
-      if(opts.ballverlust)html+='<button class="extra-btn'+(ex.bv?' active-bv':'')+'" data-ex="bv" data-idx="'+i+'">🔴 Ballverlust'+(ex.bv?' ✓':'')+'</button>';
+      if(opts.ballverlust){
+        var bvCount=Number(ex.bv)||0;
+        html+='<div style="display:flex;align-items:center;gap:6px">'
+          +'<button class="extra-btn'+(bvCount>0?' active-bv':'')+'" data-bv-add="1" data-idx="'+i+'">'
+          +'🔴 Ball'+(bvCount>0?' ×'+bvCount:'')
+          +'</button>'
+          +(bvCount>0?'<button class="extra-btn active-bv" data-bv-add="-1" data-idx="'+i+'" style="padding:6px 10px;font-size:14px">−</button>':'')
+          +'</div>';
+      }
       if(opts.ladies)html+='<button class="extra-btn'+(ex.la?' active-la':'')+'" data-ex="la" data-idx="'+i+'">🚺 Lady'+(ex.la?' 🍺':'')+'</button>';
       html+='</div>';
     }
@@ -1727,6 +1738,15 @@ function renderHoles(){
   document.querySelectorAll('[data-ex]').forEach(function(btn){
     btn.addEventListener('click',function(){
       CEXT[parseInt(this.dataset.idx)][this.dataset.ex]=!CEXT[parseInt(this.dataset.idx)][this.dataset.ex];
+      renderHoles();trigAS();
+    });
+  });
+  document.querySelectorAll('[data-bv-add]').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var idx=parseInt(this.dataset.idx),d=parseInt(this.dataset.bvAdd);
+      var cur=Number(CEXT[idx].bv)||0;
+      var next=Math.max(0,cur+d);
+      CEXT[idx].bv=next;
       renderHoles();trigAS();
     });
   });
