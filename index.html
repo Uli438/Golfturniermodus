@@ -242,6 +242,24 @@ input,select,button{font-family:'DM Sans',sans-serif}
 .putt-btn{width:32px;height:32px;border-radius:50%;border:2px solid var(--border-light);background:var(--card);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--accent);font-weight:700;line-height:1}
 .putt-val{font-size:16px;font-weight:700;min-width:24px;text-align:center;font-family:'Cormorant Garamond',serif}
 
+/* SCHLAG-ANALYSE */
+.analysis-row{padding:6px 14px 8px;background:#f8fbff;border-bottom:1px solid var(--border-light)}
+.analysis-toggle{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--accent);font-weight:700;cursor:pointer;padding:4px 0;letter-spacing:1px}
+.analysis-toggle .arr{font-size:10px;transition:.2s;display:inline-block}
+.analysis-toggle .arr.open{transform:rotate(90deg)}
+.analysis-body{display:none;padding-top:6px}
+.analysis-body.open{display:block}
+.acat{font-size:9px;color:var(--txt3);letter-spacing:1px;font-weight:700;margin-bottom:5px;margin-top:8px}
+.acat:first-child{margin-top:0}
+.achips{display:flex;gap:5px;flex-wrap:wrap}
+.achip{padding:5px 10px;border-radius:16px;border:1.5px solid var(--border-light);background:var(--card);font-size:11px;cursor:pointer;font-weight:500;color:var(--txt2);white-space:nowrap}
+.achip.sel{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+.achip.sel-green{background:#2e7d32;border-color:#2e7d32;color:#fff}
+.achip.sel-orange{background:#e65100;border-color:#e65100;color:#fff}
+.putt-mini{display:flex;gap:5px}
+.pmini{width:34px;height:34px;border-radius:50%;border:1.5px solid var(--border-light);background:var(--card);font-size:13px;font-weight:700;cursor:pointer;color:var(--txt2);display:flex;align-items:center;justify-content:center}
+.pmini.sel{background:var(--accent);border-color:var(--accent);color:#fff}
+
 /* FEATURE TOGGLES */
 .feat-section{background:var(--card);border:2px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px}
 .feat-section-title{font-size:11px;color:var(--accent);letter-spacing:2px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
@@ -275,9 +293,6 @@ input,select,button{font-family:'DM Sans',sans-serif}
 .echip{padding:6px 10px;border-radius:20px;border:2px solid var(--border-light);background:var(--card);font-size:12px;cursor:pointer;font-weight:600;white-space:nowrap}
 .echip:active{opacity:.7}
 .echip.selected{border-color:var(--accent);background:var(--accent);color:#fff}
-.event-custom-wrap{display:flex;gap:6px;margin-top:6px}
-.event-custom-inp{flex:1;background:var(--card);border:2px solid var(--border-light);border-radius:20px;padding:6px 12px;font-size:12px;outline:none}
-.event-custom-inp:focus{border-color:var(--accent)}
 .event-send-btn{background:var(--accent);border:none;border-radius:20px;color:#fff;font-size:12px;font-weight:700;padding:6px 14px;cursor:pointer;white-space:nowrap}
 .event-clear-btn{background:#ffebee;border:2px solid var(--red);border-radius:20px;color:var(--red);font-size:12px;font-weight:600;padding:6px 12px;cursor:pointer;margin-top:6px}
 
@@ -468,15 +483,6 @@ input,select,button{font-family:'DM Sans',sans-serif}
     <button class="sc-tab active" id="tab-front">FRONT 9 (1–9)</button>
     <button class="sc-tab" id="tab-back">BACK 9 (10–18)</button>
   </div>
-  <div class="event-bar" id="event-bar">
-    <div class="event-bar-title">📡 LIVE KOMMUNIKATION</div>
-    <div class="event-chips" id="event-chips"></div>
-    <div class="event-custom-wrap">
-      <input class="event-custom-inp" id="event-custom" placeholder="Eigene Nachricht…" maxlength="40">
-      <button class="event-send-btn" id="event-send-btn">Senden</button>
-    </div>
-    <button class="event-clear-btn" id="event-clear-btn">✕ Ereignis löschen</button>
-  </div>
   <div class="sc-col-head"><span>LOCH</span><span>SCHLÄGE</span><span>BRUTTO</span><span id="col4lbl">NETTO</span></div>
   <div id="sc-holes"></div>
   <div id="half-bar" class="half-bar" style="display:none">
@@ -485,8 +491,14 @@ input,select,button{font-family:'DM Sans',sans-serif}
     <div style="text-align:center;font-size:16px;font-weight:700;font-family:'Cormorant Garamond',serif" id="half-brutto-lbl"></div>
     <div style="text-align:center;font-size:13px;font-weight:700;color:#6a1b9a;font-family:'Cormorant Garamond',serif" id="half-stbl-lbl"></div>
   </div>
-  <div style="height:82px"></div>
-  <div class="save-wrap"><button class="save-btn serif" id="savebtn">Score speichern ✓</button></div>
+  <div style="height:120px"></div>
+  <div class="save-wrap">
+    <div id="sc-live-events" style="display:none;margin-bottom:8px;background:var(--bg2);border-radius:12px;padding:8px 10px;border:1px solid var(--border-light)">
+      <div style="font-size:9px;color:var(--accent);letter-spacing:2px;font-weight:700;margin-bottom:6px">📡 LIVE MELDEN</div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap" id="sc-live-chips"></div>
+    </div>
+    <button class="save-btn serif" id="savebtn">Score speichern ✓</button>
+  </div>
 </div>
 
 <!-- ══ ERGEBNIS ══ -->
@@ -637,7 +649,17 @@ input,select,button{font-family:'DM Sans',sans-serif}
           <input type="checkbox" id="opt-putts" style="width:18px;height:18px;cursor:pointer;accent-color:var(--accent)">
           <div><div style="font-size:13px;font-weight:700">🏌️ Putts pro Loch</div><div style="font-size:10px;color:var(--txt3)">Anzahl Putts auf der Scorecard eintragen — Gesamt-Putts im Leaderboard als Statistik</div></div>
         </label>
+        <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card);border:2px solid var(--border-light);border-radius:10px;cursor:pointer">
+          <input type="checkbox" id="opt-analyse" style="width:18px;height:18px;cursor:pointer;accent-color:var(--accent)">
+          <div><div style="font-size:13px;font-weight:700">📊 Schlag-Analyse pro Loch</div><div style="font-size:10px;color:var(--txt3)">Abschlag (Links/Mitte/Rechts) · Annäherung · Bunker/Rough · Putts — aufklappbar auf der Scorecard</div></div>
+        </label>
       </div>
+    </section>
+
+    <section id="setup-liveevents-section">
+      <div class="slabel">📡 LIVE KOMMUNIKATION</div>
+      <div class="shint">Wähle welche Ereignisse die Spieler live kommunizieren können. Erscheint als Badge im Leaderboard.</div>
+      <div style="display:flex;flex-direction:column;gap:6px" id="live-event-checkboxes"></div>
     </section>
 
     <section>
@@ -683,6 +705,7 @@ var FEATURES=[
   {key:'zaehlen',    label:'Zählspiel-Modi',           sub:'Zählspiel mit NDB oder festem Limit',                 icon:'🔒'},
   {key:'americans',  label:'Americans & Feste Teams',  sub:'Teamspiel-Modi in den Einstellungen',                 icon:'🔄'},
   {key:'turnier',    label:'Turniermodus (Mehrrunden)',sub:'Mehrere Runden mit Gesamtauswertung',                 icon:'🏆'},
+  {key:'analyse',    label:'Schlag-Analyse pro Loch',   sub:'Abschlag · Annäherung · Lage · Putts — aufklappbar',  icon:'📊'},
 ];
 var G_FEAT={}; // Globale Feature-Config
 
@@ -725,7 +748,10 @@ var G={
   tournament:null,
   round:{courseName:'',par:DPAR.slice(),strokeIndex:DSI.slice(),date:tod(),mode:'stroke',maxScore:null,tee:'',teamMode:'none'}
 };
-var CID=null, CS=Array(18).fill(null), CEXT=Array(18).fill(null).map(function(){return{bv:false,la:false,putts:0};}), CTAB='front', LBM='brutto', LBV='einzel', TM='bestball';
+var CID=null, CS=Array(18).fill(null),
+    CEXT=Array(18).fill(null).map(function(){return{bv:false,la:false,putts:0};}),
+    CANA=Array(18).fill(null).map(function(){return{tee:'',app:'',lie:'',putts:0};}),
+    CTAB='front', LBM='brutto', LBV='einzel', TM='bestball';
 var pSync=false, aTimer=null;
 var SP=[], SPAR=DPAR.slice(), SSI=DSI.slice(), SAC=null, SAT=null, CTM='manual', SDB=null, STM='none';
 
@@ -880,10 +906,7 @@ document.addEventListener('DOMContentLoaded',function(){
 
   // BACK BUTTONS
   document.getElementById('admin-back').addEventListener('click',function(){showView('lobby');});
-  document.getElementById('card-back').addEventListener('click',function(){
-    var bar=document.getElementById('event-bar');if(bar)bar.classList.remove('show');
-    showView('lb');
-  });
+  document.getElementById('card-back').addEventListener('click',function(){showView('lb');});
   document.getElementById('result-back').addEventListener('click',function(){showView('lb');});
   document.getElementById('total-back').addEventListener('click',function(){showView('lb');});
   document.getElementById('setup-back').addEventListener('click',function(){showView(CODE?'lb':'lobby');});
@@ -929,17 +952,7 @@ document.addEventListener('DOMContentLoaded',function(){
   });
 
   // LIVE EVENTS auf Scorecard
-  document.getElementById('event-send-btn').addEventListener('click',function(){
-    var val=document.getElementById('event-custom').value.trim();
-    if(val)sendLiveEvent(val);
-    document.getElementById('event-custom').value='';
-  });
-  document.getElementById('event-custom').addEventListener('keydown',function(e){
-    if(e.key==='Enter'){var val=this.value.trim();if(val)sendLiveEvent(val);this.value='';}
-  });
-  document.getElementById('event-clear-btn').addEventListener('click',function(){
-    sendLiveEvent(null);
-  });
+
 
   // DEV VIEW
   document.getElementById('dev-back').addEventListener('click',function(){showView('lobby');});
@@ -1097,7 +1110,6 @@ async function enterTournament(code){
 }
 
 function goLobby(){
-  var bar=document.getElementById('event-bar');if(bar)bar.classList.remove('show');
   stopListeners();CODE=null;
   G={players:[],tournament:null,round:{courseName:'',par:DPAR.slice(),strokeIndex:DSI.slice(),date:tod(),mode:'stroke',maxScore:null,tee:'',teamMode:'none'}};
   showView('lobby');
@@ -1292,7 +1304,7 @@ async function pushFB(){
   if(!navigator.onLine){syncDot('off');pSync=true;return;}
   syncDot('save');
   try{
-    G.players=G.players.map(function(p){return p.id===CID?Object.assign({},p,{scores:CS.slice(),extras:CEXT.slice()}):p;});
+    G.players=G.players.map(function(p){return p.id===CID?Object.assign({},p,{scores:CS.slice(),extras:CEXT.slice(),analyse:CANA.slice()}):p;});
     await fbSet(fp('players/'+CID),G.players.find(function(p){return p.id===CID;}));
     clearLoc(CID);pSync=false;syncDot('on');
   }catch(e){syncDot('off');pSync=true;}
@@ -1447,6 +1459,14 @@ function renderTeamView(){
 }
 
 // ═══════════════════════════════════════════════════
+// SCHLAG-ANALYSE
+// ═══════════════════════════════════════════════════
+function hasAnaData(i){
+  var a=CANA[i];
+  return !!(a&&(a.tee||a.app||a.lie||a.putts>0));
+}
+
+// ═══════════════════════════════════════════════════
 // LIVE EVENTS
 // ═══════════════════════════════════════════════════
 async function sendLiveEvent(text){
@@ -1458,8 +1478,6 @@ async function sendLiveEvent(text){
     });
     await fbSet(fp('players/'+CID+'/liveEvent'),text||null);
   }catch(e){toast('⚠️ Event konnte nicht gesendet werden');}
-  // Event-Bar neu rendern
-  renderEventBar();
   // Toast
   if(text)toast('📡 '+text);
   else toast('✕ Ereignis gelöscht');
@@ -1475,6 +1493,10 @@ function openCard(id){
   CEXT=Array(18).fill(null).map(function(_,i){
     var ex=(p.extras&&p.extras[i])||{};
     return{bv:!!ex.bv,la:!!ex.la,putts:Number(ex.putts)||0};
+  });
+  CANA=Array(18).fill(null).map(function(_,i){
+    var a=(p.analyse&&p.analyse[i])||{};
+    return{tee:a.tee||'',app:a.app||'',lie:a.lie||'',putts:Number(a.putts)||0};
   });
   var loc=loadLoc(id);
   if(loc&&Array.isArray(loc)&&loc.length===18&&
@@ -1500,32 +1522,37 @@ function renderCard(){
   document.getElementById('pill-netto-lbl').textContent=mode==='stableford'?'Stbl.':'Netto';
   document.getElementById('tab-front').classList.toggle('active',CTAB==='front');
   document.getElementById('tab-back').classList.toggle('active',CTAB==='back');
-  updatePills();renderHoles();renderEventBar();
+  updatePills();renderHoles();renderScoreLiveChips();
 }
 
-function renderEventBar(){
-  var bar=document.getElementById('event-bar');
-  var chips=document.getElementById('event-chips');
-  if(!bar||!chips)return;
-  if(!featOn('liveevents')){bar.classList.remove('show');return;}
-  bar.classList.add('show');
-  // Aktuelles Event des Spielers
+function renderScoreLiveChips(){
+  var panel=document.getElementById('sc-live-events');
+  var chipsEl=document.getElementById('sc-live-chips');
+  if(!panel||!chipsEl)return;
+  if(!featOn('liveevents')){panel.style.display='none';return;}
+  var opts=G.round.options||{};
+  var list=opts.liveEventList&&opts.liveEventList.length>0?opts.liveEventList:LIVE_EVENTS.map(function(e){return e.text;});
+  var active=list.filter(function(t){return LIVE_EVENTS.some(function(e){return e.text===t;});});
+  if(!active.length){panel.style.display='none';return;}
+  panel.style.display='block';
   var p=G.players.find(function(p){return p.id===CID;});
-  var curEvent=p&&p.liveEvent?p.liveEvent:null;
-  chips.innerHTML=LIVE_EVENTS.map(function(ev,i){
-    var sel=curEvent===ev.text;
-    return'<button class="echip'+(sel?' selected':'')+'" data-ei="'+i+'">'+ev.label+'</button>';
+  var cur=p&&p.liveEvent?p.liveEvent:null;
+  chipsEl.innerHTML=LIVE_EVENTS.filter(function(ev){return active.indexOf(ev.text)>=0;}).map(function(ev){
+    var sel=cur===ev.text;
+    return'<button class="echip'+(sel?' selected':'')+'" data-evtext="'+esc(ev.text)+'">'+ev.label+'</button>';
   }).join('');
-  chips.querySelectorAll('.echip').forEach(function(btn){
+  chipsEl.querySelectorAll('.echip').forEach(function(btn){
     btn.addEventListener('click',function(){
-      var ev=LIVE_EVENTS[parseInt(this.dataset.ei)];
-      // Toggle: nochmals antippen löscht
+      var t=this.dataset.evtext;
       var p2=G.players.find(function(p){return p.id===CID;});
-      var cur=p2&&p2.liveEvent?p2.liveEvent:null;
-      sendLiveEvent(cur===ev.text?null:ev.text);
+      var curEv=p2&&p2.liveEvent?p2.liveEvent:null;
+      sendLiveEvent(curEv===t?null:t); // Toggle
+      renderScoreLiveChips();
     });
   });
 }
+
+
 function updatePills(){
   var p=G.players.find(function(p){return p.id===CID;});if(!p)return;
   var par=G.round.par||DPAR,hcp=Number(p.handicap)||0,mode=G.round.mode||'stroke';
@@ -1576,66 +1603,98 @@ function renderHoles(){
     btn.addEventListener('click',function(){step(parseInt(this.dataset.idx),parseInt(this.dataset.d));});
   });
 
-  // Extra-Buttons (Ballverlust, Ladies, Putts) pro Loch
-  var opts=G.round.options||{};
-  holes.forEach(function(i){
-    var hasExtra=(featOn('ballverlust')&&opts.ballverlust)||(featOn('ladies')&&opts.ladies)||(featOn('putts')&&opts.putts);
-    if(!hasExtra)return;
-    var ex=CEXT[i];
-    var row=document.getElementById('hr-'+i);
-    if(!row)return;
-
-    // Extra-Zeile nach der Loch-Row einfügen (falls noch nicht da)
-    var existingEx=document.getElementById('ex-'+i);
-    if(existingEx)existingEx.remove();
-    var exDiv=document.createElement('div');
-    exDiv.id='ex-'+i;
-
-    var html='';
-    if(opts.ballverlust||opts.ladies){
-      html+='<div class="extra-row">';
-      if(opts.ballverlust&&featOn('ballverlust')){
-        html+='<button class="extra-btn'+(ex.bv?' active-bv':'')+'" data-ex="bv" data-idx="'+i+'">'
-          +'🔴 Ballverlust'+(ex.bv?' ✓':'')+'</button>';
-      }
-      if(opts.ladies&&featOn('ladies')){
-        html+='<button class="extra-btn'+(ex.la?' active-la':'')+'" data-ex="la" data-idx="'+i+'">'
-          +'🚺 Damenabschlag'+(ex.la?' 🍺':'')+'</button>';
-      }
-      html+='</div>';
-    }
-    if(opts.putts&&featOn('putts')){
-      html+='<div class="putt-row">'
-        +'<div class="putt-lbl">🏌️ Putts</div>'
-        +'<div class="putt-stepper">'
-        +'<button class="putt-btn" data-pu="-1" data-idx="'+i+'">−</button>'
-        +'<div class="putt-val" id="pv-'+i+'">'+(ex.putts||0)+'</div>'
-        +'<button class="putt-btn" data-pu="1" data-idx="'+i+'">+</button>'
-        +'</div></div>';
-    }
-    exDiv.innerHTML=html;
-    row.after(exDiv);
-  });
-
-  // Extra-Button Events
-  document.querySelectorAll('[data-ex]').forEach(function(btn){
-    btn.addEventListener('click',function(){
-      var idx=parseInt(this.dataset.idx),key=this.dataset.ex;
-      CEXT[idx][key]=!CEXT[idx][key];
-      // Ladies: xStr neu berechnen → Hole neu rendern
-      renderHoles();
-      trigAS();
+  // Analyse-Bereich pro Loch
+  var optsA=G.round.options||{};
+  if(optsA.analyse&&featOn('analyse')){
+    holes.forEach(function(i){
+      var row=document.getElementById('hr-'+i);
+      if(!row)return;
+      var ex=document.getElementById('ana-'+i);
+      if(ex)ex.remove();
+      var a=CANA[i];
+      var div=document.createElement('div');
+      div.className='analysis-row';
+      div.id='ana-'+i;
+      div.innerHTML=
+        '<div class="analysis-toggle" data-ai="'+i+'">'
+        +'<span class="arr" id="arr-'+i+'">▶</span>'
+        +'<span>📊 SCHLAG-ANALYSE</span>'
+        +(hasAnaData(i)?'<span style="font-size:9px;background:var(--accent);color:#fff;border-radius:8px;padding:1px 6px;margin-left:4px">●</span>':'')
+        +'</div>'
+        +'<div class="analysis-body" id="anab-'+i+'">'
+        // ABSCHLAG
+        +'<div class="acat">ABSCHLAG</div>'
+        +'<div class="achips">'
+        +['Links','Mitte','Rechts','Kurz','Lang','Wasser','OB'].map(function(v){
+          var sc=v==='Mitte'?'sel-green':(v==='Links'||v==='Rechts')?'sel-orange':'sel';
+          return'<button class="achip'+(a.tee===v?' '+sc:'')+'" data-af="tee" data-av="'+v+'" data-ai="'+i+'">'+v+'</button>';
+        }).join('')
+        +'</div>'
+        // ANNÄHERUNG
+        +'<div class="acat">ANNÄHERUNG</div>'
+        +'<div class="achips">'
+        +['Grün','Links','Rechts','Kurz','Lang','Wasser','Chip OK'].map(function(v){
+          var sc=v==='Grün'?'sel-green':(v==='Links'||v==='Rechts'||v==='Kurz'||v==='Lang')?'sel-orange':'sel';
+          return'<button class="achip'+(a.app===v?' '+sc:'')+'" data-af="app" data-av="'+v+'" data-ai="'+i+'">'+v+'</button>';
+        }).join('')
+        +'</div>'
+        // LAGE
+        +'<div class="acat">LAGE / HINDERNIS</div>'
+        +'<div class="achips">'
+        +['Fairway','Rough','Bunker','Wasser','Wald','OB'].map(function(v){
+          var sc=v==='Fairway'?'sel-green':v==='Bunker'||v==='Wasser'||v==='OB'?'sel-orange':'sel';
+          return'<button class="achip'+(a.lie===v?' '+sc:'')+'" data-af="lie" data-av="'+v+'" data-ai="'+i+'">'+v+'</button>';
+        }).join('')
+        +'</div>'
+        // PUTTS
+        +'<div class="acat">PUTTS</div>'
+        +'<div class="putt-mini">'
+        +[0,1,2,3,4].map(function(n){
+          return'<button class="pmini'+(a.putts===n?' sel':'')+'" data-af="putts" data-av="'+n+'" data-ai="'+i+'">'+(n===0?'–':n)+'</button>';
+        }).join('')
+        +'</div>'
+        +'</div>';
+      row.after(div);
     });
-  });
-  document.querySelectorAll('[data-pu]').forEach(function(btn){
-    btn.addEventListener('click',function(){
-      var idx=parseInt(this.dataset.idx),d=parseInt(this.dataset.pu);
-      CEXT[idx].putts=Math.max(0,Math.min(9,(CEXT[idx].putts||0)+d));
-      var pvEl=document.getElementById('pv-'+idx);
-      if(pvEl)pvEl.textContent=CEXT[idx].putts;
-      trigAS();
+
+    // Toggle Events
+    document.querySelectorAll('.analysis-toggle').forEach(function(el){
+      el.addEventListener('click',function(){
+        var i=parseInt(this.dataset.ai);
+        var body=document.getElementById('anab-'+i);
+        var arr=document.getElementById('arr-'+i);
+        if(body){body.classList.toggle('open');if(arr)arr.classList.toggle('open');}
+      });
     });
-  });
+
+    // Chip Events
+    document.querySelectorAll('.achip,[data-af="putts"]').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        var i=parseInt(this.dataset.ai),f=this.dataset.af,v=this.dataset.av;
+        if(f==='putts')CANA[i][f]=parseInt(v);
+        else CANA[i][f]=(CANA[i][f]===v?'':v); // Toggle
+        trigAS();
+        // Chips neu rendern
+        var body=document.getElementById('anab-'+i);
+        if(body&&body.classList.contains('open')){
+          // Selektionen aktualisieren
+          body.querySelectorAll('[data-af]').forEach(function(b){
+            var bf=b.dataset.af,bv=b.dataset.av;
+            b.classList.remove('sel','sel-green','sel-orange');
+            var isActive=bf==='putts'?CANA[i].putts===parseInt(bv):CANA[i][bf]===bv;
+            if(isActive){
+              var sc=bf==='putts'?'sel':(bv==='Mitte'||bv==='Grün'||bv==='Fairway')?'sel-green':(bv==='Links'||bv==='Rechts'||bv==='Kurz'||bv==='Lang'||bv==='Bunker'||bv==='Wasser'||bv==='OB')?'sel-orange':'sel';
+              b.classList.add(sc);
+            }
+          });
+          // Dot aktualisieren
+          var toggle=body.previousElementSibling;
+          var dot=toggle&&toggle.querySelector('span:last-child');
+          if(dot&&dot.style){dot.style.display=hasAnaData(i)?'':'none';}
+        }
+      });
+    });
+  }
 
   refreshHalf(holes);
 }
@@ -1688,7 +1747,7 @@ async function saveScore(){
   saveLoc(CID,CS);
   if(!navigator.onLine){toast('📵 Offline – lokal gespeichert');syncDot('off');pSync=true;btn.disabled=false;btn.textContent='Score speichern ✓';return;}
   try{
-    G.players=G.players.map(function(p){return p.id===CID?Object.assign({},p,{scores:CS.slice(),extras:CEXT.slice()}):p;});
+    G.players=G.players.map(function(p){return p.id===CID?Object.assign({},p,{scores:CS.slice(),extras:CEXT.slice(),analyse:CANA.slice()}):p;});
     await fbSet(fp('players/'+CID),G.players.find(function(p){return p.id===CID;}));
     clearLoc(CID);pSync=false;syncDot('on');
     btn.textContent='✅ Gespeichert!';btn.style.background='linear-gradient(135deg,#1b5e20,#2e7d32)';
@@ -1814,7 +1873,10 @@ function initSetup(){
   cb('opt-ballverlust',opts.ballverlust);
   cb('opt-ladies',opts.ladies);
   cb('opt-putts',opts.putts);
+  cb('opt-analyse',opts.analyse);
   selectTM(STM);renderHoleRows();renderPList();renderSavedCourses().catch(function(){});switchCourseTab('manual');
+  // Live-Event Checkboxen aufbauen
+  renderLiveEventSetup();
   // Feature-abhängige Sektionen ein-/ausblenden
   var modeEl=document.getElementById('r-mode');
   if(modeEl){
@@ -1840,6 +1902,8 @@ function initSetup(){
   if(optBV)optBV.closest('label').style.display=featOn('ballverlust')?'':'none';
   if(optLA)optLA.closest('label').style.display=featOn('ladies')?'':'none';
   if(optPU)optPU.closest('label').style.display=featOn('putts')?'':'none';
+  var optAN=document.getElementById('opt-analyse');
+  if(optAN)optAN.closest('label').style.display=featOn('analyse')?'':'none';
 }
 function switchCourseTab(t){
   CTM=t;
@@ -1937,10 +2001,15 @@ async function saveSetup(){
     maxScore=parseInt(msv&&msv.value)||8;
   }
   var gv=function(id){var el=document.getElementById(id);return el?el.checked:false;};
+  // Live-Event Liste
+  var leCbs=document.querySelectorAll('.le-cb');
+  var leList=[];
+  leCbs.forEach(function(cb){if(cb.checked)leList.push(cb.dataset.ev);});
   G.round={courseName:cname,par:SPAR,strokeIndex:SSI,tee:tee,
     date:document.getElementById('r-date').value||tod(),
     mode:rMode,maxScore:maxScore,teamMode:STM,
-    options:{ballverlust:gv('opt-ballverlust'),ladies:gv('opt-ladies'),putts:gv('opt-putts')}};
+    options:{ballverlust:gv('opt-ballverlust'),ladies:gv('opt-ladies'),putts:gv('opt-putts'),analyse:gv('opt-analyse'),
+             liveEventList:leList}};
   G.players=SP;
   var trnR=parseInt(document.getElementById('trn-rounds').value)||0;
   if(trnR>1){if(!G.tournament||G.tournament.totalRounds!==trnR)G.tournament={totalRounds:trnR,currentRound:1,name:cname,rounds:[]};}
@@ -1958,6 +2027,27 @@ async function saveSetup(){
     startListeners();
   }catch(e){toast('⚠️ Firebase nicht erreichbar');}
   renderLB();refreshTrnUI();showView('lb');
+}
+
+// ═══════════════════════════════════════════════════
+// LIVE EVENT SETUP
+// ═══════════════════════════════════════════════════
+function renderLiveEventSetup(){
+  var sec=document.getElementById('setup-liveevents-section');
+  var box=document.getElementById('live-event-checkboxes');
+  if(!sec||!box)return;
+  // Section nur zeigen wenn liveevents Feature aktiv
+  sec.style.display=featOn('liveevents')?'block':'none';
+  if(!featOn('liveevents'))return;
+  var active=G.round.options&&G.round.options.liveEventList?G.round.options.liveEventList:[];
+  box.innerHTML=LIVE_EVENTS.map(function(ev,i){
+    var checked=active.length===0||active.indexOf(ev.text)>=0; // Standard: alle an
+    return'<label style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--card);border:2px solid var(--border-light);border-radius:10px;cursor:pointer">'
+      +'<input type="checkbox" class="le-cb" data-ev="'+esc(ev.text)+'" '+(checked?'checked':'')
+      +' style="width:16px;height:16px;cursor:pointer;accent-color:var(--accent)">'
+      +'<span style="font-size:13px;font-weight:600">'+ev.label+'</span>'
+      +'</label>';
+  }).join('');
 }
 
 // ═══════════════════════════════════════════════════
