@@ -322,7 +322,7 @@ input,select,button{font-family:'DM Sans',sans-serif}
     </div>
     <div class="lcard">
       <div class="lcard-title">TURNIER BEITRETEN</div>
-      <input class="code-inp" id="join-code" placeholder="000" maxlength="3" type="number">
+      <input class="code-inp" id="join-code" placeholder="Code" maxlength="20" type="text" autocomplete="off" autocorrect="off" autocapitalize="off">
       <button class="lbtn lbtn-blue" id="btn-join">Beitreten →</button>
     </div>
     <div class="lcard" id="recent-card" style="display:none">
@@ -1072,7 +1072,7 @@ async function joinByCode(){
   if(code===DEV_PIN){await initFB();showView('dev');return;}
   // Admin-Panel
   if(code===ADMIN_PIN){await initFB();showView('admin');return;}
-  if(!/^\d{3}$/.test(code)){toast('⚠️ Bitte 3-stellige Zahl eingeben');return;}
+  if(!/^\d{3}$/.test(code)){toast('⚠️ Ungültiger Code');return;}
   await enterTournament(code);
 }
 
