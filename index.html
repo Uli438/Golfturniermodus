@@ -332,6 +332,49 @@ input,select,button{font-family:'DM Sans',sans-serif}
   </div>
 </div>
 
+<!-- ══ DEV ══ -->
+<div id="view-dev" class="view">
+  <div class="hdr">
+    <button class="back-btn" id="dev-back">←</button>
+    <div class="hdr-title serif">🛠️ Entwickler-Einstellungen</div>
+  </div>
+  <div style="padding:16px;padding-bottom:80px">
+
+    <!-- PASSWÖRTER ÄNDERN -->
+    <div class="feat-section" style="margin-bottom:14px">
+      <div class="feat-section-title">🔑 PASSWÖRTER ÄNDERN</div>
+      <div class="shint">Passwörter werden sicher in Firebase gespeichert.</div>
+
+      <div style="margin-bottom:14px">
+        <div class="slabel">TURNIER-ADMIN CODE (aktuell: <span id="show-admin-pin">···</span>)</div>
+        <div style="display:flex;gap:8px">
+          <input class="inp" id="new-admin-pin" placeholder="Neuer Admin-Code" style="flex:1">
+          <button id="btn-save-admin-pin" style="background:var(--accent);border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:700;padding:0 16px;cursor:pointer;white-space:nowrap">Speichern</button>
+        </div>
+        <div style="font-size:10px;color:var(--txt3);margin-top:4px">Zugang zur Turnier-Verwaltung (alle Turniere anzeigen/löschen)</div>
+      </div>
+
+      <div>
+        <div class="slabel">ENTWICKLER-CODE (aktuell: <span id="show-dev-pin">···</span>)</div>
+        <div style="display:flex;gap:8px">
+          <input class="inp" id="new-dev-pin" placeholder="Neuer Entwickler-Code" style="flex:1">
+          <button id="btn-save-dev-pin" style="background:var(--green);border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:700;padding:0 16px;cursor:pointer;white-space:nowrap">Speichern</button>
+        </div>
+        <div style="font-size:10px;color:var(--txt3);margin-top:4px">Zugang zu dieser Entwickler-Seite</div>
+      </div>
+    </div>
+
+    <!-- GLOBALE FEATURES -->
+    <div class="feat-section">
+      <div class="feat-section-title">🌍 GLOBALE FEATURES <span class="feat-global-badge">ALLE TURNIERE</span></div>
+      <div style="font-size:10px;color:var(--txt2);margin-bottom:10px">Standard für neue Turniere. Im Admin-Panel pro Turnier überschreibbar.</div>
+      <button class="apply-global-btn" id="btn-apply-global">⚡ Auf alle aktiven Turniere anwenden</button>
+      <div id="global-feat-rows"></div>
+    </div>
+
+  </div>
+</div>
+
 <!-- ══ ADMIN ══ -->
 <div id="view-admin" class="view">
   <div class="hdr">
@@ -627,7 +670,8 @@ var ABASE='https://api.golfcourseapi.com/v1';
 var TCOLS={black:'#222',blue:'#1e6fd9',white:'#e0e0e0',yellow:'#e6c510',red:'#d93030',gold:'#c8a020',green:'#2d7a2d',silver:'#aaa'};
 var TC=['#1565c0','#c62828'];
 var AMROT=[[[0,1],[2,3]],[[1,2],[3,0]],[[0,2],[1,3]]];
-var ADMIN_PIN='999';
+var ADMIN_PIN='999';  // Turnier-Admin (aus Firebase geladen)
+var DEV_PIN='Uli';     // Entwickler-Seite (aus Firebase geladen)
 var FEATURES=[
   {key:'bestball',   label:'Best Ball & Aggregat',     sub:'Team-Wertung im TEAMS-Tab',                           icon:'🤝'},
   {key:'stableford', label:'Stableford-Wertung',       sub:'Stableford-Tab im Leaderboard',                       icon:'⭐'},
@@ -790,6 +834,7 @@ function showView(name){
   if(name==='result')renderResult();
   if(name==='total')renderTotal();
   if(name==='admin')renderAdmin();
+  if(name==='dev')initDevView();
 }
 
 // ═══════════════════════════════════════════════════
@@ -896,8 +941,38 @@ document.addEventListener('DOMContentLoaded',function(){
     sendLiveEvent(null);
   });
 
+  // DEV VIEW
+  document.getElementById('dev-back').addEventListener('click',function(){showView('lobby');});
+  document.getElementById('btn-save-admin-pin').addEventListener('click',async function(){
+    var val=document.getElementById('new-admin-pin').value.trim();
+    if(!val){toast('⚠️ Bitte neuen Code eingeben');return;}
+    await DB.ref('config/passwords/adminPin').set(val);
+    ADMIN_PIN=val;
+    document.getElementById('show-admin-pin').textContent=val;
+    document.getElementById('new-admin-pin').value='';
+    toast('✅ Admin-Code geändert: '+val);
+  });
+  document.getElementById('btn-save-dev-pin').addEventListener('click',async function(){
+    var val=document.getElementById('new-dev-pin').value.trim();
+    if(!val){toast('⚠️ Bitte neuen Code eingeben');return;}
+    await DB.ref('config/passwords/devPin').set(val);
+    DEV_PIN=val;
+    document.getElementById('show-dev-pin').textContent=val;
+    document.getElementById('new-dev-pin').value='';
+    toast('✅ Entwickler-Code geändert: '+val);
+  });
+
   // INIT
-  initFB().catch(function(){});
+  initFB().then(async function(){
+    try{
+      var snap=await DB.ref('config/passwords').get();
+      if(snap.exists()){
+        var pw=snap.val();
+        if(pw.adminPin)ADMIN_PIN=pw.adminPin;
+        if(pw.devPin)DEV_PIN=pw.devPin;
+      }
+    }catch(e){}
+  }).catch(function(){});
   renderLobby();
 });
 
@@ -993,6 +1068,9 @@ function renderLobby(){
 async function joinByCode(){
   var code=String(document.getElementById('join-code').value).trim();
   if(!code){toast('⚠️ Bitte Code eingeben');return;}
+  // Dev-Seite
+  if(code===DEV_PIN){await initFB();showView('dev');return;}
+  // Admin-Panel
   if(code===ADMIN_PIN){await initFB();showView('admin');return;}
   if(!/^\d{3}$/.test(code)){toast('⚠️ Bitte 3-stellige Zahl eingeben');return;}
   await enterTournament(code);
@@ -1032,6 +1110,58 @@ function showQR(){
 }
 
 // ═══════════════════════════════════════════════════
+// DEV VIEW
+// ═══════════════════════════════════════════════════
+async function initDevView(){
+  await initFB();
+
+  // Aktuelle Passwörter anzeigen
+  document.getElementById('show-admin-pin').textContent=ADMIN_PIN;
+  document.getElementById('show-dev-pin').textContent=DEV_PIN;
+  document.getElementById('new-admin-pin').value='';
+  document.getElementById('new-dev-pin').value='';
+
+  // Globale Features laden und anzeigen
+  try{
+    var gSnap=await DB.ref('config/features').get();
+    G_FEAT=gSnap.exists()?gSnap.val():{};
+  }catch(e){G_FEAT={};}
+
+  var gRow=document.getElementById('global-feat-rows');
+  if(gRow){
+    gRow.innerHTML=featTogglesHTML(G_FEAT,'gf');
+    FEATURES.forEach(function(f){
+      var el=document.getElementById('gf-'+f.key);
+      if(el)el.addEventListener('change',async function(){
+        G_FEAT[f.key]=this.checked;
+        await DB.ref('config/features/'+f.key).set(this.checked);
+        toast((this.checked?'✅ ':'❌ ')+f.label+(this.checked?' aktiviert':' deaktiviert')+' (global)');
+      });
+    });
+  }
+
+  // "Auf alle anwenden" Button
+  var applyBtn=document.getElementById('btn-apply-global');
+  if(applyBtn){
+    applyBtn.onclick=async function(){
+      if(!confirm('Globale Einstellungen auf ALLE aktiven Turniere anwenden?'))return;
+      var g=readToggles('gf');
+      await DB.ref('config/features').set(g);
+      G_FEAT=g;
+      var snap=await DB.ref('turniere').get();
+      if(!snap.exists()){toast('Keine Turniere gefunden');return;}
+      var data=snap.val(),codes=Object.keys(data);
+      await Promise.all(codes.map(function(code){
+        var r=data[code].round||{};
+        var newOpts=Object.assign({},r.options||{},g);
+        return DB.ref('turniere/'+code+'/round/options').set(newOpts);
+      }));
+      toast('⚡ Auf '+codes.length+' Turniere angewendet');
+    };
+  }
+}
+
+// ═══════════════════════════════════════════════════
 // ADMIN
 // ═══════════════════════════════════════════════════
 // ── Feature-Toggle HTML aufbauen ──
@@ -1064,43 +1194,6 @@ async function renderAdmin(){
     var gSnap=await DB.ref('config/features').get();
     G_FEAT=gSnap.exists()?gSnap.val():{};
   }catch(e){G_FEAT={};}
-
-  // Globale Feature-Toggles rendern
-  var gRow=document.getElementById('global-feat-rows');
-  if(gRow){
-    gRow.innerHTML=featTogglesHTML(G_FEAT,'gf');
-    // Live-Speichern bei Toggle
-    FEATURES.forEach(function(f){
-      var el=document.getElementById('gf-'+f.key);
-      if(el)el.addEventListener('change',async function(){
-        G_FEAT[f.key]=this.checked;
-        await DB.ref('config/features/'+f.key).set(this.checked);
-        toast((this.checked?'✅ ':'❌ ')+f.label+(this.checked?' aktiviert':' deaktiviert')+' (global)');
-      });
-    });
-  }
-
-  // Auf alle anwenden Button
-  var applyBtn=document.getElementById('btn-apply-global');
-  if(applyBtn){
-    applyBtn.onclick=async function(){
-      if(!confirm('Globale Einstellungen auf ALLE aktiven Turniere anwenden?'))return;
-      var g=readToggles('gf');
-      await DB.ref('config/features').set(g);
-      G_FEAT=g;
-      // Alle Turniere aktualisieren
-      var snap=await DB.ref('turniere').get();
-      if(!snap.exists()){toast('Keine Turniere gefunden');return;}
-      var data=snap.val(),codes=Object.keys(data);
-      await Promise.all(codes.map(function(code){
-        var r=data[code].round||{};
-        var newOpts=Object.assign({},r.options||{},g);
-        return DB.ref('turniere/'+code+'/round/options').set(newOpts);
-      }));
-      toast('⚡ Globale Einstellungen auf '+codes.length+' Turniere angewendet');
-      renderAdmin();
-    };
-  }
 
   // Turnier-Liste
   var el=document.getElementById('admin-list');
