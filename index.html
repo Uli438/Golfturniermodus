@@ -714,6 +714,17 @@ input,select,button{font-family:'DM Sans',sans-serif}
       </div>
     </div>
     <div class="lcard">
+      <div class="lcard-title" style="display:flex;align-items:center;justify-content:space-between">
+        <span>📊 AKTIVITÄT & ONLINE-STATUS</span>
+        <button id="dev-activity-refresh" style="background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:11px;font-weight:700;padding:5px 10px;cursor:pointer">↻ Laden</button>
+      </div>
+      <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:10px" id="dev-activity-counter">– Gesamtbesuche</div>
+      <div id="dev-activity-list" style="max-height:400px;overflow-y:auto">
+        <div style="text-align:center;padding:20px;color:var(--txt3);font-size:12px">↻ Tippe "Laden" um Aktivität zu sehen</div>
+      </div>
+    </div>
+
+    <div class="lcard">
       <div class="lcard-title">ℹ️ APP-INFO</div>
       <div style="font-size:12px;color:var(--txt2);line-height:2">
         <div>Firebase: <b>ulis-golfscore</b></div>
@@ -975,6 +986,7 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('dev-lock-btn').addEventListener('click',function(){setTournamentLock(true);});
   document.getElementById('dev-unlock-btn').addEventListener('click',function(){setTournamentLock(false);});
   document.getElementById('dev-unfreeze-btn').addEventListener('click',unfreezeRound);
+  document.getElementById('dev-activity-refresh').addEventListener('click',renderActivityLog);
 
   initFB().catch(function(){});
   renderLobby();
@@ -1045,12 +1057,81 @@ async function enterTournament(code,fromAdmin){
     saveRec(code,G.round.courseName||code);
     document.getElementById('code-badge').textContent='🔑 '+code;
     startListeners();renderLB();refreshTrnUI();showView('lb');syncDot('on');toast('🟢 Code '+code+' verbunden');
+    // Presence & Activity tracking
+    trackPresence(code);
   }catch(e){toast('⚠️ Verbindungsfehler');CODE=null;}
 }
-function goLobby(){stopListeners();CODE=null;PREV_SNAP={};NOTIF_ON=false;hideBanner();resetScoreLog();LIVE_ROUND=null;LIVE_PLAYERS=null;VIEW_RND=null;G={players:[],tournament:null,round:{courseName:'',par:DPAR.slice(),strokeIndex:DSI.slice(),date:tod(),mode:'stroke',maxScore:null,tee:'',teamMode:'none',options:{}}};showView('lobby');}
+function goLobby(){stopListeners();stopPresence();CODE=null;PREV_SNAP={};NOTIF_ON=false;hideBanner();resetScoreLog();LIVE_ROUND=null;LIVE_PLAYERS=null;VIEW_RND=null;G={players:[],tournament:null,round:{courseName:'',par:DPAR.slice(),strokeIndex:DSI.slice(),date:tod(),mode:'stroke',maxScore:null,tee:'',teamMode:'none',options:{}}};showView('lobby');}
 function showQR(){if(!CODE)return;document.getElementById('qr-code-txt').textContent=CODE;document.getElementById('qr-modal').classList.add('show');}
 
-// ════ ADMIN ════
+// ════ PRESENCE & ACTIVITY ════
+var PRES_REF=null;
+function trackPresence(code){
+  if(!DB||!code)return;
+  // Geräte-Info
+  var ua=navigator.userAgent,device='Web';
+  if(/iPhone/.test(ua))device='iPhone';else if(/iPad/.test(ua))device='iPad';else if(/Android/.test(ua))device='Android';else if(/Mac/.test(ua))device='Mac';
+  // Spieler-ID falls bekannt, sonst anonym
+  var pid=CID||('anon_'+Math.random().toString(36).slice(2,8));
+  var pname=CID?(G.players.find(function(p){return p.id===CID;})||{}).name||'Unbekannt':'Beobachter';
+  var now=new Date().toISOString();
+  var presData={name:pname,device:device,code:code,courseName:G.round.courseName||'–',joined:now,online:true};
+  // Presence: wird automatisch gelöscht wenn Gerät offline geht
+  PRES_REF=DB.ref('presence/'+code+'/'+pid);
+  DB.ref('.info/connected').on('value',function(snap){
+    if(!snap.val())return;
+    PRES_REF.onDisconnect().update({online:false,left:new Date().toISOString()});
+    PRES_REF.set(presData);
+  });
+  // Activity log (persistent, max 200 Einträge)
+  var actRef=DB.ref('activity').push();
+  actRef.set({name:pname,device:device,code:code,courseName:G.round.courseName||'–',time:now});
+  // Counter erhöhen
+  DB.ref('activity_counter').transaction(function(cur){return(cur||0)+1;});
+}
+function stopPresence(){
+  if(PRES_REF){PRES_REF.update({online:false,left:new Date().toISOString()});PRES_REF=null;}
+}
+
+async function renderActivityLog(){
+  var el=document.getElementById('dev-activity-list');if(!el)return;
+  el.innerHTML='<div style="text-align:center;padding:20px;color:var(--txt3)">⏳ Lade…</div>';
+  try{
+    await initFB();
+    // Counter
+    var cSnap=await DB.ref('activity_counter').get();
+    document.getElementById('dev-activity-counter').textContent=(cSnap.val()||0)+' Gesamtbesuche';
+    // Presence (aktuell online)
+    var pSnap=await DB.ref('presence').get();
+    var onlineList=[];
+    if(pSnap.exists()){
+      var pd=pSnap.val();
+      Object.keys(pd).forEach(function(code){
+        Object.values(pd[code]).forEach(function(p){
+          if(p.online)onlineList.push(Object.assign({},p,{code:code}));
+        });
+      });
+    }
+    // Activity log (letzte 50)
+    var aSnap=await DB.ref('activity').limitToLast(50).get();
+    var acts=[];
+    if(aSnap.exists()){Object.values(aSnap.val()).forEach(function(a){acts.push(a);});}
+    acts.sort(function(a,b){return b.time.localeCompare(a.time);});
+    var html='';
+    // Online jetzt
+    if(onlineList.length){
+      html+='<div style="font-size:9px;color:var(--green);letter-spacing:2px;font-weight:700;margin-bottom:8px">🟢 GERADE ONLINE ('+onlineList.length+')</div>';
+      html+=onlineList.map(function(p){return'<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:#e8f5e9;border-radius:8px;margin-bottom:5px"><div style="width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0"></div><div style="flex:1"><div style="font-size:13px;font-weight:700">'+esc(p.name)+'</div><div style="font-size:10px;color:var(--txt3)">'+esc(p.courseName)+' ['+esc(p.code)+'] · '+esc(p.device)+'</div></div><div style="font-size:10px;color:var(--txt3)">'+fmtTime(p.joined)+'</div></div>';}).join('');
+      html+='<div style="height:12px"></div>';
+    }
+    // Log
+    html+='<div style="font-size:9px;color:var(--txt3);letter-spacing:2px;font-weight:700;margin-bottom:8px">📋 LETZTE 50 BESUCHE</div>';
+    html+=acts.map(function(a){return'<div style="display:flex;align-items:center;gap:10px;padding:7px 10px;background:var(--card);border:1px solid var(--border-light);border-radius:8px;margin-bottom:4px"><div style="flex:1"><div style="font-size:13px;font-weight:700">'+esc(a.name)+'</div><div style="font-size:10px;color:var(--txt3)">'+esc(a.courseName)+' ['+esc(a.code)+'] · '+esc(a.device)+'</div></div><div style="font-size:10px;color:var(--txt3);text-align:right;flex-shrink:0">'+fmtTime(a.time)+'</div></div>';}).join('');
+    if(!acts.length)html+='<div style="text-align:center;padding:20px;color:var(--txt3)">Noch keine Aktivität</div>';
+    el.innerHTML=html;
+  }catch(e){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--red)">⚠️ '+esc(e.message)+'</div>';}
+}
+function fmtTime(iso){try{var d=new Date(iso),now=new Date(),diff=Math.floor((now-d)/1000);if(diff<60)return'gerade';if(diff<3600)return Math.floor(diff/60)+'min';if(diff<86400)return Math.floor(diff/3600)+'h';return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});}catch(e){return iso?iso.slice(0,16).replace('T',' '):'';}}
 async function setTournamentLock(lock){
   var statusEl=document.getElementById('dev-lock-status');
   var code=String(document.getElementById('dev-lock-code').value).trim();
