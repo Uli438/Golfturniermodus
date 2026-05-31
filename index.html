@@ -291,6 +291,25 @@ input,select,button{font-family:'DM Sans',sans-serif}
   </div>
 </div>
 
+<!-- NUTZUNGSBEDINGUNGEN -->
+<div id="terms-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:600;align-items:center;justify-content:center;padding:16px">
+  <div style="background:var(--card);border-radius:20px;padding:24px;width:100%;max-width:380px;max-height:88vh;overflow-y:auto">
+    <div style="text-align:center;font-size:38px;margin-bottom:6px">⛳</div>
+    <div class="serif" style="text-align:center;font-size:22px;font-weight:700;margin-bottom:4px">Willkommen!</div>
+    <div style="text-align:center;font-size:11px;color:var(--accent);letter-spacing:2px;font-weight:700;margin-bottom:16px">NUTZUNGSBEDINGUNGEN & DATENSCHUTZ</div>
+    <div style="font-size:13px;color:var(--txt2);line-height:1.6">
+      <p style="margin-bottom:12px">Diese App dient zum Live-Scoring von Golfrunden und -turnieren.</p>
+      <div style="font-size:9px;color:var(--accent);letter-spacing:1px;font-weight:700;margin-bottom:6px">WELCHE DATEN GESPEICHERT WERDEN</div>
+      <p style="margin-bottom:12px">Zur Turnierverwaltung und Verbesserung der App werden gespeichert: dein eingegebener <b>Spielername</b>, dein <b>Gerätetyp</b> (z.B. iPhone), eine anonyme <b>Geräte-Kennung</b>, die <b>Uhrzeit</b> deines Beitritts sowie deine eingetragenen <b>Scores</b>.</p>
+      <div style="font-size:9px;color:var(--accent);letter-spacing:1px;font-weight:700;margin-bottom:6px">WO & WIE LANGE</div>
+      <p style="margin-bottom:12px">Die Daten werden bei Google Firebase gespeichert und ausschließlich für den Betrieb dieser App verwendet. Sie werden nicht an Dritte weitergegeben oder für Werbung genutzt.</p>
+      <div style="font-size:9px;color:var(--accent);letter-spacing:1px;font-weight:700;margin-bottom:6px">DEINE RECHTE</div>
+      <p style="margin-bottom:16px">Du kannst jederzeit die Löschung deiner Daten verlangen. Wende dich dazu an den Turnier-Organisator.</p>
+    </div>
+    <button id="terms-accept" style="width:100%;padding:15px;background:linear-gradient(135deg,var(--green),#43a047);border:none;border-radius:12px;color:#fff;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(46,125,50,.35)">Verstanden & Zustimmen ✓</button>
+  </div>
+</div>
+
 <!-- LOBBY -->
 <div id="view-lobby" class="view active">
   <div class="lobby-hero"><div class="lobby-icon">⛳</div><div class="lobby-title serif">Golf Turniermodus</div><div class="lobby-sub">Erstelle oder trete einem Turnier bei</div></div>
@@ -493,6 +512,20 @@ input,select,button{font-family:'DM Sans',sans-serif}
     </div>
 
     <div class="lcard">
+      <div class="lcard-title">⚠️ SCORECARD-WARNUNG</div>
+      <div style="font-size:11px;color:var(--txt2);margin-bottom:12px;line-height:1.5">Warnt Spieler wenn sie eine fremde Scorecard öffnen (nur Hinweis, keine Sperre). Setzt voraus, dass der Spieler vorher seine eigene Scorecard geöffnet hat. Gilt für alle Geräte.</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;gap:8px">
+          <button class="sw-mode-btn" data-sw="all" style="flex:1;padding:11px;border-radius:8px;border:2px solid var(--border-light);background:var(--card);font-size:12px;font-weight:700;cursor:pointer">Alle Turniere</button>
+          <button class="sw-mode-btn" data-sw="code" style="flex:1;padding:11px;border-radius:8px;border:2px solid var(--border-light);background:var(--card);font-size:12px;font-weight:700;cursor:pointer">Ein Turnier</button>
+          <button class="sw-mode-btn" data-sw="off" style="flex:1;padding:11px;border-radius:8px;border:2px solid var(--border-light);background:var(--card);font-size:12px;font-weight:700;cursor:pointer">Aus</button>
+        </div>
+        <input class="inp" id="dev-sw-code" placeholder="Turnier-Code (z.B. 123)" maxlength="3" autocomplete="off" style="display:none;text-align:center;font-size:20px;font-weight:900;letter-spacing:4px">
+        <div id="dev-sw-status" style="font-size:11px;color:var(--txt3);text-align:center;min-height:16px"></div>
+      </div>
+    </div>
+
+    <div class="lcard">
       <div class="lcard-title">🔒 TURNIER SPERREN / ENTSPERREN</div>
       <div style="font-size:11px;color:var(--txt2);margin-bottom:12px;line-height:1.5">Gesperrte Turniere können über Admin (999) nicht geöffnet oder verändert werden.</div>
       <div style="display:flex;flex-direction:column;gap:8px">
@@ -540,6 +573,9 @@ var TC=['#1565c0','#c62828'];
 var AMROT=[[[0,1],[2,3]],[[1,2],[3,0]],[[0,2],[1,3]]];
 var ADMIN_PIN='999',DEV_CODE='Uli',COURSE_PIN='platz';
 var LS_PIN='gtm_admin_pin',LS_COURSE_PIN='gtm_course_pin',LS_TAB='gtm_tab_',LS_LOC='gtm_loc_',LS_REC='gtm_rec';
+var LS_DEVICE='gtm_device_id',LS_TERMS='gtm_terms_ok';
+var DEVICE_ID=null;
+var SCORECARD_WARN='off';
 var FB_CFG={apiKey:'AIzaSyDWzTqMaEa2U9MF_k84MBvbHj1wK30LuuA',authDomain:'ulis-golfscore.firebaseapp.com',databaseURL:'https://ulis-golfscore-default-rtdb.europe-west1.firebasedatabase.app',projectId:'ulis-golfscore',storageBucket:'ulis-golfscore.firebasestorage.app',messagingSenderId:'752079349846',appId:'1:752079349846:web:5fe4656acf7722f743b3f7'};
 var SBU='https://pukixlbdbdbbsmqobfhj.supabase.co';
 var SBK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1a2l4bGJkYmRiYnNtcW9iZmhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNDEyNzksImV4cCI6MjA5MjgxNzI3OX0.DPTM9aJmVIQaa_Csu0wEvzcgGc7pstM5M0K3GGTgXgk';
@@ -588,7 +624,7 @@ function askPin(title){
 function askConfirm(msg,okLabel,okColor){
   return new Promise(function(resolve){
     var modal=document.getElementById('confirm-modal');
-    document.getElementById('confirm-modal-txt').textContent=msg;
+    var txtEl=document.getElementById('confirm-modal-txt');txtEl.textContent=msg;txtEl.style.whiteSpace='pre-line';
     var okBtn=document.getElementById('confirm-modal-ok');okBtn.textContent=okLabel||'OK';okBtn.style.background=okColor||'var(--red)';
     modal.style.display='flex';
     function done(val){modal.style.display='none';okBtn.removeEventListener('click',onOk);document.getElementById('confirm-modal-cancel').removeEventListener('click',onCancel);resolve(val);}
@@ -662,6 +698,15 @@ function checkEvents(prev,np){
   if(opts.putts&&on('putt3')){for(var l=0;l<18;l++){var op=Number((oEx[l]&&oEx[l].putts)||0),np2=Number((nEx[l]&&nEx[l].putts)||0);if(np2>=3&&op<3&&nSc[l]!=null){showBanner('🏌️‍♂️','3-Putt! '+name+' · Loch '+(l+1),'putt3');break;}}}
 }
 
+// ════ GERÄTE-ID & NUTZUNGSBEDINGUNGEN ════
+function getDeviceId(){try{var id=localStorage.getItem(LS_DEVICE);if(!id){id='dev_'+Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);localStorage.setItem(LS_DEVICE,id);}return id;}catch(e){return'dev_nostore';}}
+function showTermsIfNeeded(){
+  var accepted=false;try{accepted=localStorage.getItem(LS_TERMS)==='1';}catch(e){}
+  if(accepted)return;
+  var modal=document.getElementById('terms-modal');modal.style.display='flex';
+  document.getElementById('terms-accept').addEventListener('click',function(){try{localStorage.setItem(LS_TERMS,'1');}catch(e){}modal.style.display='none';},{once:true});
+}
+
 // ════ VIEW MANAGER ════
 function showView(name){document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});document.getElementById('view-'+name).classList.add('active');window.scrollTo(0,0);if(name==='lobby')renderLobby();if(name==='setup')initSetup();if(name==='result')renderResult();if(name==='total')renderTotal();if(name==='admin')renderAdmin();if(name==='dev')initDevView();}
 
@@ -731,7 +776,11 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('dev-code-save').addEventListener('click',async function(){var p=document.getElementById('dev-code-new').value.trim();var st=document.getElementById('dev-code-status');if(!p){st.textContent='⚠️ Bitte Code eingeben';st.style.color='var(--red)';return;}st.textContent='⏳ Speichere…';st.style.color='var(--txt3)';try{await initFB();await DB.ref('config/dev_code').set(p);DEV_CODE=p;document.getElementById('dev-code-display').value=p;document.getElementById('dev-code-new').value='';st.textContent='✅ Entwickler-Code geändert: '+p;st.style.color='var(--green)';toast('✅ Dev-Code geändert');}catch(e){st.textContent='⚠️ Fehler: '+e.message;st.style.color='var(--red)';}});
   document.getElementById('dev-counter-reset').addEventListener('click',async function(){var ok=await askConfirm('Besuchszähler wirklich auf 0 zurücksetzen?','Zurücksetzen','#e65100');if(!ok)return;try{await initFB();await DB.ref('activity_counter').set(0);toast('🔄 Counter zurückgesetzt');renderActivityLog();}catch(e){toast('⚠️ Fehler');}});
   document.getElementById('dev-tracking-clear').addEventListener('click',async function(){var ok=await askConfirm('Komplettes Tracking (Online-Status + alle Besuche) löschen? Der Counter bleibt erhalten.','Alles löschen','var(--red)');if(!ok)return;try{await initFB();await DB.ref('presence').remove();await DB.ref('activity').remove();toast('🗑 Tracking gelöscht');renderActivityLog();}catch(e){toast('⚠️ Fehler');}});
-  initFB().then(function(){return DB.ref('config/dev_code').get();}).then(function(snap){if(snap&&snap.exists()&&snap.val())DEV_CODE=String(snap.val());}).catch(function(){});renderLobby();
+  document.querySelectorAll('.sw-mode-btn').forEach(function(btn){btn.addEventListener('click',function(){setScorecardWarn(this.dataset.sw);});});
+  document.getElementById('dev-sw-code').addEventListener('change',function(){var v=this.value.trim();if(/^\d{3}$/.test(v))saveScorecardWarn(v);});
+  DEVICE_ID=getDeviceId();
+  initFB().then(function(){return DB.ref('config/dev_code').get();}).then(function(snap){if(snap&&snap.exists()&&snap.val())DEV_CODE=String(snap.val());return DB.ref('config/scorecard_warning').get();}).then(function(snap){if(snap&&snap.exists()&&snap.val())SCORECARD_WARN=String(snap.val());}).catch(function(){});renderLobby();
+  showTermsIfNeeded();
 });
 
 // ════ FIREBASE ════
@@ -773,6 +822,7 @@ async function enterTournament(code,fromAdmin){
     document.getElementById('code-badge').textContent='🔑 '+code;
     startListeners();renderLB();refreshTrnUI();showView('lb');syncDot('on');toast('🟢 Code '+code+' verbunden');
     trackPresence(code);
+    try{var swSnap=await DB.ref('config/scorecard_warning').get();if(swSnap&&swSnap.exists()&&swSnap.val())SCORECARD_WARN=String(swSnap.val());}catch(e){}
   }catch(e){toast('⚠️ Verbindungsfehler');CODE=null;}
 }
 function goLobby(){stopListeners();stopPresence();CODE=null;PREV_SNAP={};NOTIF_ON=false;hideBanner();resetScoreLog();LIVE_ROUND=null;LIVE_PLAYERS=null;VIEW_RND=null;G={players:[],tournament:null,round:{courseName:'',par:DPAR.slice(),strokeIndex:DSI.slice(),date:tod(),mode:'stroke',maxScore:null,tee:'',teamMode:'none',options:{}}};showView('lobby');}
@@ -783,13 +833,14 @@ function trackPresence(code){
   if(!DB||!code)return;
   var ua=navigator.userAgent,device='Web';
   if(/iPhone/.test(ua))device='iPhone';else if(/iPad/.test(ua))device='iPad';else if(/Android/.test(ua))device='Android';else if(/Mac/.test(ua))device='Mac';
+  var devId=DEVICE_ID||getDeviceId();
   var pid=CID||('anon_'+Math.random().toString(36).slice(2,8));
   var pname=CID?(G.players.find(function(p){return p.id===CID;})||{}).name||'Unbekannt':'Beobachter';
   var now=new Date().toISOString();
-  var presData={name:pname,device:device,code:code,courseName:G.round.courseName||'–',joined:now,online:true};
+  var presData={name:pname,device:device,deviceId:devId,code:code,courseName:G.round.courseName||'–',joined:now,online:true};
   PRES_REF=DB.ref('presence/'+code+'/'+pid);
   DB.ref('.info/connected').on('value',function(snap){if(!snap.val())return;PRES_REF.onDisconnect().update({online:false,left:new Date().toISOString()});PRES_REF.set(presData);});
-  var actRef=DB.ref('activity').push();actRef.set({name:pname,device:device,code:code,courseName:G.round.courseName||'–',time:now});
+  var actRef=DB.ref('activity').push();actRef.set({name:pname,device:device,deviceId:devId,code:code,courseName:G.round.courseName||'–',time:now});
   DB.ref('activity_counter').transaction(function(cur){return(cur||0)+1;});
 }
 function stopPresence(){if(PRES_REF){PRES_REF.update({online:false,left:new Date().toISOString()});PRES_REF=null;}}
@@ -804,9 +855,9 @@ async function renderActivityLog(){
     var aSnap=await DB.ref('activity').limitToLast(50).get();var acts=[];if(aSnap.exists()){Object.keys(aSnap.val()).forEach(function(key){acts.push(Object.assign({},aSnap.val()[key],{_key:key}));});}
     acts.sort(function(a,b){return b.time.localeCompare(a.time);});
     var html='';
-    if(onlineList.length){html+='<div style="font-size:9px;color:var(--green);letter-spacing:2px;font-weight:700;margin-bottom:8px">🟢 GERADE ONLINE ('+onlineList.length+')</div>';html+=onlineList.map(function(p){return'<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:#e8f5e9;border-radius:8px;margin-bottom:5px"><div style="width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0"></div><div style="flex:1"><div style="font-size:13px;font-weight:700">'+esc(p.name)+'</div><div style="font-size:10px;color:var(--txt3)">'+esc(p.courseName)+' ['+esc(p.code)+'] · '+esc(p.device)+'</div></div><div style="font-size:10px;color:var(--txt3)">'+fmtTime(p.joined)+'</div><button class="dev-pres-del" data-code="'+esc(p.code)+'" data-pid="'+esc(p.pid)+'" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:2px 4px;line-height:1;flex-shrink:0">×</button></div>';}).join('');html+='<div style="height:12px"></div>';}
+    if(onlineList.length){html+='<div style="font-size:9px;color:var(--green);letter-spacing:2px;font-weight:700;margin-bottom:8px">🟢 GERADE ONLINE ('+onlineList.length+')</div>';html+=onlineList.map(function(p){return'<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:#e8f5e9;border-radius:8px;margin-bottom:5px"><div style="width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0"></div><div style="flex:1"><div style="font-size:13px;font-weight:700">'+esc(p.name)+'</div><div style="font-size:10px;color:var(--txt3)">'+esc(p.courseName)+' ['+esc(p.code)+'] · '+esc(p.device)+(p.deviceId?' · '+esc(String(p.deviceId).slice(-6)):'')+'</div></div><div style="font-size:10px;color:var(--txt3)">'+fmtTime(p.joined)+'</div><button class="dev-pres-del" data-code="'+esc(p.code)+'" data-pid="'+esc(p.pid)+'" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:2px 4px;line-height:1;flex-shrink:0">×</button></div>';}).join('');html+='<div style="height:12px"></div>';}
     html+='<div style="font-size:9px;color:var(--txt3);letter-spacing:2px;font-weight:700;margin-bottom:8px">📋 LETZTE 50 BESUCHE</div>';
-    html+=acts.map(function(a){return'<div style="display:flex;align-items:center;gap:10px;padding:7px 10px;background:var(--card);border:1px solid var(--border-light);border-radius:8px;margin-bottom:4px"><div style="flex:1"><div style="font-size:13px;font-weight:700">'+esc(a.name)+'</div><div style="font-size:10px;color:var(--txt3)">'+esc(a.courseName)+' ['+esc(a.code)+'] · '+esc(a.device)+'</div></div><div style="font-size:10px;color:var(--txt3);text-align:right;flex-shrink:0">'+fmtTime(a.time)+'</div><button class="dev-act-del" data-key="'+esc(a._key)+'" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:2px 4px;line-height:1;flex-shrink:0">×</button></div>';}).join('');
+    html+=acts.map(function(a){return'<div style="display:flex;align-items:center;gap:10px;padding:7px 10px;background:var(--card);border:1px solid var(--border-light);border-radius:8px;margin-bottom:4px"><div style="flex:1"><div style="font-size:13px;font-weight:700">'+esc(a.name)+'</div><div style="font-size:10px;color:var(--txt3)">'+esc(a.courseName)+' ['+esc(a.code)+'] · '+esc(a.device)+(a.deviceId?' · '+esc(String(a.deviceId).slice(-6)):'')+'</div></div><div style="font-size:10px;color:var(--txt3);text-align:right;flex-shrink:0">'+fmtTime(a.time)+'</div><button class="dev-act-del" data-key="'+esc(a._key)+'" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:2px 4px;line-height:1;flex-shrink:0">×</button></div>';}).join('');
     if(!acts.length)html+='<div style="text-align:center;padding:20px;color:var(--txt3)">Noch keine Aktivität</div>';
     el.innerHTML=html;
     el.querySelectorAll('.dev-pres-del').forEach(function(btn){btn.addEventListener('click',async function(){try{await DB.ref('presence/'+this.dataset.code+'/'+this.dataset.pid).remove();toast('🗑 Eintrag gelöscht');renderActivityLog();}catch(e){toast('⚠️ Fehler');}});});
@@ -821,7 +872,22 @@ async function setTournamentLock(lock){
   statusEl.textContent='⏳ ...';statusEl.style.color='var(--txt3)';
   try{await initFB();var snap=await DB.ref('turniere/'+code+'/round').get();if(!snap.exists()){statusEl.textContent='⚠️ Turnier "'+code+'" nicht gefunden';statusEl.style.color='var(--red)';return;}await DB.ref('turniere/'+code+'/locked').set(lock?true:null);statusEl.textContent=lock?'🔒 Turnier '+code+' gesperrt':'🔓 Turnier '+code+' entsperrt';statusEl.style.color=lock?'var(--red)':'var(--green)';toast(lock?'🔒 '+code+' gesperrt':'🔓 '+code+' entsperrt');}catch(e){statusEl.textContent='⚠️ Fehler: '+e.message;statusEl.style.color='var(--red)';}
 }
-function initDevView(){var d=document.getElementById('dev-pin-display');if(d){d.value=ADMIN_PIN;d.type='password';}var sb=document.getElementById('dev-pin-show');if(sb)sb.textContent='👁';var ni=document.getElementById('dev-pin-new');if(ni)ni.value='';var cd=document.getElementById('dev-coursepin-display');if(cd){cd.value=COURSE_PIN;cd.type='password';}var csb=document.getElementById('dev-coursepin-show');if(csb)csb.textContent='👁';var cni=document.getElementById('dev-coursepin-new');if(cni)cni.value='';var dcd=document.getElementById('dev-code-display');if(dcd){dcd.value=DEV_CODE;dcd.type='password';}var dcsb=document.getElementById('dev-code-show');if(dcsb)dcsb.textContent='👁';var dcni=document.getElementById('dev-code-new');if(dcni)dcni.value='';var dcst=document.getElementById('dev-code-status');if(dcst)dcst.textContent='';}
+function initDevView(){var d=document.getElementById('dev-pin-display');if(d){d.value=ADMIN_PIN;d.type='password';}var sb=document.getElementById('dev-pin-show');if(sb)sb.textContent='👁';var ni=document.getElementById('dev-pin-new');if(ni)ni.value='';var cd=document.getElementById('dev-coursepin-display');if(cd){cd.value=COURSE_PIN;cd.type='password';}var csb=document.getElementById('dev-coursepin-show');if(csb)csb.textContent='👁';var cni=document.getElementById('dev-coursepin-new');if(cni)cni.value='';var dcd=document.getElementById('dev-code-display');if(dcd){dcd.value=DEV_CODE;dcd.type='password';}var dcsb=document.getElementById('dev-code-show');if(dcsb)dcsb.textContent='👁';var dcni=document.getElementById('dev-code-new');if(dcni)dcni.value='';var dcst=document.getElementById('dev-code-status');if(dcst)dcst.textContent='';refreshScorecardWarnUI();initFB().then(function(){return DB.ref('config/scorecard_warning').get();}).then(function(snap){if(snap&&snap.exists()&&snap.val())SCORECARD_WARN=String(snap.val());refreshScorecardWarnUI();}).catch(function(){});}
+function refreshScorecardWarnUI(){
+  var mode=SCORECARD_WARN,isCode=mode!=='all'&&mode!=='off'&&mode;
+  document.querySelectorAll('.sw-mode-btn').forEach(function(b){var d=b.dataset.sw;var act=(d==='all'&&mode==='all')||(d==='off'&&(mode==='off'||!mode))||(d==='code'&&isCode);b.style.background=act?'var(--accent)':'var(--card)';b.style.color=act?'#fff':'var(--txt2)';b.style.borderColor=act?'var(--accent2)':'var(--border-light)';});
+  var inp=document.getElementById('dev-sw-code');if(inp){inp.style.display=isCode?'block':'none';if(isCode)inp.value=mode;}
+  var st=document.getElementById('dev-sw-status');if(st){st.textContent=mode==='all'?'✅ Aktiv für alle Turniere':isCode?'✅ Aktiv für Turnier '+mode:'Warnung ausgeschaltet';st.style.color=mode==='off'||!mode?'var(--txt3)':'var(--green)';}
+}
+function setScorecardWarn(which){
+  if(which==='all')saveScorecardWarn('all');
+  else if(which==='off')saveScorecardWarn('off');
+  else{var inp=document.getElementById('dev-sw-code');inp.style.display='block';inp.focus();document.querySelectorAll('.sw-mode-btn').forEach(function(b){var act=b.dataset.sw==='code';b.style.background=act?'var(--accent)':'var(--card)';b.style.color=act?'#fff':'var(--txt2)';b.style.borderColor=act?'var(--accent2)':'var(--border-light)';});var st=document.getElementById('dev-sw-status');if(st){st.textContent='Bitte Turnier-Code eingeben';st.style.color='var(--txt3)';}}
+}
+async function saveScorecardWarn(val){
+  var st=document.getElementById('dev-sw-status');if(st){st.textContent='⏳ Speichere…';st.style.color='var(--txt3)';}
+  try{await initFB();await DB.ref('config/scorecard_warning').set(val);SCORECARD_WARN=val;refreshScorecardWarnUI();toast('✅ Scorecard-Warnung: '+(val==='all'?'alle':val==='off'?'aus':'Turnier '+val));}catch(e){if(st){st.textContent='⚠️ Fehler: '+e.message;st.style.color='var(--red)';}}
+}
 async function renderAdmin(){
   var el=document.getElementById('admin-list');el.innerHTML='<div style="text-align:center;padding:40px;color:var(--txt3)">⏳ Lade Turniere…</div>';
   try{
@@ -913,7 +979,29 @@ function renderTeamView(){
 }
 
 // ════ SCORECARD ════
-function openCard(id){
+async function openCard(id){
+  var p=G.players.find(function(p){return p.id===id;});if(!p)return;
+  // Scorecard-Warnung prüfen
+  var warnMode=SCORECARD_WARN;
+  var warnActive=warnMode==='all'||(warnMode&&warnMode===CODE);
+  if(warnActive&&DB){
+    var devId=DEVICE_ID||getDeviceId();
+    try{
+      var snap=await DB.ref('device_player/'+devId).get();
+      var ownPid=snap.exists()?snap.val():null;
+      if(ownPid&&ownPid!==id){
+        var ownName=(G.players.find(function(x){return x.id===ownPid;})||{}).name||'ein anderer Spieler';
+        var ok=await askConfirm('⚠️ Das ist nicht deine Scorecard!\n\nDieses Gerät gehört zu: '+ownName+'\nDu öffnest gerade: '+p.name+'\n\nTrotzdem öffnen?','Trotzdem öffnen','#e65100');
+        if(!ok)return;
+      }else if(!ownPid){
+        // Erste Zuordnung: dieses Gerät gehört ab jetzt zu diesem Spieler
+        DB.ref('device_player/'+devId).set(id).catch(function(){});
+      }
+    }catch(e){}
+  }
+  doOpenCard(id);
+}
+function doOpenCard(id){
   var p=G.players.find(function(p){return p.id===id;});if(!p)return;
   CID=id;CS=p.scores?p.scores.slice():Array(18).fill(null);
   CEXT=Array(18).fill(null).map(function(_,i){var ex=(p.extras&&p.extras[i])||{};return{bv:Number(ex.bv)||0,la:!!ex.la,putts:Number(ex.putts)||0,absch:ex.absch||null,abschLaenge:ex.abschLaenge||null,annDist:ex.annDist||null,annTref:!!ex.annTref};});
