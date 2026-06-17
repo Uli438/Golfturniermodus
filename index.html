@@ -224,7 +224,15 @@ input,select,button{font-family:'DM Sans',sans-serif}
 .teeopt{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;border:2px solid var(--border-light);background:var(--card);margin-bottom:6px;cursor:pointer}
 .teeopt.sel{background:#e3f2fd;border-color:var(--accent)}
 .teedot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
-.pli{display:grid;grid-template-columns:1fr 68px auto auto;gap:8px;margin-bottom:8px;align-items:center}
+.pli{display:grid;grid-template-columns:1fr 60px auto auto auto;gap:6px;margin-bottom:8px;align-items:center}
+.gps-row{display:flex;align-items:center;gap:8px;padding:4px 14px 8px;background:var(--card);border-bottom:1px solid var(--border-light);flex-wrap:wrap}
+.gps-club{background:var(--card);border:2px solid var(--border-light);border-radius:8px;color:var(--txt);font-size:12px;font-weight:600;padding:7px 8px;outline:none}
+.gps-club:focus{border-color:var(--accent)}
+.gps-btn{display:flex;align-items:center;gap:5px;padding:7px 14px;border-radius:20px;border:2px solid var(--accent);background:var(--card);font-size:12px;font-weight:700;cursor:pointer;color:var(--accent)}
+.gps-btn.measuring{background:#fff3e0;border-color:#e65100;color:#e65100}
+.gps-shots{display:flex;gap:5px;flex-wrap:wrap;width:100%}
+.gps-shot{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:14px;background:#e8f0fe;border:1px solid var(--accent);font-size:11px;font-weight:600;color:var(--accent)}
+.gps-shot button{background:none;border:none;color:var(--red);font-size:14px;cursor:pointer;line-height:1;padding:0;font-weight:700}
 .pname{padding:10px 14px;background:var(--card);border:2px solid var(--border);border-radius:10px;font-size:15px;font-weight:500}
 .rmbtn{background:#ffebee;border:2px solid var(--red);border-radius:8px;color:var(--red);font-size:18px;padding:7px;cursor:pointer;line-height:1;font-weight:700}
 .tdot{width:28px;height:28px;border-radius:6px;border:2px solid var(--border);cursor:pointer;font-size:11px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -284,6 +292,9 @@ input,select,button{font-family:'DM Sans',sans-serif}
 .z-cmp-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;margin:0;background:#f8fbff;border-bottom:1px solid var(--border-light);font-size:12px;font-weight:600;color:var(--txt2)}
 .z-cmp-ok{color:var(--green);font-weight:700}
 .z-cmp-warn{color:var(--red);font-weight:700}
+.dev-sec{display:flex;align-items:center;gap:8px;margin:6px 2px -4px;font-size:10px;color:var(--accent);letter-spacing:2px;font-weight:700}
+.dev-sec::before{content:'';flex:0 0 18px;height:2px;background:var(--accent);border-radius:2px;opacity:.5}
+.dev-sec::after{content:'';flex:1;height:1px;background:var(--border-light)}
 </style>
 </head>
 <body>
@@ -319,7 +330,9 @@ input,select,button{font-family:'DM Sans',sans-serif}
     <div style="font-size:13px;color:var(--txt2);line-height:1.6">
       <p style="margin-bottom:12px">Diese App dient zum Live-Scoring von Golfrunden und -turnieren.</p>
       <div style="font-size:9px;color:var(--accent);letter-spacing:1px;font-weight:700;margin-bottom:6px">WELCHE DATEN GESPEICHERT WERDEN</div>
-      <p style="margin-bottom:12px">Zur Turnierverwaltung und Verbesserung der App werden gespeichert: dein eingegebener <b>Spielername</b>, dein <b>Gerätetyp</b> (z.B. iPhone), eine anonyme <b>Geräte-Kennung</b>, die <b>Uhrzeit</b> deines Beitritts sowie deine eingetragenen <b>Scores</b>.</p>
+      <p style="margin-bottom:12px">Zur Turnierverwaltung und Verbesserung der App werden gespeichert: dein eingegebener <b>Spielername</b>, dein <b>Gerätetyp</b> (z.B. iPhone), eine anonyme <b>Geräte-Kennung</b>, die <b>Uhrzeit</b> deines Beitritts sowie deine eingetragenen <b>Scores</b> und optionalen Spielstatistiken.</p>
+      <div style="font-size:9px;color:var(--accent);letter-spacing:1px;font-weight:700;margin-bottom:6px">GPS / STANDORT (NUR OPTIONAL)</div>
+      <p style="margin-bottom:12px">Nur wenn du die Schlagweiten-Messung (📍) aktivierst, ruft die App beim Antippen deinen <b>GPS-Standort</b> ab — ausschließlich zur Berechnung der Distanz zwischen zwei Punkten. Es findet <b>kein</b> dauerhaftes Standort-Tracking statt; die Position wird nur im Moment der Messung verwendet und nicht dauerhaft gespeichert.</p>
       <div style="font-size:9px;color:var(--accent);letter-spacing:1px;font-weight:700;margin-bottom:6px">WO & WIE LANGE</div>
       <p style="margin-bottom:12px">Die Daten werden bei Google Firebase gespeichert und ausschließlich für den Betrieb dieser App verwendet. Sie werden nicht an Dritte weitergegeben oder für Werbung genutzt.</p>
       <div style="font-size:9px;color:var(--accent);letter-spacing:1px;font-weight:700;margin-bottom:6px">DEINE RECHTE</div>
@@ -400,6 +413,7 @@ input,select,button{font-family:'DM Sans',sans-serif}
   <div class="hdr"><button class="back-btn" id="result-back">←</button><div class="hdr-title serif">Ergebnis & Teilen</div></div>
   <div class="result-body">
     <div class="result-card"><div class="serif" style="font-size:20px;font-weight:700;margin-bottom:2px" id="res-course"></div><div style="font-size:11px;color:var(--txt2);margin-bottom:14px" id="res-meta"></div><div class="res-scroll"><table class="res-table"><thead><tr id="res-head-row"></tr></thead><tbody id="res-rows"></tbody></table></div></div>
+    <div id="longest-drive-card"></div>
     <div class="share-btns"><button class="share-btn p" id="btn-share-result">📤 Teilen</button><button class="share-btn s" id="btn-copy-result">📋 Kopieren</button></div>
   </div>
 </div>
@@ -502,6 +516,11 @@ input,select,button{font-family:'DM Sans',sans-serif}
       <div class="shint">Für Einzelrunde leer lassen.</div>
       <select class="inp" id="trn-rounds"><option value="0">Keine Turnierwertung</option><option value="2">2 Runden</option><option value="3">3 Runden</option><option value="4">4 Runden</option><option value="5">5 Runden</option><option value="6">6 Runden</option><option value="7">7 Runden</option></select>
     </section>
+    <section>
+      <div class="slabel">📏 LONGEST DRIVE (OPTIONAL)</div>
+      <div class="shint">Bahn festlegen, an der der längste Drive gewertet wird. Spieler messen ihren Drive per GPS (📍 muss aktiv sein). Sieger erscheint in der Ergebnis-Tabelle.</div>
+      <select class="inp" id="longest-drive-hole"><option value="0">Kein Longest Drive</option></select>
+    </section>
     <button class="rstbtn" id="btn-reset">Alle Scores zurücksetzen</button>
     <button class="primbtn serif" id="btn-save-setup">Speichern & Starten ✓</button>
   </div>
@@ -510,34 +529,55 @@ input,select,button{font-family:'DM Sans',sans-serif}
 <!-- DEV VIEW -->
 <div id="view-dev" class="view">
   <div class="hdr"><button class="back-btn" id="dev-back">←</button><div class="hdr-title serif">🛠 Entwickler</div></div>
-  <div style="padding:20px 16px;display:flex;flex-direction:column;gap:16px">
+  <div style="padding:18px 16px;display:flex;flex-direction:column;gap:14px">
     <div style="background:#1a1a2e;border-radius:14px;padding:16px"><div style="font-size:9px;color:#ffd700;letter-spacing:2px;font-weight:700;margin-bottom:4px">ENTWICKLER-BEREICH</div><div style="font-size:11px;color:rgba(255,255,255,.6);line-height:1.5">Golf Turniermodus · Entwickler-Einstellungen</div></div>
+
+    <div class="dev-sec">SICHERHEIT &amp; ZUGANG</div>
     <div class="lcard">
       <div class="lcard-title">🔐 ADMIN-PIN</div>
       <div style="font-size:11px;color:var(--txt2);margin-bottom:12px;line-height:1.5">Wird beim Turnier-Abschluss und Code 999 abgefragt.</div>
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><input class="inp" id="dev-pin-display" type="password" readonly style="font-size:28px;font-weight:900;letter-spacing:6px;text-align:center;background:var(--bg2);cursor:default"><button id="dev-pin-show" style="background:var(--card);border:2px solid var(--border);border-radius:10px;padding:10px 14px;font-size:18px;cursor:pointer;flex-shrink:0">👁</button></div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><input class="inp" id="dev-pin-display" type="password" readonly style="font-size:24px;font-weight:900;letter-spacing:5px;text-align:center;background:var(--bg2);cursor:default"><button id="dev-pin-show" style="background:var(--card);border:2px solid var(--border);border-radius:10px;padding:10px 14px;font-size:18px;cursor:pointer;flex-shrink:0">👁</button></div>
       <div style="font-size:9px;color:var(--txt3);margin-bottom:12px">Aktueller Admin-PIN</div>
       <div style="font-size:9px;color:var(--accent);letter-spacing:2px;font-weight:700;margin-bottom:8px">PIN ÄNDERN</div>
-      <div style="display:flex;gap:8px"><input class="inp" id="dev-pin-new" placeholder="Neuer PIN" autocomplete="off" autocorrect="off" autocapitalize="off" style="font-size:20px;font-weight:900;letter-spacing:4px;text-align:center"><button id="dev-pin-save" style="background:linear-gradient(135deg,var(--green),#43a047);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;padding:0 16px;cursor:pointer;flex-shrink:0">Speichern</button></div>
+      <div style="display:flex;gap:8px"><input class="inp" id="dev-pin-new" placeholder="Neuer PIN" autocomplete="off" autocorrect="off" autocapitalize="off" style="font-size:18px;font-weight:900;letter-spacing:3px;text-align:center"><button id="dev-pin-save" style="background:linear-gradient(135deg,var(--green),#43a047);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;padding:0 16px;cursor:pointer;flex-shrink:0">Speichern</button></div>
     </div>
     <div class="lcard">
       <div class="lcard-title">💾 PLATZ-SPEICHER-PIN</div>
       <div style="font-size:11px;color:var(--txt2);margin-bottom:12px;line-height:1.5">Wird beim Speichern/Löschen eines Platzes abgefragt.</div>
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><input class="inp" id="dev-coursepin-display" type="password" readonly style="font-size:28px;font-weight:900;letter-spacing:6px;text-align:center;background:var(--bg2);cursor:default"><button id="dev-coursepin-show" style="background:var(--card);border:2px solid var(--border);border-radius:10px;padding:10px 14px;font-size:18px;cursor:pointer;flex-shrink:0">👁</button></div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><input class="inp" id="dev-coursepin-display" type="password" readonly style="font-size:24px;font-weight:900;letter-spacing:5px;text-align:center;background:var(--bg2);cursor:default"><button id="dev-coursepin-show" style="background:var(--card);border:2px solid var(--border);border-radius:10px;padding:10px 14px;font-size:18px;cursor:pointer;flex-shrink:0">👁</button></div>
       <div style="font-size:9px;color:var(--txt3);margin-bottom:12px">Aktueller Platz-PIN</div>
       <div style="font-size:9px;color:var(--accent);letter-spacing:2px;font-weight:700;margin-bottom:8px">PIN ÄNDERN</div>
-      <div style="display:flex;gap:8px"><input class="inp" id="dev-coursepin-new" placeholder="Neuer PIN" autocomplete="off" autocorrect="off" autocapitalize="off" style="font-size:20px;font-weight:900;letter-spacing:4px;text-align:center"><button id="dev-coursepin-save" style="background:linear-gradient(135deg,var(--green),#43a047);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;padding:0 16px;cursor:pointer;flex-shrink:0">Speichern</button></div>
+      <div style="display:flex;gap:8px"><input class="inp" id="dev-coursepin-new" placeholder="Neuer PIN" autocomplete="off" autocorrect="off" autocapitalize="off" style="font-size:18px;font-weight:900;letter-spacing:3px;text-align:center"><button id="dev-coursepin-save" style="background:linear-gradient(135deg,var(--green),#43a047);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;padding:0 16px;cursor:pointer;flex-shrink:0">Speichern</button></div>
     </div>
     <div class="lcard">
       <div class="lcard-title">🛠 ENTWICKLER-CODE</div>
       <div style="font-size:11px;color:var(--txt2);margin-bottom:12px;line-height:1.5">Code zum Öffnen dieser Entwicklerseite. Gilt für alle Geräte (Firebase).</div>
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><input class="inp" id="dev-code-display" type="password" readonly style="font-size:24px;font-weight:900;letter-spacing:4px;text-align:center;background:var(--bg2);cursor:default"><button id="dev-code-show" style="background:var(--card);border:2px solid var(--border);border-radius:10px;padding:10px 14px;font-size:18px;cursor:pointer;flex-shrink:0">👁</button></div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><input class="inp" id="dev-code-display" type="password" readonly style="font-size:24px;font-weight:900;letter-spacing:5px;text-align:center;background:var(--bg2);cursor:default"><button id="dev-code-show" style="background:var(--card);border:2px solid var(--border);border-radius:10px;padding:10px 14px;font-size:18px;cursor:pointer;flex-shrink:0">👁</button></div>
       <div style="font-size:9px;color:var(--txt3);margin-bottom:12px">Aktueller Entwickler-Code</div>
       <div style="font-size:9px;color:var(--accent);letter-spacing:2px;font-weight:700;margin-bottom:8px">CODE ÄNDERN</div>
       <div style="display:flex;gap:8px"><input class="inp" id="dev-code-new" placeholder="Neuer Code" autocomplete="off" autocorrect="off" autocapitalize="off" style="font-size:18px;font-weight:900;text-align:center"><button id="dev-code-save" style="background:linear-gradient(135deg,var(--green),#43a047);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;padding:0 16px;cursor:pointer;flex-shrink:0">Speichern</button></div>
       <div id="dev-code-status" style="font-size:11px;color:var(--txt3);text-align:center;min-height:16px;margin-top:8px"></div>
     </div>
 
+    <div class="dev-sec">TURNIER-VERWALTUNG</div>
+    <div class="lcard">
+      <div class="lcard-title">🔒 TURNIER SPERREN / ENTSPERREN</div>
+      <div style="font-size:11px;color:var(--txt2);margin-bottom:12px;line-height:1.5">Gesperrte Turniere können über Admin (999) nicht geöffnet oder verändert werden.</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <input class="inp" id="dev-lock-code" placeholder="Turnier-Code (z.B. 123)" maxlength="3" autocomplete="off" style="text-align:center;font-size:22px;font-weight:900;letter-spacing:5px">
+        <div style="display:flex;gap:8px"><button id="dev-lock-btn" style="flex:1;padding:12px;background:linear-gradient(135deg,#b71c1c,#e53935);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">🔒 Sperren</button><button id="dev-unlock-btn" style="flex:1;padding:12px;background:linear-gradient(135deg,var(--green),#43a047);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">🔓 Entsperren</button></div>
+        <div id="dev-lock-status" style="font-size:11px;color:var(--txt3);text-align:center;min-height:16px"></div>
+      </div>
+    </div>
+    <div class="lcard">
+      <div class="lcard-title">🔓 RUNDE EINFRIEREN RÜCKGÄNGIG</div>
+      <div style="font-size:11px;color:var(--txt2);margin-bottom:12px;line-height:1.5">Macht das Abschließen einer Runde rückgängig — Scores und Vorgaben bleiben erhalten.</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="row2"><input class="inp" id="dev-unfreeze-code" placeholder="Code (z.B. 123)" maxlength="3" autocomplete="off" style="text-align:center;font-size:20px;font-weight:900;letter-spacing:4px"><input class="inp" id="dev-unfreeze-round" type="number" placeholder="Runde" min="1" max="7" style="text-align:center;font-size:20px;font-weight:900;letter-spacing:4px"></div>
+        <button id="dev-unfreeze-btn" style="width:100%;padding:12px;background:linear-gradient(135deg,#e65100,#f57c00);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">🔓 Runde freigeben</button>
+        <div id="dev-unfreeze-status" style="font-size:11px;color:var(--txt3);text-align:center;min-height:16px"></div>
+      </div>
+    </div>
     <div class="lcard">
       <div class="lcard-title">⚠️ SCORECARD-WARNUNG</div>
       <div style="font-size:11px;color:var(--txt2);margin-bottom:12px;line-height:1.5">Warnt Spieler wenn sie eine fremde Scorecard öffnen (nur Hinweis, keine Sperre). Setzt voraus, dass der Spieler vorher seine eigene Scorecard geöffnet hat. Gilt für alle Geräte.</div>
@@ -554,30 +594,15 @@ input,select,button{font-family:'DM Sans',sans-serif}
       </div>
     </div>
 
+    <div class="dev-sec">NUTZUNG &amp; TRACKING</div>
     <div class="lcard">
-      <div class="lcard-title">🔒 TURNIER SPERREN / ENTSPERREN</div>
-      <div style="font-size:11px;color:var(--txt2);margin-bottom:12px;line-height:1.5">Gesperrte Turniere können über Admin (999) nicht geöffnet oder verändert werden.</div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <input class="inp" id="dev-lock-code" placeholder="Turnier-Code (z.B. 123)" maxlength="3" autocomplete="off" style="text-align:center;font-size:24px;font-weight:900;letter-spacing:6px">
-        <div style="display:flex;gap:8px"><button id="dev-lock-btn" style="flex:1;padding:12px;background:linear-gradient(135deg,#b71c1c,#e53935);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">🔒 Sperren</button><button id="dev-unlock-btn" style="flex:1;padding:12px;background:linear-gradient(135deg,var(--green),#43a047);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">🔓 Entsperren</button></div>
-        <div id="dev-lock-status" style="font-size:11px;color:var(--txt3);text-align:center;min-height:16px"></div>
-      </div>
-    </div>
-    <div class="lcard">
-      <div class="lcard-title">🔓 RUNDE EINFRIEREN RÜCKGÄNGIG</div>
-      <div style="font-size:11px;color:var(--txt2);margin-bottom:12px;line-height:1.5">Macht das Abschließen einer Runde rückgängig — Scores und Vorgaben bleiben erhalten.</div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <div class="row2"><input class="inp" id="dev-unfreeze-code" placeholder="Code (z.B. 123)" maxlength="3" autocomplete="off" style="text-align:center;font-size:20px;font-weight:900;letter-spacing:4px"><input class="inp" id="dev-unfreeze-round" type="number" placeholder="Runde" min="1" max="7" style="text-align:center;font-size:20px;font-weight:900;letter-spacing:4px"></div>
-        <button id="dev-unfreeze-btn" style="width:100%;padding:12px;background:linear-gradient(135deg,#e65100,#f57c00);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">🔓 Runde freigeben</button>
-        <div id="dev-unfreeze-status" style="font-size:11px;color:var(--txt3);text-align:center;min-height:16px"></div>
-      </div>
-    </div>
-    <div class="lcard">
-      <div class="lcard-title" style="display:flex;align-items:center;justify-content:space-between"><span>📊 AKTIVITÄT & ONLINE-STATUS</span><button id="dev-activity-refresh" style="background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:11px;font-weight:700;padding:5px 10px;cursor:pointer">↻ Laden</button></div>
+      <div class="lcard-title" style="display:flex;align-items:center;justify-content:space-between"><span>📊 AKTIVITÄT &amp; ONLINE-STATUS</span><button id="dev-activity-refresh" style="background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:11px;font-weight:700;padding:5px 10px;cursor:pointer">↻ Laden</button></div>
       <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:10px" id="dev-activity-counter">– Gesamtbesuche</div>
       <div style="display:flex;gap:8px;margin-bottom:12px"><button id="dev-counter-reset" style="flex:1;padding:9px;background:#fff3e0;border:2px solid #e65100;border-radius:8px;color:#e65100;font-size:12px;font-weight:700;cursor:pointer">🔄 Counter auf 0</button><button id="dev-tracking-clear" style="flex:1;padding:9px;background:#ffebee;border:2px solid var(--red);border-radius:8px;color:var(--red);font-size:12px;font-weight:700;cursor:pointer">🗑 Tracking löschen</button></div>
       <div id="dev-activity-list" style="max-height:400px;overflow-y:auto"><div style="text-align:center;padding:20px;color:var(--txt3);font-size:12px">↻ Tippe "Laden" um Aktivität zu sehen</div></div>
     </div>
+
+    <div class="dev-sec">SYSTEM</div>
     <div class="lcard">
       <div class="lcard-title">ℹ️ APP-INFO</div>
       <div style="font-size:12px;color:var(--txt2);line-height:2"><div>Firebase: <b>ulis-golfscore</b></div><div>Supabase: <b>pukixlbdbdbbsmqobfhj</b></div><div>LS-Prefix: <b>gtm_</b></div><div>Admin-Code: <b>999</b></div><div>Dev-Code: <b>Uli</b></div></div>
@@ -607,6 +632,8 @@ var DEVICE_ID=null;
 var SCORECARD_WARN='off';
 var SCORECARD_WARN_EXCEPT='';
 var CMARK=Array(18).fill(null),MARK_ID=null,Z_SLOT='self';
+var GPS_MEASURE=null;
+var CLUBS=['Driver','Holz 3','Holz 5','Hybrid','Eisen 4','Eisen 5','Eisen 6','Eisen 7','Eisen 8','Eisen 9','Pitching Wedge','Gap Wedge','Sand Wedge','Lob Wedge'];
 var FB_CFG={apiKey:'AIzaSyDWzTqMaEa2U9MF_k84MBvbHj1wK30LuuA',authDomain:'ulis-golfscore.firebaseapp.com',databaseURL:'https://ulis-golfscore-default-rtdb.europe-west1.firebasedatabase.app',projectId:'ulis-golfscore',storageBucket:'ulis-golfscore.firebasestorage.app',messagingSenderId:'752079349846',appId:'1:752079349846:web:5fe4656acf7722f743b3f7'};
 var SBU='https://pukixlbdbdbbsmqobfhj.supabase.co';
 var SBK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1a2l4bGJkYmRiYnNtcW9iZmhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNDEyNzksImV4cCI6MjA5MjgxNzI3OX0.DPTM9aJmVIQaa_Csu0wEvzcgGc7pstM5M0K3GGTgXgk';
@@ -886,11 +913,11 @@ async function renderActivityLog(){
     var cSnap=await DB.ref('activity_counter').get();document.getElementById('dev-activity-counter').textContent=(cSnap.val()||0)+' Gesamtbesuche';
     var pSnap=await DB.ref('presence').get();var onlineList=[];
     if(pSnap.exists()){var pd=pSnap.val();Object.keys(pd).forEach(function(code){Object.keys(pd[code]).forEach(function(pid){var p=pd[code][pid];if(p.online)onlineList.push(Object.assign({},p,{code:code,pid:pid}));});});}
-    var aSnap=await DB.ref('activity').limitToLast(50).get();var acts=[];if(aSnap.exists()){Object.keys(aSnap.val()).forEach(function(key){acts.push(Object.assign({},aSnap.val()[key],{_key:key}));});}
+    var aSnap=await DB.ref('activity').limitToLast(200).get();var acts=[];if(aSnap.exists()){Object.keys(aSnap.val()).forEach(function(key){acts.push(Object.assign({},aSnap.val()[key],{_key:key}));});}
     acts.sort(function(a,b){return b.time.localeCompare(a.time);});
     var html='';
     if(onlineList.length){html+='<div style="font-size:9px;color:var(--green);letter-spacing:2px;font-weight:700;margin-bottom:8px">🟢 GERADE ONLINE ('+onlineList.length+')</div>';html+=onlineList.map(function(p){return'<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:#e8f5e9;border-radius:8px;margin-bottom:5px"><div style="width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0"></div><div style="flex:1"><div style="font-size:13px;font-weight:700">'+esc(p.name)+'</div><div style="font-size:10px;color:var(--txt3)">'+esc(p.courseName)+' ['+esc(p.code)+'] · '+esc(p.device)+(p.deviceId?' · '+esc(String(p.deviceId).slice(-6)):'')+'</div></div><div style="font-size:10px;color:var(--txt3)">'+fmtTime(p.joined)+'</div><button class="dev-pres-del" data-code="'+esc(p.code)+'" data-pid="'+esc(p.pid)+'" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:2px 4px;line-height:1;flex-shrink:0">×</button></div>';}).join('');html+='<div style="height:12px"></div>';}
-    html+='<div style="font-size:9px;color:var(--txt3);letter-spacing:2px;font-weight:700;margin-bottom:8px">📋 LETZTE 50 BESUCHE</div>';
+    html+='<div style="font-size:9px;color:var(--txt3);letter-spacing:2px;font-weight:700;margin-bottom:8px">📋 LETZTE 200 BESUCHE</div>';
     html+=acts.map(function(a){return'<div style="display:flex;align-items:center;gap:10px;padding:7px 10px;background:var(--card);border:1px solid var(--border-light);border-radius:8px;margin-bottom:4px"><div style="flex:1"><div style="font-size:13px;font-weight:700">'+esc(a.name)+'</div><div style="font-size:10px;color:var(--txt3)">'+esc(a.courseName)+' ['+esc(a.code)+'] · '+esc(a.device)+(a.deviceId?' · '+esc(String(a.deviceId).slice(-6)):'')+'</div></div><div style="font-size:10px;color:var(--txt3);text-align:right;flex-shrink:0">'+fmtTime(a.time)+'</div><button class="dev-act-del" data-key="'+esc(a._key)+'" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:2px 4px;line-height:1;flex-shrink:0">×</button></div>';}).join('');
     if(!acts.length)html+='<div style="text-align:center;padding:20px;color:var(--txt3)">Noch keine Aktivität</div>';
     el.innerHTML=html;
@@ -1059,7 +1086,7 @@ async function openCard(id){
 function doOpenCard(id){
   var p=G.players.find(function(p){return p.id===id;});if(!p)return;
   CID=id;CS=p.scores?p.scores.slice():Array(18).fill(null);
-  CEXT=Array(18).fill(null).map(function(_,i){var ex=(p.extras&&p.extras[i])||{};return{bv:Number(ex.bv)||0,la:!!ex.la,putts:Number(ex.putts)||0,absch:ex.absch||null,abschLaenge:ex.abschLaenge||null,annDist:ex.annDist||null,annTref:!!ex.annTref,fir:!!ex.fir,sand:!!ex.sand};});
+  CEXT=Array(18).fill(null).map(function(_,i){var ex=(p.extras&&p.extras[i])||{};return{bv:Number(ex.bv)||0,la:!!ex.la,putts:Number(ex.putts)||0,absch:ex.absch||null,abschLaenge:ex.abschLaenge||null,annDist:ex.annDist||null,annTref:!!ex.annTref,fir:!!ex.fir,sand:!!ex.sand,shots:Array.isArray(ex.shots)?ex.shots.slice():[]};});
   // Zähler-Modus: Marker-Daten laden
   var opts=G.round.options||{};
   if(opts.zaehler&&p.marks){MARK_ID=p.marks;CMARK=(p.markedScores&&Array.isArray(p.markedScores))?p.markedScores.slice():Array(18).fill(null);while(CMARK.length<18)CMARK.push(null);}else{MARK_ID=null;CMARK=Array(18).fill(null);}
@@ -1120,7 +1147,8 @@ function renderHoles(){
   var opts=G.round.options||{};
   holes.forEach(function(i){
     var curPlayerAnalyse=!!(G.players.find(function(p){return p.id===CID;})||{}).analyse;
-    if(!opts.ballverlust&&!opts.ladies&&!opts.putts&&!curPlayerAnalyse)return;
+    var curPlayerGps=!!(G.players.find(function(p){return p.id===CID;})||{}).gps;
+    if(!opts.ballverlust&&!opts.ladies&&!opts.putts&&!curPlayerAnalyse&&!curPlayerGps)return;
     var ex=CEXT[i],row=document.getElementById('hr-'+i);if(!row)return;
     var old=document.getElementById('ex-'+i);if(old)old.remove();
     var exDiv=document.createElement('div');exDiv.id='ex-'+i;var html='';
@@ -1142,6 +1170,12 @@ function renderHoles(){
       var firRow=pvH>=4?'<div class="analyse-row-title" style="margin-top:4px">🎯 FAIRWAY</div><div class="analyse-chips"><div class="achip'+(ex.fir?' on':'')+'" data-fir="1" data-idx="'+i+'">✓ Fairway getroffen</div></div>':'';
       html+='<div class="analyse-row"><div class="analyse-row-title">🏌️ ABSCHLAG RICHTUNG</div><div class="analyse-chips">'+['L','M','R'].map(function(o){return'<div class="achip'+(ab===o?' on':'')+'" data-ab="'+o+'" data-idx="'+i+'">'+o+'</div>';}).join('')+'</div><div class="analyse-row-title" style="margin-top:4px">📏 ABSCHLAG LÄNGE</div><div class="analyse-chips">'+['Lang','Kurz'].map(function(o){return'<div class="achip'+(al===o?' on':'')+'" data-al="'+o+'" data-idx="'+i+'">'+o+'</div>';}).join('')+'</div>'+firRow+'<div class="analyse-row-title" style="margin-top:4px">📍 ANNÄHERUNG</div><div class="ann-row"><input class="ann-inp" type="number" placeholder="Meter" value="'+ad+'" data-ann-idx="'+i+'" min="0" max="999"><div class="achip'+(at?' on':'')+'" data-at="1" data-idx="'+i+'">✓ Grün getroffen</div></div><div class="analyse-row-title" style="margin-top:4px">🏖️ BUNKER</div><div class="analyse-chips"><div class="achip'+(ex.sand?' on':'')+'" data-sand="1" data-idx="'+i+'">Im Bunker</div></div></div>';
     }
+    if(curPlayerGps){
+      var measuring=GPS_MEASURE&&GPS_MEASURE.idx===i;
+      var shots=ex.shots||[];
+      var clubOpts=CLUBS.map(function(c){return'<option value="'+esc(c)+'">'+esc(c)+'</option>';}).join('');
+      html+='<div class="gps-row"><select class="gps-club" id="gps-club-'+i+'">'+clubOpts+'</select><button class="gps-btn'+(measuring?' measuring':'')+'" id="gps-btn-'+i+'" data-gps-idx="'+i+'">'+(measuring?'📍 Ende messen':'📏 Schlag messen')+'</button>'+(shots.length?'<div class="gps-shots">'+shots.map(function(s,si){return'<span class="gps-shot">'+esc(s.club)+' '+s.dist+'m <button data-delshot-idx="'+i+'" data-delshot-si="'+si+'">×</button></span>';}).join('')+'</div>':'')+'</div>';
+    }
     exDiv.innerHTML=html;row.after(exDiv);
   });
   document.querySelectorAll('[data-ex]').forEach(function(btn){btn.addEventListener('click',function(){CEXT[parseInt(this.dataset.idx)][this.dataset.ex]=!CEXT[parseInt(this.dataset.idx)][this.dataset.ex];renderHoles();trigAS();});});
@@ -1154,6 +1188,9 @@ function renderHoles(){
   document.querySelectorAll('[data-sand]').forEach(function(chip){chip.addEventListener('click',function(){var idx=parseInt(this.dataset.idx);CEXT[idx].sand=!CEXT[idx].sand;renderHoles();trigAS();});});
   document.querySelectorAll('[data-ann-idx]').forEach(function(inp){inp.addEventListener('change',function(){CEXT[parseInt(this.dataset.annIdx)].annDist=this.value?Number(this.value):null;trigAS();});});
   document.querySelectorAll('[data-pu]').forEach(function(btn){btn.addEventListener('click',function(){var idx=parseInt(this.dataset.idx),d=parseInt(this.dataset.pu);CEXT[idx].putts=Math.max(0,Math.min(9,(CEXT[idx].putts||0)+d));var pvEl=document.getElementById('pv-'+idx);if(pvEl)pvEl.textContent=CEXT[idx].putts;trigAS();});});
+  document.querySelectorAll('[data-gps-idx]').forEach(function(btn){btn.addEventListener('click',function(){gpsMeasure(parseInt(this.dataset.gpsIdx));});});
+  document.querySelectorAll('[data-delshot-idx]').forEach(function(btn){btn.addEventListener('click',function(){delShot(parseInt(this.dataset.delshotIdx),parseInt(this.dataset.delshotSi));});});
+  if(GPS_MEASURE){var cs=document.getElementById('gps-club-'+GPS_MEASURE.idx);if(cs)cs.value=GPS_MEASURE.club;}
   refreshHalf(holes);
 }
 function markedPlayer(){return MARK_ID?G.players.find(function(p){return p.id===MARK_ID;}):null;}
@@ -1285,12 +1322,31 @@ function renderResult(){
     return'<tr class="res-player-row" data-pid="'+esc(p.id)+'" style="cursor:pointer">'+row+'</tr><tr><td colspan="'+colSpan+'" style="padding:0"><div class="sc-detail" id="scd-'+esc(p.id)+'">'+scDetail+'</div></td></tr>';
   }).join('');
   document.querySelectorAll('.res-player-row').forEach(function(row){row.addEventListener('click',function(){var pid=this.dataset.pid;var detail=document.getElementById('scd-'+pid);if(!detail)return;var isOpen=detail.classList.contains('open');document.querySelectorAll('.sc-detail.open').forEach(function(d){d.classList.remove('open');});if(!isOpen)detail.classList.add('open');});});
+  renderLongestDrive();
+}
+function longestDriveStandings(){
+  var hole=G.round.longestDrive||0;if(!hole)return null;var idx=hole-1;
+  var rows=G.players.map(function(p){
+    var shots=(p.extras&&p.extras[idx]&&p.extras[idx].shots)||[];
+    var best=null;shots.forEach(function(s){if(s&&s.dist!=null&&(best===null||s.dist>best.dist))best={dist:s.dist,club:s.club};});
+    return{name:p.name,dist:best?best.dist:null,club:best?best.club:null};
+  }).filter(function(r){return r.dist!=null;});
+  rows.sort(function(a,b){return b.dist-a.dist;});
+  return{hole:hole,rows:rows};
+}
+function renderLongestDrive(){
+  var box=document.getElementById('longest-drive-card');if(!box)return;
+  var ld=longestDriveStandings();
+  if(!ld){box.innerHTML='';return;}
+  if(!ld.rows.length){box.innerHTML='<div class="result-card"><div class="serif" style="font-size:17px;font-weight:700;margin-bottom:4px">📏 Longest Drive · Bahn '+ld.hole+'</div><div style="font-size:12px;color:var(--txt3)">Noch keine Drives gemessen. Spieler müssen GPS (📍) aktiv haben und ihren Drive an Bahn '+ld.hole+' messen.</div></div>';return;}
+  box.innerHTML='<div class="result-card"><div class="serif" style="font-size:17px;font-weight:700;margin-bottom:10px">📏 Longest Drive · Bahn '+ld.hole+'</div>'+ld.rows.map(function(r,i){var medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.';return'<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border-light)"><div style="min-width:28px;text-align:center;font-size:14px">'+medal+'</div><div style="flex:1;font-size:14px;font-weight:700'+(i===0?';color:var(--accent)':'')+'">'+esc(r.name)+'</div>'+(r.club?'<div style="font-size:10px;color:var(--txt3)">'+esc(r.club)+'</div>':'')+'<div style="font-size:18px;font-weight:900;font-family:\'Cormorant Garamond\',serif;color:'+(i===0?'var(--accent)':'var(--txt)')+'">'+r.dist+'m</div></div>';}).join('')+'</div>';
 }
 function buildShareText(){
   var r=G.round,par=r.par||DPAR,sopts=r.options||{};
   var sorted=G.players.map(enrich).sort(function(a,b){if(a.bvp==null&&b.bvp==null)return 0;if(a.bvp==null)return 1;if(b.bvp==null)return -1;return a.bvp-b.bvp;});
   var t='⛳ '+(r.courseName||'Golf')+(CODE?' ['+CODE+']':'')+'\n📅 '+(r.date||'')+' · Par '+par.reduce(function(a,b){return a+b;},0)+' · '+modeName(r)+'\n\n';
   sorted.forEach(function(p,i){var m=i===0&&p.pl>0?'🥇':i===1&&p.pl>0?'🥈':i===2&&p.pl>0?'🥉':(i+1)+'.';var extra='';if(sopts.putts&&p.totalPutts>0)extra+='  🏌️'+p.totalPutts+'P';if(sopts.ballverlust&&p.totalBV>0)extra+='  🔴'+p.totalBV+'BV';if(sopts.ladies&&p.totalLA>0)extra+='  🚺'+p.totalLA+'🍺';t+=m+' '+p.name+'  B:'+(p.bvp!=null?fmt(p.bvp):'–')+'  N:'+(p.nvp!=null?fmt(p.nvp):'–')+'  S:'+(p.stp!=null?p.stp:'–')+'  ('+p.pl+'/18)'+extra+'\n';});
+  var ld=longestDriveStandings();if(ld&&ld.rows.length){t+='\n📏 LONGEST DRIVE · Bahn '+ld.hole+':\n';ld.rows.forEach(function(r,i){var m=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.';t+=m+' '+r.name+'  '+r.dist+'m'+(r.club?' ('+r.club+')':'')+'\n';});}
   return t+'\n📊 Golf Turniermodus · uli438.github.io/Golfturniermodus';
 }
 async function shareResult(){var t=buildShareText();if(navigator.share){try{await navigator.share({title:'Golf Ergebnis',text:t});}catch(e){}}else copyText(t);}
@@ -1309,6 +1365,7 @@ function initSetup(){
   var msv=document.getElementById('max-score-val');if(msv)msv.value=G.round.maxScore||'';document.getElementById('max-score-wrap').style.display=G.round.mode==='zaehlen_fix'?'block':'none';
   document.getElementById('api-results').style.display='none';document.getElementById('tee-wrap').style.display='none';document.getElementById('api-sel').style.display='none';document.getElementById('api-search').value='';document.getElementById('api-save-btn').style.display='none';
   var tSel=document.getElementById('trn-rounds');if(tSel)tSel.value=G.tournament?G.tournament.totalRounds:0;
+  var ldSel=document.getElementById('longest-drive-hole');if(ldSel){var par=SPAR||DPAR;ldSel.innerHTML='<option value="0">Kein Longest Drive</option>'+Array.from({length:18},function(_,i){return i;}).map(function(i){return'<option value="'+(i+1)+'">Bahn '+(i+1)+' (Par '+(par[i]||4)+')</option>';}).join('');ldSel.value=G.round.longestDrive||0;}
   var opts=G.round.options||{};var cb=function(id,val){var el=document.getElementById(id);if(el)el.checked=!!val;};
   cb('opt-ballverlust',opts.ballverlust);cb('opt-ladies',opts.ladies);cb('opt-putts',opts.putts);cb('opt-notif',opts.notif);cb('opt-zaehler',opts.zaehler);
   var ns=opts.notifSettings||{};var nDef=function(id,def){var el=document.getElementById(id);if(el)el.checked=(id.replace('notif-','') in ns)?ns[id.replace('notif-','')]:def;};
@@ -1372,15 +1429,17 @@ function renderPList(){
   document.getElementById('p-list').innerHTML=SP.map(function(p,idx){
     var extra=showT?'<div style="display:flex;gap:4px"><div class="tdot" style="background:'+(p.team===0?TC[0]:'#ccc')+'" data-id="'+esc(p.id)+'" data-t="0">1</div><div class="tdot" style="background:'+(p.team===1?TC[1]:'#ccc')+'" data-id="'+esc(p.id)+'" data-t="1">2</div></div>':showO?'<div style="width:28px;height:28px;border-radius:6px;background:var(--bg2);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--accent)">'+(idx+1)+'</div>':'';
     var anBtn='<button class="tdot" style="background:'+(p.analyse?'var(--accent)':'#ccc')+';color:#fff;font-size:11px;flex-shrink:0" title="Spielanalyse" data-anid="'+esc(p.id)+'">📊</button>';
-    return'<div class="pli"><div class="pname serif">'+esc(p.name)+'</div><input class="inp" type="number" step="0.1" min="-10" max="54" value="'+(p.handicap!=null?p.handicap:'')+'" placeholder="HCP" style="text-align:center;padding-left:4px;padding-right:4px" data-hid="'+esc(p.id)+'">'+anBtn+extra+'<button class="rmbtn" data-rmid="'+esc(p.id)+'">×</button></div>';
+    var gpsBtn='<button class="tdot" style="background:'+(p.gps?'var(--green)':'#ccc')+';color:#fff;font-size:11px;flex-shrink:0" title="GPS Schlagweite" data-gpsid="'+esc(p.id)+'">📍</button>';
+    return'<div class="pli"><div class="pname serif">'+esc(p.name)+'</div><input class="inp" type="number" step="0.1" min="-10" max="54" value="'+(p.handicap!=null?p.handicap:'')+'" placeholder="HCP" style="text-align:center;padding-left:4px;padding-right:4px" data-hid="'+esc(p.id)+'">'+anBtn+gpsBtn+extra+'<button class="rmbtn" data-rmid="'+esc(p.id)+'">×</button></div>';
   }).join('');
   document.querySelectorAll('[data-hid]').forEach(function(el){el.addEventListener('input',function(){var p=SP.find(function(p){return p.id===this.dataset.hid;}.bind(this));if(p)p.handicap=this.value===''?0:Number(this.value);}.bind(el));});
   document.querySelectorAll('[data-anid]').forEach(function(el){el.addEventListener('click',function(){var p=SP.find(function(p){return p.id===this.dataset.anid;}.bind(this));if(p){p.analyse=!p.analyse;renderPList();}}.bind(el));});
+  document.querySelectorAll('[data-gpsid]').forEach(function(el){el.addEventListener('click',function(){var p=SP.find(function(p){return p.id===this.dataset.gpsid;}.bind(this));if(p){p.gps=!p.gps;renderPList();}}.bind(el));});
   document.querySelectorAll('[data-rmid]').forEach(function(el){el.addEventListener('click',async function(){var id=this.dataset.rmid,pl=SP.find(function(p){return p.id===id;});var ok=await askConfirm((pl&&pl.name||'Spieler')+' wirklich löschen?','Löschen','var(--red)');if(!ok)return;SP=SP.filter(function(p){return p.id!==id;});renderPList();if(CODE)try{await fbSet(fp('players/'+id),null);}catch(e){}});});
   if(showT){document.querySelectorAll('.tdot').forEach(function(el){if(el.dataset.id)el.addEventListener('click',function(){var p=SP.find(function(p){return p.id===this.dataset.id;}.bind(this));if(p){p.team=parseInt(this.dataset.t);renderPList();}}.bind(el));});}
   if(STM==='americans'&&SP.length>=4)renderAmPrev();
 }
-function addPlayer(){var name=document.getElementById('new-name').value.trim();if(!name)return;var hcp=document.getElementById('new-hcp').value;SP.push({id:Date.now().toString(),name:name,handicap:hcp!==''?Number(hcp):0,scores:Array(18).fill(null),team:SP.length%2,flight:1});document.getElementById('new-name').value='';document.getElementById('new-hcp').value='';renderPList();renderFlights();}
+function addPlayer(){var name=document.getElementById('new-name').value.trim();if(!name)return;var hcp=document.getElementById('new-hcp').value;SP.push({id:Date.now().toString(),name:name,handicap:hcp!==''?Number(hcp):0,scores:Array(18).fill(null),team:SP.length%2,flight:1,gps:false});document.getElementById('new-name').value='';document.getElementById('new-hcp').value='';renderPList();renderFlights();}
 async function resetScores(){var ok=await askConfirm('Alle Scores zurücksetzen?','Zurücksetzen','var(--red)');if(!ok)return;SP=SP.map(function(p){return Object.assign({},p,{scores:Array(18).fill(null)});});renderPList();if(CODE)try{await Promise.all(SP.map(function(p){return fbSet(fp('players/'+p.id),p);}));toast('✅ Scores zurückgesetzt');}catch(e){toast('📶 Lokal zurückgesetzt');}}
 async function saveSetup(){
   for(var i=0;i<18;i++){var pe=document.getElementById('par-'+i),se=document.getElementById('si-'+i);if(pe)SPAR[i]=Number(pe.value)||4;if(se)SSI[i]=se.value!==''?Number(se.value)||i+1:i+1;}
@@ -1389,7 +1448,7 @@ async function saveSetup(){
   if(rMode==='zaehlen_fix'){var msv=document.getElementById('max-score-val');maxScore=parseInt(msv&&msv.value)||8;}
   var gv=function(id){var el=document.getElementById(id);return el?el.checked:false;};
   var notifSettings={hio:gv('notif-hio'),eagle:gv('notif-eagle'),birdie:gv('notif-birdie'),par:gv('notif-par'),bogey:gv('notif-bogey'),double:gv('notif-double'),bv:gv('notif-bv'),lady:gv('notif-lady'),putt3:gv('notif-putt3'),scorelog:gv('notif-scorelog')};
-  G.round={courseName:cname,par:SPAR,strokeIndex:SSI,tee:tee,date:document.getElementById('r-date').value||tod(),mode:rMode,maxScore:maxScore,teamMode:STM,options:{ballverlust:gv('opt-ballverlust'),ladies:gv('opt-ladies'),putts:gv('opt-putts'),notif:gv('opt-notif'),notifSettings:notifSettings,zaehler:gv('opt-zaehler')}};
+  G.round={courseName:cname,par:SPAR,strokeIndex:SSI,tee:tee,date:document.getElementById('r-date').value||tod(),mode:rMode,maxScore:maxScore,teamMode:STM,longestDrive:(parseInt(document.getElementById('longest-drive-hole').value)||0),options:{ballverlust:gv('opt-ballverlust'),ladies:gv('opt-ladies'),putts:gv('opt-putts'),notif:gv('opt-notif'),notifSettings:notifSettings,zaehler:gv('opt-zaehler')}};
   G.players=SP;var trnR=parseInt(document.getElementById('trn-rounds').value)||0;
   if(trnR>1){if(!G.tournament||G.tournament.totalRounds!==trnR)G.tournament={totalRounds:trnR,currentRound:1,name:cname,rounds:[]};}else G.tournament=null;
   if(!CODE)CODE=genCode();NOTIF_ON=gv('opt-notif');saveRec(CODE,cname);document.getElementById('code-badge').textContent='🔑 '+CODE;
@@ -1487,6 +1546,28 @@ function renderTotal(){
 function buildTrnText(){var t=G.tournament;if(!t)return'';var all=calcTotal();var txt='🏆 '+(t.name||'Turnier')+(CODE?' ['+CODE+']':'')+'\n'+(t.rounds||[]).length+' von '+t.totalRounds+' Runden\n\n';(t.rounds||[]).forEach(function(r){txt+='R'+r.roundNum+': '+r.courseName+' ('+r.date+') · '+modeName(r)+'\n';});txt+='\n🏌️ BRUTTO:\n';all.slice().sort(function(a,b){return a.bSum-b.bSum;}).forEach(function(p,i){var m=i===0&&p.played>0?'🥇':i===1&&p.played>0?'🥈':i===2&&p.played>0?'🥉':(i+1)+'.';txt+=m+' '+p.name+'  '+(p.played>0?fmt(p.bSum):'–')+'  ('+p.details.map(function(d){return d.b!=null?'R'+d.r+':'+fmt(d.b):'R'+d.r+':–';}).join(' ')+')\n';});txt+='\n🎯 NETTO:\n';all.slice().sort(function(a,b){return a.nSum-b.nSum;}).forEach(function(p,i){var m=i===0&&p.played>0?'🥇':i===1&&p.played>0?'🥈':i===2&&p.played>0?'🥉':(i+1)+'.';txt+=m+' '+p.name+'  '+(p.played>0?fmt(p.nSum):'–')+'  ('+p.details.map(function(d){return d.n!=null?'R'+d.r+':'+fmt(d.n):'R'+d.r+':–';}).join(' ')+')\n';});txt+='\n⭐ STABLEFORD:\n';all.slice().sort(function(a,b){return b.sSum-a.sSum;}).forEach(function(p,i){var m=i===0&&p.played>0?'🥇':i===1&&p.played>0?'🥈':i===2&&p.played>0?'🥉':(i+1)+'.';txt+=m+' '+p.name+'  '+(p.played>0?p.sSum+'P':'–')+'  ('+p.details.map(function(d){return d.s!=null?'R'+d.r+':'+d.s+'P':'R'+d.r+':–';}).join(' ')+')\n';});return txt+'\n📊 Golf Turniermodus · uli438.github.io/Golfturniermodus';}
 async function shareTrn(){var t=buildTrnText();if(navigator.share){try{await navigator.share({title:'Turnier Gesamt',text:t});}catch(e){}}else copyText(t);}
 
+// ════ GPS SCHLAGWEITE ════
+function haversine(a,b){var R=6371000,toR=function(d){return d*Math.PI/180;};var dLat=toR(b.lat-a.lat),dLng=toR(b.lng-a.lng);var s=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(toR(a.lat))*Math.cos(toR(b.lat))*Math.sin(dLng/2)*Math.sin(dLng/2);return Math.round(R*2*Math.atan2(Math.sqrt(s),Math.sqrt(1-s)));}
+function getGps(){return new Promise(function(resolve,reject){if(!navigator.geolocation){reject(new Error('GPS nicht verfügbar'));return;}navigator.geolocation.getCurrentPosition(function(pos){resolve({lat:pos.coords.latitude,lng:pos.coords.longitude,acc:pos.coords.accuracy});},function(err){reject(err);},{enableHighAccuracy:true,timeout:12000,maximumAge:0});});}
+async function gpsMeasure(idx){
+  var clubSel=document.getElementById('gps-club-'+idx);var club=clubSel?clubSel.value:CLUBS[0];
+  var btn=document.getElementById('gps-btn-'+idx);
+  if(GPS_MEASURE&&GPS_MEASURE.idx===idx){
+    // Endpunkt messen
+    if(btn){btn.textContent='⏳ messe…';btn.disabled=true;}
+    try{var end=await getGps();var dist=haversine(GPS_MEASURE.start,end);
+      if(!CEXT[idx].shots)CEXT[idx].shots=[];CEXT[idx].shots.push({club:GPS_MEASURE.club,dist:dist});
+      GPS_MEASURE=null;toast('📏 '+club+': '+dist+' m');renderHoles();trigAS();
+    }catch(e){toast('⚠️ GPS Fehler: '+(e.message||'kein Signal'));if(btn){btn.disabled=false;}GPS_MEASURE=null;renderHoles();}
+  }else{
+    // Startpunkt messen
+    if(btn){btn.textContent='⏳ GPS…';btn.disabled=true;}
+    try{var start=await getGps();GPS_MEASURE={idx:idx,start:start,club:club};toast('📍 Start gesetzt — geh zum Ball und tippe "Ende"');renderHoles();}
+    catch(e){toast('⚠️ GPS Fehler: '+(e.message||'kein Signal'));if(btn){btn.disabled=false;}renderHoles();}
+  }
+}
+function delShot(idx,si){if(CEXT[idx]&&CEXT[idx].shots){CEXT[idx].shots.splice(si,1);renderHoles();trigAS();}}
+
 // ════ SPIELANALYSE ════
 function openAnalyse(pid){
   var p=G.players.find(function(p){return p.id===pid;});if(!p)return;
@@ -1547,6 +1628,13 @@ function openAnalyse(pid){
   if(f9.length>0&&b9.length>0){
     var f9v=f9.reduce(function(a,h){return a+(h.diff||0);},0),b9v=b9.reduce(function(a,h){return a+(h.diff||0);},0);
     html+='<div style="background:var(--card);border:2px solid var(--border);border-radius:14px;padding:16px"><div class="slabel" style="margin-bottom:10px">FRONT 9 VS BACK 9</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;text-align:center"><div style="background:var(--bg2);border-radius:10px;padding:10px"><div style="font-size:22px;font-weight:900;font-family:\'Cormorant Garamond\',serif;color:'+dc(f9v)+'">'+fmt(f9v)+'</div><div style="font-size:9px;color:var(--txt3);font-weight:700">FRONT 9</div><div style="font-size:10px;color:var(--txt3)">'+f9.length+' Löcher</div></div><div style="background:var(--bg2);border-radius:10px;padding:10px"><div style="font-size:22px;font-weight:900;font-family:\'Cormorant Garamond\',serif;color:'+dc(b9v)+'">'+fmt(b9v)+'</div><div style="font-size:9px;color:var(--txt3);font-weight:700">BACK 9</div><div style="font-size:10px;color:var(--txt3)">'+b9.length+' Löcher</div></div></div></div>';
+  }
+  // GPS Schlagweiten nach Schläger
+  var clubAgg={};
+  played.forEach(function(h){var sh=(ext[h.idx]&&ext[h.idx].shots)||[];sh.forEach(function(s){if(!s||s.dist==null)return;if(!clubAgg[s.club])clubAgg[s.club]=[];clubAgg[s.club].push(s.dist);});});
+  var clubKeys=CLUBS.filter(function(c){return clubAgg[c]&&clubAgg[c].length;});
+  if(clubKeys.length){
+    html+='<div style="background:var(--card);border:2px solid var(--border);border-radius:14px;padding:16px"><div class="slabel" style="margin-bottom:10px">📍 SCHLAGWEITEN (GPS)</div><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><tr style="background:var(--bg2);font-size:9px;color:var(--txt3);letter-spacing:1px"><th style="padding:6px 8px;text-align:left">SCHLÄGER</th><th style="padding:6px 8px;text-align:center">Ø</th><th style="padding:6px 8px;text-align:center">MAX</th><th style="padding:6px 8px;text-align:center">ANZ.</th></tr>'+clubKeys.map(function(c){var arr=clubAgg[c],avg=Math.round(arr.reduce(function(a,b){return a+b;},0)/arr.length),mx=Math.max.apply(null,arr);return'<tr style="border-bottom:1px solid var(--border-light)"><td style="padding:7px 8px;font-size:13px;font-weight:600">'+esc(c)+'</td><td style="padding:7px 8px;text-align:center;font-size:15px;font-weight:900;font-family:\'Cormorant Garamond\',serif;color:var(--accent)">'+avg+'m</td><td style="padding:7px 8px;text-align:center;font-size:13px;font-weight:700">'+mx+'m</td><td style="padding:7px 8px;text-align:center;font-size:12px;color:var(--txt3)">'+arr.length+'</td></tr>';}).join('')+'</table></div><div style="font-size:9px;color:var(--txt3);margin-top:8px;line-height:1.4">GPS-Messung · Genauigkeit ±5–10m je nach Empfang</div></div>';
   }
   var abschCounts={L:0,M:0,R:0},abschTotal=0,laengeCounts={Lang:0,Kurz:0},laengeTotal=0;
   played.forEach(function(h){if(h.absch){abschCounts[h.absch]=(abschCounts[h.absch]||0)+1;abschTotal++;}if(h.abschLaenge){laengeCounts[h.abschLaenge]=(laengeCounts[h.abschLaenge]||0)+1;laengeTotal++;}});
