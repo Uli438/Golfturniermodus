@@ -663,7 +663,7 @@ function teeC(n){if(!n)return'#888';var lc=n.toLowerCase();for(var k in TCOLS){i
 function isZaehl(){var m=G.round.mode||'stroke';return m==='zaehlen'||m==='zaehlen_ndb'||m==='zaehlen_fix';}
 function isStbl(){var m=G.round.mode||'stroke';return m==='stableford'||m==='stableford_brutto';}
 function modeName(r){var l={stroke:'Stroke Play',stableford:'Stableford (Netto)',stableford_brutto:'Stableford (Brutto)',zaehlen:'Zählspiel',zaehlen_ndb:'Zählspiel (NDB)',zaehlen_fix:'Zählspiel (max.'+(r.maxScore||8)+')'};return l[r.mode||'stroke']||'Stroke Play';}
-function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show');},4000);}
+function toast(msg,color){var t=document.getElementById('toast');t.textContent=msg;t.style.background=color||'rgba(21,101,192,.96)';t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show');},4000);}
 function syncDot(s){var d=document.getElementById('sync-dot');if(!d)return;if(s==='on'){d.style.background='#00c853';d.style.animation='pulse 2s infinite';}else if(s==='off'){d.style.background='#ff9800';d.style.animation='none';}else{d.style.background='#1565c0';d.style.animation='pulse .5s infinite';}}
 function fmtTime(iso){try{var d=new Date(iso),now=new Date(),diff=Math.floor((now-d)/1000);if(diff<60)return'gerade';if(diff<3600)return Math.floor(diff/60)+'min';if(diff<86400)return Math.floor(diff/3600)+'h';return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});}catch(e){return iso?iso.slice(0,16).replace('T',' '):'';}
 }
@@ -1174,7 +1174,7 @@ function renderHoles(){
       var measuring=GPS_MEASURE&&GPS_MEASURE.idx===i;
       var shots=ex.shots||[];
       var clubOpts=CLUBS.map(function(c){return'<option value="'+esc(c)+'">'+esc(c)+'</option>';}).join('');
-      html+='<div class="gps-row"><select class="gps-club" id="gps-club-'+i+'">'+clubOpts+'</select><button class="gps-btn'+(measuring?' measuring':'')+'" id="gps-btn-'+i+'" data-gps-idx="'+i+'">'+(measuring?'📍 Ende messen':'📏 Schlag messen')+'</button>'+(shots.length?'<div class="gps-shots">'+shots.map(function(s,si){return'<span class="gps-shot">'+esc(s.club)+' '+s.dist+'m <button data-delshot-idx="'+i+'" data-delshot-si="'+si+'">×</button></span>';}).join('')+'</div>':'')+'</div>';
+      html+='<div class="gps-row"><select class="gps-club" id="gps-club-'+i+'">'+clubOpts+'</select><button class="gps-btn'+(measuring?' measuring':'')+'" id="gps-btn-'+i+'" data-gps-idx="'+i+'">'+(measuring?'📍 Ende messen':'📏 Schlag messen')+'</button>'+(shots.length?'<div class="gps-shots">'+shots.map(function(s,si){return'<span class="gps-shot">'+esc(s.club)+' '+s.dist+'m'+(s.acc!=null?' (±'+s.acc+'m)':'')+' <button data-delshot-idx="'+i+'" data-delshot-si="'+si+'">×</button></span>';}).join('')+'</div>':'')+'</div>';
     }
     exDiv.innerHTML=html;row.after(exDiv);
   });
@@ -1549,6 +1549,7 @@ async function shareTrn(){var t=buildTrnText();if(navigator.share){try{await nav
 // ════ GPS SCHLAGWEITE ════
 function haversine(a,b){var R=6371000,toR=function(d){return d*Math.PI/180;};var dLat=toR(b.lat-a.lat),dLng=toR(b.lng-a.lng);var s=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(toR(a.lat))*Math.cos(toR(b.lat))*Math.sin(dLng/2)*Math.sin(dLng/2);return Math.round(R*2*Math.atan2(Math.sqrt(s),Math.sqrt(1-s)));}
 function getGps(){return new Promise(function(resolve,reject){if(!navigator.geolocation){reject(new Error('GPS nicht verfügbar'));return;}navigator.geolocation.getCurrentPosition(function(pos){resolve({lat:pos.coords.latitude,lng:pos.coords.longitude,acc:pos.coords.accuracy});},function(err){reject(err);},{enableHighAccuracy:true,timeout:12000,maximumAge:0});});}
+function accColor(acc){if(acc==null)return'rgba(21,101,192,.96)';if(acc<=8)return'rgba(46,125,50,.96)';if(acc<=15)return'rgba(230,81,0,.96)';return'rgba(198,40,40,.96)';}
 async function gpsMeasure(idx){
   var clubSel=document.getElementById('gps-club-'+idx);var club=clubSel?clubSel.value:CLUBS[0];
   var btn=document.getElementById('gps-btn-'+idx);
@@ -1556,14 +1557,15 @@ async function gpsMeasure(idx){
     // Endpunkt messen
     if(btn){btn.textContent='⏳ messe…';btn.disabled=true;}
     try{var end=await getGps();var dist=haversine(GPS_MEASURE.start,end);
-      if(!CEXT[idx].shots)CEXT[idx].shots=[];CEXT[idx].shots.push({club:GPS_MEASURE.club,dist:dist});
-      GPS_MEASURE=null;toast('📏 '+club+': '+dist+' m');renderHoles();trigAS();
-    }catch(e){toast('⚠️ GPS Fehler: '+(e.message||'kein Signal'));if(btn){btn.disabled=false;}GPS_MEASURE=null;renderHoles();}
+      var combAcc=Math.round(Math.sqrt(Math.pow(GPS_MEASURE.start.acc||0,2)+Math.pow(end.acc||0,2)));
+      if(!CEXT[idx].shots)CEXT[idx].shots=[];CEXT[idx].shots.push({club:GPS_MEASURE.club,dist:dist,acc:combAcc});
+      GPS_MEASURE=null;toast('📏 '+club+': '+dist+' m  (±'+combAcc+' m)',accColor(combAcc));renderHoles();trigAS();
+    }catch(e){toast('⚠️ GPS Fehler: '+(e.message||'kein Signal'),'rgba(198,40,40,.96)');if(btn){btn.disabled=false;}GPS_MEASURE=null;renderHoles();}
   }else{
     // Startpunkt messen
     if(btn){btn.textContent='⏳ GPS…';btn.disabled=true;}
-    try{var start=await getGps();GPS_MEASURE={idx:idx,start:start,club:club};toast('📍 Start gesetzt — geh zum Ball und tippe "Ende"');renderHoles();}
-    catch(e){toast('⚠️ GPS Fehler: '+(e.message||'kein Signal'));if(btn){btn.disabled=false;}renderHoles();}
+    try{var start=await getGps();GPS_MEASURE={idx:idx,start:start,club:club};toast('📍 Start gesetzt — geh zum Ball und tippe "Ende"',accColor(start.acc));renderHoles();}
+    catch(e){toast('⚠️ GPS Fehler: '+(e.message||'kein Signal'),'rgba(198,40,40,.96)');if(btn){btn.disabled=false;}renderHoles();}
   }
 }
 function delShot(idx,si){if(CEXT[idx]&&CEXT[idx].shots){CEXT[idx].shots.splice(si,1);renderHoles();trigAS();}}
