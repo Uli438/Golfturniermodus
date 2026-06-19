@@ -1576,13 +1576,15 @@ async function shareTrn(){var t=buildTrnText();if(navigator.share){try{await nav
 
 // ════ GPS SCHLAGWEITE ════
 function haversine(a,b){var R=6371000,toR=function(d){return d*Math.PI/180;};var dLat=toR(b.lat-a.lat),dLng=toR(b.lng-a.lng);var s=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(toR(a.lat))*Math.cos(toR(b.lat))*Math.sin(dLng/2)*Math.sin(dLng/2);return Math.round(R*2*Math.atan2(Math.sqrt(s),Math.sqrt(1-s)));}
-var GPS_WATCH=null,GPS_LAST=null,GPS_WARM_TIMER=null;
+var GPS_WATCH=null,GPS_LAST=null,GPS_WARM_TIMER=null,GPS_PERM=false;
 function gpsWarmup(){
   if(!navigator.geolocation)return;
-  if(GPS_WARM_TIMER){clearTimeout(GPS_WARM_TIMER);GPS_WARM_TIMER=null;}
-  if(GPS_WATCH==null){
-    try{GPS_WATCH=navigator.geolocation.watchPosition(function(pos){GPS_LAST={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:pos.coords.accuracy,t:Date.now()};},function(){},{enableHighAccuracy:true,timeout:15000,maximumAge:0});}catch(e){}
-  }
+  // Erst vorwärmen, wenn der Nutzer GPS schon einmal aktiv erlaubt/genutzt hat
+  // (sonst soll die ALLERERSTE Anfrage von einem direkten Tap kommen → iOS-Popup).
+  if(!GPS_PERM)return;
+  // Läuft bereits? Dann NICHT neu starten (Timer nicht zurücksetzen → Pfeil geht nach 90s aus).
+  if(GPS_WATCH!=null)return;
+  try{GPS_WATCH=navigator.geolocation.watchPosition(function(pos){GPS_LAST={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:pos.coords.accuracy,t:Date.now()};},function(){},{enableHighAccuracy:true,timeout:15000,maximumAge:0});}catch(e){}
   // Nach 90s automatisch ausschalten (Akku) – außer es wird gerade gemessen
   GPS_WARM_TIMER=setTimeout(function tick(){if(GPS_MEASURE){GPS_WARM_TIMER=setTimeout(tick,30000);return;}gpsStopWarmup();},90000);
 }
@@ -1594,7 +1596,7 @@ function getGps(){
     var best=null,count=0,done=false,maxN=6,startT=Date.now();
     // Vorgewärmte Position als erste Referenz (nur wenn frisch, < 3s alt)
     if(GPS_LAST&&(Date.now()-GPS_LAST.t)<3000)best={lat:GPS_LAST.lat,lng:GPS_LAST.lng,acc:GPS_LAST.acc};
-    function finish(){if(done)return;done=true;if(wid!=null)navigator.geolocation.clearWatch(wid);clearTimeout(to);if(best)resolve(best);else reject(new Error('kein Signal'));}
+    function finish(){if(done)return;done=true;if(wid!=null)navigator.geolocation.clearWatch(wid);clearTimeout(to);if(best){GPS_PERM=true;resolve(best);}else reject(new Error('kein Signal'));}
     var wid=navigator.geolocation.watchPosition(function(pos){
       count++;var c={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:pos.coords.accuracy};
       if(!best||c.acc<best.acc)best=c;
@@ -1607,7 +1609,6 @@ function getGps(){
 }
 function accColor(acc){if(acc==null)return'rgba(21,101,192,.96)';if(acc<=8)return'rgba(46,125,50,.96)';if(acc<=15)return'rgba(230,81,0,.96)';return'rgba(198,40,40,.96)';}
 async function gpsMeasure(idx){
-  gpsWarmup();
   var clubSel=document.getElementById('gps-club-'+idx);var club=clubSel?clubSel.value:CLUBS[0];
   var btn=document.getElementById('gps-btn-'+idx);
   var st=(GPS_MEASURE&&GPS_MEASURE.idx===idx)?GPS_MEASURE.stage:null;
