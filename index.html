@@ -793,7 +793,7 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('tmt-bb').addEventListener('click',function(){setTM('bestball');});
   document.getElementById('tmt-agg').addEventListener('click',function(){setTM('aggregat');});
   document.getElementById('admin-back').addEventListener('click',function(){showView('lobby');});
-  document.getElementById('card-back').addEventListener('click',function(){var hdr=document.getElementById('card-hdr');if(hdr)hdr.style.top='0px';showView('lb');});
+  document.getElementById('card-back').addEventListener('click',function(){var hdr=document.getElementById('card-hdr');if(hdr)hdr.style.top='0px';gpsStopWarmup();showView('lb');});
   document.getElementById('result-back').addEventListener('click',function(){showView('lb');});
   document.getElementById('total-back').addEventListener('click',function(){showView('lb');});
   document.getElementById('setup-back').addEventListener('click',function(){showView(CODE?'lb':'lobby');});
@@ -889,7 +889,7 @@ async function enterTournament(code,fromAdmin){
     try{var swSnap=await DB.ref('config/scorecard_warning').get();if(swSnap&&swSnap.exists()&&swSnap.val())SCORECARD_WARN=String(swSnap.val());var swEx=await DB.ref('config/scorecard_warning_except').get();if(swEx&&swEx.exists()&&swEx.val())SCORECARD_WARN_EXCEPT=String(swEx.val());}catch(e){}
   }catch(e){toast('⚠️ Verbindungsfehler');CODE=null;}
 }
-function goLobby(){stopListeners();stopPresence();CODE=null;PREV_SNAP={};NOTIF_ON=false;hideBanner();resetScoreLog();LIVE_ROUND=null;LIVE_PLAYERS=null;VIEW_RND=null;G={players:[],tournament:null,round:{courseName:'',par:DPAR.slice(),strokeIndex:DSI.slice(),date:tod(),mode:'stroke',maxScore:null,tee:'',teamMode:'none',options:{}}};showView('lobby');}
+function goLobby(){stopListeners();stopPresence();gpsStopWarmup();CODE=null;PREV_SNAP={};NOTIF_ON=false;hideBanner();resetScoreLog();LIVE_ROUND=null;LIVE_PLAYERS=null;VIEW_RND=null;G={players:[],tournament:null,round:{courseName:'',par:DPAR.slice(),strokeIndex:DSI.slice(),date:tod(),mode:'stroke',maxScore:null,tee:'',teamMode:'none',options:{}}};showView('lobby');}
 function showQR(){if(!CODE)return;document.getElementById('qr-code-txt').textContent=CODE;document.getElementById('qr-modal').classList.add('show');}
 
 // ════ PRESENCE & ACTIVITY ════
@@ -1181,10 +1181,11 @@ function renderHoles(){
       html+='<div class="extra-row" style="padding-top:8px"><span style="font-size:11px;color:var(--txt3);font-weight:600;align-self:center">Abschlag:</span><button class="extra-btn'+(g==='H'?' ld-on-h':'')+'" data-ldg="H" data-idx="'+i+'">🚹 Herren</button><button class="extra-btn'+(g==='D'?' ld-on-d':'')+'" data-ldg="D" data-idx="'+i+'">🚺 Damen</button></div>';
     }
     if(gpsActive){
-      var measuring=GPS_MEASURE&&GPS_MEASURE.idx===i;
+      var gstage=(GPS_MEASURE&&GPS_MEASURE.idx===i)?GPS_MEASURE.stage:null;
+      var gLabel=gstage==='ready'?'📍 Start messen':gstage==='start'?'📍 Ende messen':'📏 Schlag messen';
       var shots=ex.shots||[];
       var clubOpts=CLUBS.map(function(c){return'<option value="'+esc(c)+'">'+esc(c)+'</option>';}).join('');
-      html+='<div class="gps-row"><select class="gps-club" id="gps-club-'+i+'">'+clubOpts+'</select><button class="gps-btn'+(measuring?' measuring':'')+'" id="gps-btn-'+i+'" data-gps-idx="'+i+'">'+(measuring?'📍 Ende messen':'📏 Schlag messen')+'</button>'+(shots.length?'<div class="gps-shots">'+shots.map(function(s,si){return'<span class="gps-shot">'+esc(s.club)+' '+s.dist+'m'+(s.acc!=null?' (±'+s.acc+'m)':'')+' <button data-delshot-idx="'+i+'" data-delshot-si="'+si+'">×</button></span>';}).join('')+'</div>':'')+'</div>';
+      html+='<div class="gps-row"><select class="gps-club" id="gps-club-'+i+'"'+(gstage?' disabled':'')+'>'+clubOpts+'</select><button class="gps-btn'+(gstage?' measuring':'')+'" id="gps-btn-'+i+'" data-gps-idx="'+i+'">'+gLabel+'</button>'+(shots.length?'<div class="gps-shots">'+shots.map(function(s,si){return'<span class="gps-shot">'+esc(s.club)+' '+s.dist+'m'+(s.acc!=null?' (±'+s.acc+'m)':'')+' <button data-delshot-idx="'+i+'" data-delshot-si="'+si+'">×</button></span>';}).join('')+'</div>':'')+'</div>';
     }
     exDiv.innerHTML=html;row.after(exDiv);
   });
@@ -1251,6 +1252,7 @@ function zstep(slot,idx,delta){
   var mp=markedPlayer();var row=document.getElementById('zr-'+idx);
   if(mp&&row){var mpSelf=(mp.scores&&mp.scores[idx]!=null)?mp.scores[idx]:null;var mismatch=(CMARK[idx]!=null&&mpSelf!=null&&CMARK[idx]!==mpSelf);row.className='zrow'+(mismatch?' mismatch':'');}
   updatePills();renderZCompare();trigAS();
+  if(slot==='self'&&next!=null&&gpsContextActive(idx))gpsWarmup();
 }
 function step(idx,delta){
   var par=G.round.par||DPAR,pv=par[idx]||4,cur=CS[idx],next;
@@ -1261,8 +1263,16 @@ function step(idx,delta){
   if(next===0){if(row)row.className='hrow filled';if(brEl)brEl.innerHTML='<div class="rv serif" style="color:#aaa">NR</div>';if(neEl)neEl.innerHTML=isStbl()?'<div class="stbl serif" style="color:#aaa">0</div>':'<div class="rv serif" style="color:#aaa">NR</div>';}
   else{var eff=effScore(next,idx,hcp),capped=isCapped(next,idx,hcp);if(row)row.className='hrow filled'+(capped?' capped':'');var bd=eff-pv,ns=netH(eff,idx,hcp),nd=ns!=null?ns-pv:null,sv2=ns!=null?stbl(ns,pv):null;if(brEl)brEl.innerHTML='<div class="rv serif" style="color:'+dc(bd)+'">'+fmt(bd)+'</div><div class="rl" style="color:'+dc(bd)+'">'+dl(bd)+'</div>';if(neEl)neEl.innerHTML=(mode==='stableford'||mode==='stableford_brutto')?(mode==='stableford'?(sv2!=null?'<div class="stbl serif">'+sv2+'</div>':'<span class="dash">–</span>'):'<div class="stbl serif">'+stblBrutto(next,pv)+'</div>'):(nd!=null?'<div class="rv serif" style="color:'+dc(nd)+'">'+fmt(nd)+'</div><div class="rl" style="color:'+dc(nd)+'">'+dl(nd)+'</div>':'<span class="dash">–</span>');var hinfo=document.querySelector('#hr-'+idx+' .hinfo');if(hinfo){var old=hinfo.querySelector('.cap-icon');if(old)old.remove();if(capped){var ci=document.createElement('div');ci.className='cap-icon';ci.style.cssText='font-size:9px;color:#e65100;font-weight:700;line-height:1';ci.textContent='🔒'+eff;hinfo.appendChild(ci);}}}
   updatePills();refreshHalf(Array.from({length:9},function(_,i){return(CTAB==='front'?0:9)+i;}));trigAS();
+  if(next!=null&&gpsContextActive(idx))gpsWarmup();
   var opts=G.round.options||{};var cpa=!!(G.players.find(function(p){return p.id===CID;})||{}).analyse;
   if((opts.ballverlust||opts.ladies||opts.putts||cpa))renderHoles();
+}
+function gpsContextActive(idx){
+  var p=G.players.find(function(p){return p.id===CID;});
+  if(p&&p.gps)return true;
+  var ld=G.round.longestDrive||0;
+  if(ld&&(idx+2===ld||idx+1===ld))return true;
+  return false;
 }
 function refreshHalf(holes){
   var par=G.round.par||DPAR,p=G.players.find(function(p){return p.id===CID;});var hcp=Number(p&&p.handicap)||0,mode=G.round.mode||'stroke';
@@ -1566,24 +1576,59 @@ async function shareTrn(){var t=buildTrnText();if(navigator.share){try{await nav
 
 // ════ GPS SCHLAGWEITE ════
 function haversine(a,b){var R=6371000,toR=function(d){return d*Math.PI/180;};var dLat=toR(b.lat-a.lat),dLng=toR(b.lng-a.lng);var s=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(toR(a.lat))*Math.cos(toR(b.lat))*Math.sin(dLng/2)*Math.sin(dLng/2);return Math.round(R*2*Math.atan2(Math.sqrt(s),Math.sqrt(1-s)));}
-function getGps(){return new Promise(function(resolve,reject){if(!navigator.geolocation){reject(new Error('GPS nicht verfügbar'));return;}navigator.geolocation.getCurrentPosition(function(pos){resolve({lat:pos.coords.latitude,lng:pos.coords.longitude,acc:pos.coords.accuracy});},function(err){reject(err);},{enableHighAccuracy:true,timeout:12000,maximumAge:0});});}
+var GPS_WATCH=null,GPS_LAST=null,GPS_WARM_TIMER=null;
+function gpsWarmup(){
+  if(!navigator.geolocation)return;
+  if(GPS_WARM_TIMER){clearTimeout(GPS_WARM_TIMER);GPS_WARM_TIMER=null;}
+  if(GPS_WATCH==null){
+    try{GPS_WATCH=navigator.geolocation.watchPosition(function(pos){GPS_LAST={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:pos.coords.accuracy,t:Date.now()};},function(){},{enableHighAccuracy:true,timeout:15000,maximumAge:0});}catch(e){}
+  }
+  // Nach 90s automatisch ausschalten (Akku) – außer es wird gerade gemessen
+  GPS_WARM_TIMER=setTimeout(function tick(){if(GPS_MEASURE){GPS_WARM_TIMER=setTimeout(tick,30000);return;}gpsStopWarmup();},90000);
+}
+function gpsStopWarmup(){if(GPS_WARM_TIMER){clearTimeout(GPS_WARM_TIMER);GPS_WARM_TIMER=null;}if(GPS_WATCH!=null&&navigator.geolocation){try{navigator.geolocation.clearWatch(GPS_WATCH);}catch(e){}}GPS_WATCH=null;GPS_LAST=null;}
+function getGps(){
+  // Sammelt bis zu 6 Messungen über max ~4s und nimmt die genaueste; nutzt vorgewärmte Position als Start.
+  return new Promise(function(resolve,reject){
+    if(!navigator.geolocation){reject(new Error('GPS nicht verfügbar'));return;}
+    var best=null,count=0,done=false,maxN=6,startT=Date.now();
+    // Vorgewärmte Position als erste Referenz (nur wenn frisch, < 3s alt)
+    if(GPS_LAST&&(Date.now()-GPS_LAST.t)<3000)best={lat:GPS_LAST.lat,lng:GPS_LAST.lng,acc:GPS_LAST.acc};
+    function finish(){if(done)return;done=true;if(wid!=null)navigator.geolocation.clearWatch(wid);clearTimeout(to);if(best)resolve(best);else reject(new Error('kein Signal'));}
+    var wid=navigator.geolocation.watchPosition(function(pos){
+      count++;var c={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:pos.coords.accuracy};
+      if(!best||c.acc<best.acc)best=c;
+      // Gut genug (≤6m) oder genug Messungen → fertig
+      if((best.acc<=6&&count>=2)||count>=maxN)finish();
+    },function(err){if(!best)reject(err);else finish();},{enableHighAccuracy:true,timeout:12000,maximumAge:0});
+    // Spätestens nach 4,5s mit der besten bisherigen Position abschließen
+    var to=setTimeout(finish,4500);
+  });
+}
 function accColor(acc){if(acc==null)return'rgba(21,101,192,.96)';if(acc<=8)return'rgba(46,125,50,.96)';if(acc<=15)return'rgba(230,81,0,.96)';return'rgba(198,40,40,.96)';}
 async function gpsMeasure(idx){
+  gpsWarmup();
   var clubSel=document.getElementById('gps-club-'+idx);var club=clubSel?clubSel.value:CLUBS[0];
   var btn=document.getElementById('gps-btn-'+idx);
-  if(GPS_MEASURE&&GPS_MEASURE.idx===idx){
-    // Endpunkt messen
+  var st=(GPS_MEASURE&&GPS_MEASURE.idx===idx)?GPS_MEASURE.stage:null;
+  if(st==='ready'){
+    // 2. Druck: Startpunkt setzen
+    if(btn){btn.textContent='⏳ Startpunkt…';btn.disabled=true;}
+    try{var start=await getGps();GPS_MEASURE={idx:idx,stage:'start',start:start,club:club};toast('📍 Start gesetzt — geh zum Ball und tippe "Ende messen"',accColor(start.acc));renderHoles();}
+    catch(e){toast('⚠️ GPS Fehler: '+(e.message||'kein Signal'),'rgba(198,40,40,.96)');GPS_MEASURE=null;renderHoles();}
+  }else if(st==='start'){
+    // 3. Druck: Endpunkt messen
     if(btn){btn.textContent='⏳ messe…';btn.disabled=true;}
     try{var end=await getGps();var dist=haversine(GPS_MEASURE.start,end);
       var combAcc=Math.round(Math.sqrt(Math.pow(GPS_MEASURE.start.acc||0,2)+Math.pow(end.acc||0,2)));
       if(!CEXT[idx].shots)CEXT[idx].shots=[];CEXT[idx].shots.push({club:GPS_MEASURE.club,dist:dist,acc:combAcc});
       GPS_MEASURE=null;toast('📏 '+club+': '+dist+' m  (±'+combAcc+' m)',accColor(combAcc));renderHoles();trigAS();
-    }catch(e){toast('⚠️ GPS Fehler: '+(e.message||'kein Signal'),'rgba(198,40,40,.96)');if(btn){btn.disabled=false;}GPS_MEASURE=null;renderHoles();}
+    }catch(e){toast('⚠️ GPS Fehler: '+(e.message||'kein Signal'),'rgba(198,40,40,.96)');GPS_MEASURE=null;renderHoles();}
   }else{
-    // Startpunkt messen
-    if(btn){btn.textContent='⏳ GPS…';btn.disabled=true;}
-    try{var start=await getGps();GPS_MEASURE={idx:idx,start:start,club:club};toast('📍 Start gesetzt — geh zum Ball und tippe "Ende"',accColor(start.acc));renderHoles();}
-    catch(e){toast('⚠️ GPS Fehler: '+(e.message||'kein Signal'),'rgba(198,40,40,.96)');if(btn){btn.disabled=false;}renderHoles();}
+    // 1. Druck: nur auf gutes GPS-Signal warten
+    if(btn){btn.textContent='⏳ Warten auf GPS…';btn.disabled=true;}
+    try{var fix=await getGps();GPS_MEASURE={idx:idx,stage:'ready',club:club};toast('✅ GPS bereit (±'+Math.round(fix.acc)+' m) — tippe "Start messen"',accColor(fix.acc));renderHoles();}
+    catch(e){toast('⚠️ GPS Fehler: '+(e.message||'kein Signal'),'rgba(198,40,40,.96)');GPS_MEASURE=null;renderHoles();}
   }
 }
 function delShot(idx,si){if(CEXT[idx]&&CEXT[idx].shots){CEXT[idx].shots.splice(si,1);renderHoles();trigAS();}}
