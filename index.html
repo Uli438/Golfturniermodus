@@ -1593,18 +1593,23 @@ function getGps(){
   // Sammelt bis zu 6 Messungen über max ~4s und nimmt die genaueste; nutzt vorgewärmte Position als Start.
   return new Promise(function(resolve,reject){
     if(!navigator.geolocation){reject(new Error('GPS nicht verfügbar'));return;}
-    var best=null,count=0,done=false,maxN=6,startT=Date.now();
+    var best=null,count=0,done=false,maxN=6;
     // Vorgewärmte Position als erste Referenz (nur wenn frisch, < 3s alt)
     if(GPS_LAST&&(Date.now()-GPS_LAST.t)<3000)best={lat:GPS_LAST.lat,lng:GPS_LAST.lng,acc:GPS_LAST.acc};
-    function finish(){if(done)return;done=true;if(wid!=null)navigator.geolocation.clearWatch(wid);clearTimeout(to);if(best){GPS_PERM=true;resolve(best);}else reject(new Error('kein Signal'));}
-    var wid=navigator.geolocation.watchPosition(function(pos){
-      count++;var c={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:pos.coords.accuracy};
-      if(!best||c.acc<best.acc)best=c;
-      // Gut genug (≤6m) oder genug Messungen → fertig
-      if((best.acc<=6&&count>=2)||count>=maxN)finish();
-    },function(err){if(!best)reject(err);else finish();},{enableHighAccuracy:true,timeout:12000,maximumAge:0});
-    // Spätestens nach 4,5s mit der besten bisherigen Position abschließen
-    var to=setTimeout(finish,4500);
+    var wid=null,to=null;
+    function finish(){if(done)return;done=true;if(wid!=null)navigator.geolocation.clearWatch(wid);if(to)clearTimeout(to);if(best){GPS_PERM=true;resolve(best);}else reject(new Error('kein Signal'));}
+    function consider(pos){count++;var c={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:pos.coords.accuracy};if(!best||c.acc<best.acc)best=c;if((best.acc<=6&&count>=2)||count>=maxN)finish();}
+    // 1) Erste Anfrage IMMER über getCurrentPosition → löst auf iOS-PWA zuverlässig das Berechtigungs-Popup aus
+    navigator.geolocation.getCurrentPosition(function(pos){
+      consider(pos);
+      if(done)return;
+      // 2) danach kurz verfeinern über watchPosition
+      try{wid=navigator.geolocation.watchPosition(consider,function(){},{enableHighAccuracy:true,timeout:12000,maximumAge:0});}catch(e){}
+      to=setTimeout(finish,3500);
+    },function(err){
+      // Fehler/Ablehnung: wenn wir eine vorgewärmte Position haben, die nehmen, sonst Fehler
+      if(best)finish();else reject(err);
+    },{enableHighAccuracy:true,timeout:12000,maximumAge:0});
   });
 }
 function accColor(acc){if(acc==null)return'rgba(21,101,192,.96)';if(acc<=8)return'rgba(46,125,50,.96)';if(acc<=15)return'rgba(230,81,0,.96)';return'rgba(198,40,40,.96)';}
