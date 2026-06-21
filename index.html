@@ -236,6 +236,7 @@ input,select,button{font-family:'DM Sans',sans-serif}
 .ld-hint{display:flex;align-items:center;gap:6px;padding:8px 14px;background:#fff8e1;border-bottom:1px solid #ffa000;font-size:12px;font-weight:700;color:#e65100}
 .extra-btn.ld-on-h{background:#e3f2fd;border-color:var(--accent);color:var(--accent)}
 .extra-btn.ld-on-d{background:#fce4ec;border-color:#c2185b;color:#c2185b}
+.extra-btn.ld-fw-on{background:#e8f5e9;border-color:var(--green);color:var(--green)}
 .pname{padding:10px 14px;background:var(--card);border:2px solid var(--border);border-radius:10px;font-size:15px;font-weight:500}
 .rmbtn{background:#ffebee;border:2px solid var(--red);border-radius:8px;color:var(--red);font-size:18px;padding:7px;cursor:pointer;line-height:1;font-weight:700}
 .tdot{width:28px;height:28px;border-radius:6px;border:2px solid var(--border);cursor:pointer;font-size:11px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -1089,7 +1090,7 @@ async function openCard(id){
 function doOpenCard(id){
   var p=G.players.find(function(p){return p.id===id;});if(!p)return;
   CID=id;CS=p.scores?p.scores.slice():Array(18).fill(null);
-  CEXT=Array(18).fill(null).map(function(_,i){var ex=(p.extras&&p.extras[i])||{};return{bv:Number(ex.bv)||0,la:!!ex.la,putts:Number(ex.putts)||0,absch:ex.absch||null,abschLaenge:ex.abschLaenge||null,annDist:ex.annDist||null,annTref:!!ex.annTref,fir:!!ex.fir,sand:!!ex.sand,shots:Array.isArray(ex.shots)?ex.shots.slice():[],ldGender:ex.ldGender||null};});
+  CEXT=Array(18).fill(null).map(function(_,i){var ex=(p.extras&&p.extras[i])||{};return{bv:Number(ex.bv)||0,la:!!ex.la,putts:Number(ex.putts)||0,absch:ex.absch||null,abschLaenge:ex.abschLaenge||null,annDist:ex.annDist||null,annTref:!!ex.annTref,fir:!!ex.fir,sand:!!ex.sand,shots:Array.isArray(ex.shots)?ex.shots.slice():[],ldGender:ex.ldGender||null,ldFairway:!!ex.ldFairway};});
   // Zähler-Modus: Marker-Daten laden
   var opts=G.round.options||{};
   if(opts.zaehler&&p.marks){MARK_ID=p.marks;CMARK=(p.markedScores&&Array.isArray(p.markedScores))?p.markedScores.slice():Array(18).fill(null);while(CMARK.length<18)CMARK.push(null);}else{MARK_ID=null;CMARK=Array(18).fill(null);}
@@ -1177,8 +1178,9 @@ function renderHoles(){
     }
     if(isLD){
       var g=ex.ldGender||'H';
-      html+='<div class="ld-hint">🏆 Longest Drive an dieser Bahn — bitte Drive messen</div>';
+      html+='<div class="ld-hint">🏆 Longest Drive an dieser Bahn — nur mit getroffenem Fairway zählt der Drive</div>';
       html+='<div class="extra-row" style="padding-top:8px"><span style="font-size:11px;color:var(--txt3);font-weight:600;align-self:center">Abschlag:</span><button class="extra-btn'+(g==='H'?' ld-on-h':'')+'" data-ldg="H" data-idx="'+i+'">🚹 Herren</button><button class="extra-btn'+(g==='D'?' ld-on-d':'')+'" data-ldg="D" data-idx="'+i+'">🚺 Damen</button></div>';
+      html+='<div class="extra-row" style="padding-top:6px"><button class="extra-btn'+(ex.ldFairway?' ld-fw-on':'')+'" data-ldfw="1" data-idx="'+i+'">'+(ex.ldFairway?'✅ Fairway getroffen':'🎯 Fairway getroffen?')+'</button></div>';
     }
     if(gpsActive){
       var gstage=(GPS_MEASURE&&GPS_MEASURE.idx===i)?GPS_MEASURE.stage:null;
@@ -1201,6 +1203,7 @@ function renderHoles(){
   document.querySelectorAll('[data-pu]').forEach(function(btn){btn.addEventListener('click',function(){var idx=parseInt(this.dataset.idx),d=parseInt(this.dataset.pu);CEXT[idx].putts=Math.max(0,Math.min(9,(CEXT[idx].putts||0)+d));var pvEl=document.getElementById('pv-'+idx);if(pvEl)pvEl.textContent=CEXT[idx].putts;trigAS();});});
   document.querySelectorAll('[data-gps-idx]').forEach(function(btn){btn.addEventListener('click',function(){gpsMeasure(parseInt(this.dataset.gpsIdx));});});
   document.querySelectorAll('[data-ldg]').forEach(function(btn){btn.addEventListener('click',function(){var idx=parseInt(this.dataset.idx);CEXT[idx].ldGender=this.dataset.ldg;renderHoles();trigAS();});});
+  document.querySelectorAll('[data-ldfw]').forEach(function(btn){btn.addEventListener('click',function(){var idx=parseInt(this.dataset.idx);CEXT[idx].ldFairway=!CEXT[idx].ldFairway;renderHoles();trigAS();});});
   document.querySelectorAll('[data-delshot-idx]').forEach(function(btn){btn.addEventListener('click',function(){delShot(parseInt(this.dataset.delshotIdx),parseInt(this.dataset.delshotSi));});});
   if(GPS_MEASURE){var cs=document.getElementById('gps-club-'+GPS_MEASURE.idx);if(cs)cs.value=GPS_MEASURE.club;}
   refreshHalf(holes);
@@ -1348,12 +1351,15 @@ function renderResult(){
 function longestDriveStandings(){
   var hole=G.round.longestDrive||0;if(!hole)return null;var idx=hole-1;
   var mapPlayer=function(p){
-    var shots=(p.extras&&p.extras[idx]&&p.extras[idx].shots)||[];
+    var ext=(p.extras&&p.extras[idx])||{};
+    var fwHit=!!ext.ldFairway;
+    var shots=ext.shots||[];
     var best=null;shots.forEach(function(s){if(s&&s.dist!=null&&(best===null||s.dist>best.dist))best={dist:s.dist,club:s.club};});
-    var g=(p.extras&&p.extras[idx]&&p.extras[idx].ldGender)||'H';
-    return{name:p.name,dist:best?best.dist:null,club:best?best.club:null,gender:g};
+    var g=ext.ldGender||'H';
+    return{name:p.name,dist:best?best.dist:null,club:best?best.club:null,gender:g,fwHit:fwHit};
   };
-  var all=G.players.map(mapPlayer).filter(function(r){return r.dist!=null;});
+  // Nur Drives MIT getroffenem Fairway zählen in die Wertung
+  var all=G.players.map(mapPlayer).filter(function(r){return r.dist!=null&&r.fwHit;});
   var herren=all.filter(function(r){return r.gender!=='D';}).sort(function(a,b){return b.dist-a.dist;});
   var damen=all.filter(function(r){return r.gender==='D';}).sort(function(a,b){return b.dist-a.dist;});
   return{hole:hole,herren:herren,damen:damen,total:all.length};
@@ -1366,8 +1372,8 @@ function renderLongestDrive(){
   var box=document.getElementById('longest-drive-card');if(!box)return;
   var ld=longestDriveStandings();
   if(!ld){box.innerHTML='';return;}
-  if(!ld.total){box.innerHTML='<div class="result-card"><div class="serif" style="font-size:17px;font-weight:700;margin-bottom:4px">📏 Longest Drive · Bahn '+ld.hole+'</div><div style="font-size:12px;color:var(--txt3)">Noch keine Drives gemessen. Die Spieler messen ihren Drive an Bahn '+ld.hole+' per GPS.</div></div>';return;}
-  box.innerHTML='<div class="result-card"><div class="serif" style="font-size:17px;font-weight:700;margin-bottom:4px">📏 Longest Drive · Bahn '+ld.hole+'</div>'+ldGroupHtml('🚹 HERREN',ld.herren)+ldGroupHtml('🚺 DAMEN',ld.damen)+'</div>';
+  if(!ld.total){box.innerHTML='<div class="result-card"><div class="serif" style="font-size:17px;font-weight:700;margin-bottom:4px">📏 Longest Drive · Bahn '+ld.hole+'</div><div style="font-size:12px;color:var(--txt3)">Noch kein gewerteter Drive. Es zählen nur Drives mit gemessener Weite <b>und</b> getroffenem Fairway an Bahn '+ld.hole+'.</div></div>';return;}
+  box.innerHTML='<div class="result-card"><div class="serif" style="font-size:17px;font-weight:700;margin-bottom:4px">📏 Longest Drive · Bahn '+ld.hole+'</div><div style="font-size:10px;color:var(--txt3);margin-bottom:6px">Nur Drives mit getroffenem Fairway zählen</div>'+ldGroupHtml('🚹 HERREN',ld.herren)+ldGroupHtml('🚺 DAMEN',ld.damen)+'</div>';
 }
 function buildShareText(){
   var r=G.round,par=r.par||DPAR,sopts=r.options||{};
@@ -1523,21 +1529,21 @@ function goToRound(r){
   var t=G.tournament;if(!t)return;G.tournament.currentRound=r;
   var doneNums=(t.rounds||[]).map(function(x){return x.roundNum;}),isLive=doneNums.indexOf(r)<0;
   if(isLive){VIEW_RND=null;if(LIVE_ROUND)G.round=LIVE_ROUND;if(LIVE_PLAYERS)G.players=LIVE_PLAYERS;}
-  else{VIEW_RND=r;var saved=(t.rounds||[]).find(function(x){return x.roundNum===r;});if(saved){G.round={courseName:saved.courseName,par:saved.par||DPAR,strokeIndex:saved.si||DSI,date:saved.date||tod(),mode:saved.mode||'stroke',maxScore:saved.maxScore||null,tee:saved.tee||'',teamMode:saved.teamMode||'none',options:saved.options||{}};var sc=saved.scores||{},hcp=saved.handicaps||{};G.players=G.players.map(function(p){return Object.assign({},p,{scores:sc[p.id]||Array(18).fill(null),handicap:hcp[p.id]!=null?hcp[p.id]:p.handicap});});}}
+  else{VIEW_RND=r;var saved=(t.rounds||[]).find(function(x){return x.roundNum===r;});if(saved){G.round={courseName:saved.courseName,par:saved.par||DPAR,strokeIndex:saved.si||DSI,date:saved.date||tod(),mode:saved.mode||'stroke',maxScore:saved.maxScore||null,tee:saved.tee||'',teamMode:saved.teamMode||'none',longestDrive:saved.longestDrive||0,options:saved.options||{}};var sc=saved.scores||{},hcp=saved.handicaps||{},ext=saved.extras||{};G.players=G.players.map(function(p){return Object.assign({},p,{scores:sc[p.id]||Array(18).fill(null),handicap:hcp[p.id]!=null?hcp[p.id]:p.handicap,extras:ext[p.id]||Array(18).fill(null)});});}}
   renderLB();refreshTrnUI();
 }
 async function closeRound(){
   var t=G.tournament;if(!t)return;var cur=t.currentRound||1;
   var ok=await askConfirm('Runde '+cur+' von '+t.totalRounds+' abschließen und Scores einfrieren?','Einfrieren','#e65100');if(!ok)return;
-  var scores={},handicaps={};var livePlayers=LIVE_PLAYERS||G.players,liveRound=LIVE_ROUND||G.round;
-  livePlayers.forEach(function(p){scores[p.id]=(p.scores||Array(18).fill(null)).slice();handicaps[p.id]=Number(p.handicap)||0;});
-  var entry={roundNum:cur,date:liveRound.date||tod(),courseName:liveRound.courseName||'–',tee:liveRound.tee||'',par:(liveRound.par||DPAR).slice(),si:(liveRound.strokeIndex||DSI).slice(),mode:liveRound.mode||'stroke',maxScore:liveRound.maxScore||null,teamMode:liveRound.teamMode||'none',options:liveRound.options||{},scores:scores,handicaps:handicaps};
+  var scores={},handicaps={},extras={};var livePlayers=LIVE_PLAYERS||G.players,liveRound=LIVE_ROUND||G.round;
+  livePlayers.forEach(function(p){scores[p.id]=(p.scores||Array(18).fill(null)).slice();handicaps[p.id]=Number(p.handicap)||0;extras[p.id]=(p.extras||Array(18).fill(null)).slice();});
+  var entry={roundNum:cur,date:liveRound.date||tod(),courseName:liveRound.courseName||'–',tee:liveRound.tee||'',par:(liveRound.par||DPAR).slice(),si:(liveRound.strokeIndex||DSI).slice(),mode:liveRound.mode||'stroke',maxScore:liveRound.maxScore||null,teamMode:liveRound.teamMode||'none',longestDrive:liveRound.longestDrive||0,options:liveRound.options||{},scores:scores,handicaps:handicaps,extras:extras};
   var tSnap=await DB.ref(fp('tournament')).get();var freshTrn=tSnap.exists()?tSnap.val():t;
   var rounds=(freshTrn.rounds||[]).slice(),idx=rounds.findIndex(function(x){return x.roundNum===cur;});if(idx>=0)rounds[idx]=entry;else rounds.push(entry);
   var next=cur<t.totalRounds?cur+1:cur;G.tournament=Object.assign({},freshTrn,{rounds:rounds,currentRound:next});
-  if(next!==cur){var resetPlayers=livePlayers.map(function(p){return Object.assign({},p,{scores:Array(18).fill(null),extras:Array(18).fill(null).map(function(){return{bv:0,la:false,putts:0,absch:null,abschLaenge:null,annDist:null,annTref:false};})});});await Promise.all(resetPlayers.map(function(p){return fbSet(fp('players/'+p.id),p);}));}
+  if(next!==cur){var resetPlayers=livePlayers.map(function(p){return Object.assign({},p,{scores:Array(18).fill(null),extras:Array(18).fill(null).map(function(){return{bv:0,la:false,putts:0,absch:null,abschLaenge:null,annDist:null,annTref:false,fir:false,sand:false,shots:[],ldGender:null,ldFairway:false};})});});await Promise.all(resetPlayers.map(function(p){return fbSet(fp('players/'+p.id),p);}));}
   await fbSet(fp('tournament'),G.tournament);VIEW_RND=null;
-  if(LIVE_PLAYERS&&next!==cur)LIVE_PLAYERS=livePlayers.map(function(p){return Object.assign({},p,{scores:Array(18).fill(null),extras:Array(18).fill(null).map(function(){return{bv:0,la:false,putts:0,absch:null,abschLaenge:null,annDist:null,annTref:false};})});});
+  if(LIVE_PLAYERS&&next!==cur)LIVE_PLAYERS=livePlayers.map(function(p){return Object.assign({},p,{scores:Array(18).fill(null),extras:Array(18).fill(null).map(function(){return{bv:0,la:false,putts:0,absch:null,abschLaenge:null,annDist:null,annTref:false,fir:false,sand:false,shots:[],ldGender:null,ldFairway:false};})});});
   if(LIVE_ROUND)G.round=LIVE_ROUND;toast('✅ Runde '+cur+' gespeichert und eingefroren!');renderLB();refreshTrnUI();
 }
 
