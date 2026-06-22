@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>⛳ Golf Turniermodus</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#daeeff;--bg2:#c8e6fa;--bg3:#b8d8f5;--card:#fff;--border:#2c2c2c;--border-light:#8bb8d8;--txt:#111;--txt2:#334455;--txt3:#556677;--accent:#1565c0;--accent2:#0d47a1;--green:#2e7d32;--red:#e53935;--t1:#1565c0;--t2:#c62828;}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -46,22 +46,25 @@ input,select,button{font-family:'DM Sans',sans-serif}
 .sc-detail-sum{display:flex;justify-content:space-around;padding:6px 12px 10px;font-size:11px;font-weight:700;color:var(--txt2)}
 .sc-detail-sum span{text-align:center}
 .sc-detail-sum b{display:block;font-size:15px;font-family:'Cormorant Garamond',serif}
-.lobby-hero{background:linear-gradient(160deg,var(--bg2) 60%,var(--bg3));padding:40px 24px 28px;border-bottom:2px solid var(--border);text-align:center}
+.lobby-hero{background:#fff;padding:36px 24px 30px;text-align:center}
+.lobby-logo{width:200px;max-width:64%;margin:0 auto 6px}
+.lobby-logo svg{width:100%;height:auto;display:block}
 .lobby-icon{font-size:52px;margin-bottom:8px}
-.lobby-title{font-size:28px;font-weight:700;font-family:'Cormorant Garamond',serif}
-.lobby-sub{font-size:12px;color:var(--txt2);margin-top:4px}
-.lobby-body{padding:20px 16px;display:flex;flex-direction:column;gap:14px}
-.lcard{background:var(--card);border:2px solid var(--border);border-radius:14px;padding:18px}
-.lcard-title{font-size:9px;color:var(--accent);letter-spacing:2px;font-weight:700;margin-bottom:12px}
-.lbtn{width:100%;padding:15px;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:8px;display:block}
+.lobby-title{font-family:'Space Grotesk','DM Sans',sans-serif;font-size:32px;font-weight:700;letter-spacing:-1px;color:#0d2818;line-height:1}
+.lobby-title span{color:#3a9e1e}
+.lobby-sub{font-size:12.5px;color:#5a6a78;margin-top:6px}
+.lobby-body{padding:18px 16px 30px;display:flex;flex-direction:column;gap:14px;background:#f4f7f6;flex:1}
+.lcard{background:#fff;border:1px solid #e7edea;border-radius:18px;padding:20px;box-shadow:0 1px 2px rgba(13,40,24,.04),0 8px 22px rgba(13,40,24,.05)}
+.lcard-title{font-size:11px;color:#8a9aa4;letter-spacing:.5px;font-weight:600;margin-bottom:13px}
+.lbtn{width:100%;padding:15px;border:none;border-radius:13px;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:8px;display:block}
 .lbtn:last-child{margin-bottom:0}
-.lbtn-green{background:linear-gradient(135deg,var(--green),#43a047);color:#fff;box-shadow:0 4px 14px rgba(46,125,50,.35)}
-.lbtn-blue{background:var(--accent);color:#fff;box-shadow:0 4px 14px rgba(21,101,192,.3)}
-.code-inp{background:var(--card);border:3px solid var(--border);border-radius:12px;color:var(--txt);font-size:36px;font-weight:900;padding:14px;outline:none;width:100%;text-align:center;letter-spacing:10px;font-family:'Cormorant Garamond',serif;margin-bottom:10px}
-.code-inp:focus{border-color:var(--accent)}
-.trn-item{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--card);border:2px solid var(--border);border-radius:12px;margin-bottom:8px;cursor:pointer}
+.lbtn-green{background:#3a9e1e;color:#fff;box-shadow:0 6px 16px rgba(58,158,30,.28)}
+.lbtn-blue{background:#1f8fd6;color:#fff;box-shadow:0 6px 16px rgba(31,143,214,.26)}
+.code-inp{background:#f2f5f4;border:1.5px solid #e0e7e3;border-radius:13px;color:#0d2818;font-size:34px;font-weight:900;padding:14px;outline:none;width:100%;text-align:center;letter-spacing:9px;font-family:'Space Grotesk','Cormorant Garamond',serif;margin-bottom:11px}
+.code-inp:focus{border-color:#1f8fd6}
+.trn-item{display:flex;align-items:center;gap:10px;padding:12px 14px;background:#f7faf9;border:1px solid #e7edea;border-radius:12px;margin-bottom:8px;cursor:pointer}
 .trn-item:active{background:#e3f2fd}
-.trn-code{font-size:22px;font-weight:900;color:var(--accent);font-family:'Cormorant Garamond',serif;min-width:52px}
+.trn-code{font-size:22px;font-weight:900;color:#1f8fd6;font-family:'Space Grotesk','Cormorant Garamond',serif;min-width:52px}
 .trn-info{flex:1}
 .trn-name{font-size:14px;font-weight:700}
 .trn-sub{font-size:10px;color:var(--txt3)}
@@ -348,7 +351,23 @@ input,select,button{font-family:'DM Sans',sans-serif}
 
 <!-- LOBBY -->
 <div id="view-lobby" class="view active">
-  <div class="lobby-hero"><div class="lobby-icon">⛳</div><div class="lobby-title serif">Golf Turniermodus</div><div class="lobby-sub">Erstelle oder trete einem Turnier bei</div></div>
+  <div class="lobby-hero">
+    <div class="lobby-logo"><svg viewBox="20 20 560 400" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bl_sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe6ff"/><stop offset="0.6" stop-color="#e3f4ff"/><stop offset="1" stop-color="#f4fbff"/></linearGradient><linearGradient id="bl_green" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fcf4f"/><stop offset="1" stop-color="#2f8a1d"/></linearGradient><linearGradient id="bl_ribG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8ad13a"/><stop offset="0.5" stop-color="#57b026"/><stop offset="1" stop-color="#2c7d14"/></linearGradient><linearGradient id="bl_ribB" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3eb0ec"/><stop offset="0.5" stop-color="#1d84cf"/><stop offset="1" stop-color="#0a5ba2"/></linearGradient><linearGradient id="bl_bird" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#33495a"/><stop offset="0.55" stop-color="#1c2c39"/><stop offset="1" stop-color="#0e1920"/></linearGradient><linearGradient id="bl_birdWing" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3f5a6e"/><stop offset="1" stop-color="#16242e"/></linearGradient><radialGradient id="bl_ball" cx="0.38" cy="0.34" r="0.75"><stop offset="0" stop-color="#ffffff"/><stop offset="0.7" stop-color="#eef2f4"/><stop offset="1" stop-color="#c7d0d6"/></radialGradient><radialGradient id="bl_inGlow" cx="0.5" cy="0.4" r="0.7"><stop offset="0" stop-color="#ffffff" stop-opacity="0.0"/><stop offset="1" stop-color="#0a3a5a" stop-opacity="0.12"/></radialGradient><linearGradient id="bl_gloss" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.55"/><stop offset="0.5" stop-color="#ffffff" stop-opacity="0.05"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient><filter id="bl_ds" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#0c2a18" flood-opacity="0.28"/></filter><clipPath id="bl_ovalClip"><ellipse cx="300" cy="232" rx="196" ry="150"/></clipPath></defs><!-- ===== Schwung-Bänder (blau hinten, grün vorne) ===== --><g filter="url(#bl_ds)"><!-- Blaues Band --><path d="M300 36
+           C 470 36 560 130 560 232
+           C 560 300 520 352 470 380
+           C 520 330 532 268 510 214
+           C 478 132 398 86 300 86
+           C 250 86 206 100 170 124
+           C 210 70 250 36 300 36 Z" fill="url(#bl_ribB)"/><path d="M300 44 C 250 44 212 74 178 122" fill="none" stroke="#bfe9ff" stroke-width="4" stroke-linecap="round" opacity="0.5"/><!-- Grünes Band --><path d="M300 428
+           C 130 428 40 334 40 232
+           C 40 164 80 112 130 84
+           C 80 134 68 196 90 250
+           C 122 332 202 378 300 378
+           C 350 378 394 364 430 340
+           C 390 394 350 428 300 428 Z" fill="url(#bl_ribG)"/><path d="M300 420 C 350 420 388 390 422 342" fill="none" stroke="#d8f3a8" stroke-width="4" stroke-linecap="round" opacity="0.5"/></g><!-- ===== Innen-Oval (Szene) ===== --><g clip-path="url(#bl_ovalClip)"><rect x="100" y="78" width="400" height="200" fill="url(#bl_sky)"/><!-- Grün/Fairway --><path d="M104 250 C 200 210 330 214 496 246 L 496 390 L 104 390 Z" fill="url(#bl_green)"/><path d="M104 250 C 200 210 330 214 496 246" fill="none" stroke="#ffffff" stroke-width="3" opacity="0.25"/><!-- weiches Fairway-Highlight --><ellipse cx="300" cy="300" rx="150" ry="40" fill="#ffffff" opacity="0.10"/><!-- Fahne auf dem Grün --><line x1="388" y1="196" x2="388" y2="286" stroke="#3a3a3a" stroke-width="4" stroke-linecap="round"/><path d="M388 198 L 430 210 L 388 224 Z" fill="#e8403a"/><ellipse cx="388" cy="288" rx="14" ry="5" fill="#1f5e12" opacity="0.5"/><!-- Golfball --><circle cx="250" cy="300" r="26" fill="url(#bl_ball)"/><circle cx="243" cy="294" r="3" fill="#d3dade" opacity="0.8"/><circle cx="255" cy="300" r="3" fill="#d3dade" opacity="0.8"/><circle cx="248" cy="308" r="3" fill="#d3dade" opacity="0.8"/><circle cx="260" cy="291" r="2.6" fill="#d3dade" opacity="0.8"/><ellipse cx="250" cy="326" rx="22" ry="5" fill="#1f5e12" opacity="0.45"/><!-- ===== Vogel in Flugpose (elegante Silhouette) ===== --><g filter="url(#bl_ds)"><!-- hinterer Flügel nach oben --><path d="M286 168 C 250 120 214 92 168 84 C 206 110 232 146 256 192 Z" fill="url(#bl_birdWing)"/><!-- vorderer Flügel weit nach oben gespreizt --><path d="M300 166 C 286 116 300 70 332 40 C 330 92 330 140 318 178 Z" fill="url(#bl_bird)"/><!-- Körper, stromlinienförmig --><path d="M256 196 C 270 176 300 168 332 178 C 360 186 372 200 366 214 C 360 230 332 236 300 230 C 280 226 262 216 256 196 Z" fill="url(#bl_bird)"/><!-- Kopf --><circle cx="360" cy="190" r="17" fill="url(#bl_bird)"/><!-- Schnabel --><path d="M375 186 L 396 191 L 375 199 Z" fill="#f3a51f"/><!-- Auge --><circle cx="365" cy="187" r="3" fill="#ffffff"/><circle cx="366" cy="187" r="1.5" fill="#0e1920"/><!-- Schwanz, gegabelt --><path d="M262 214 C 240 226 218 228 200 222 C 222 218 240 208 256 196 Z" fill="url(#bl_birdWing)"/><!-- Flügel-Federdetails --><path d="M300 168 C 292 130 300 92 320 64" fill="none" stroke="#54707f" stroke-width="2.5" stroke-linecap="round" opacity="0.45"/><path d="M278 176 C 258 140 232 116 198 100" fill="none" stroke="#54707f" stroke-width="2.5" stroke-linecap="round" opacity="0.4"/></g></g></g><!-- Innen-Schatten/Glanz für Tiefe --><ellipse cx="300" cy="232" rx="196" ry="150" fill="url(#bl_inGlow)"/><ellipse cx="300" cy="232" rx="196" ry="150" fill="none" stroke="#ffffff" stroke-width="6" opacity="0.85"/><ellipse cx="300" cy="232" rx="196" ry="150" fill="none" stroke="#0a3a5a" stroke-width="1.5" opacity="0.25"/><!-- oberer Glanz --><path d="M140 150 A 196 150 0 0 1 460 150 C 380 120 220 120 140 150 Z" fill="url(#bl_gloss)" clip-path="url(#bl_ovalClip)"/></svg></div>
+    <div class="lobby-title">Bird<span>ino</span></div>
+    <div class="lobby-sub">Turniere organisieren · live mitspielen</div>
+  </div>
   <div class="lobby-body">
     <div class="lcard"><div class="lcard-title">NEUES TURNIER</div><button class="lbtn lbtn-green" id="btn-new-trn">+ Turnier erstellen</button></div>
     <div class="lcard"><div class="lcard-title">TURNIER BEITRETEN</div><input class="code-inp" id="join-code" placeholder="000" maxlength="5" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"><button class="lbtn lbtn-blue" id="btn-join">Beitreten →</button></div>
