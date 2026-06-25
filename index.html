@@ -1715,7 +1715,7 @@ function refreshTrnUI(){
   var curDone=doneNums.indexOf(cur)>=0;
   var allDone=doneNums.length>=t.totalRounds;
   var showClose=IS_ADMIN_VIEW&&!viewingFrozen&&!curDone&&!allDone;
-  tBar.style.display=(IS_ADMIN_VIEW||viewingFrozen)?'flex':'none';
+  tBar.style.display=IS_ADMIN_VIEW?'flex':'none';
   var btnClose=document.getElementById('btn-close-round');if(btnClose){btnClose.style.display=showClose?'':'none';btnClose.textContent='✅ Runde '+cur+' abschließen';}
   var infoTxt;
   if(viewingFrozen)infoTxt='📋 Ansicht: eingefrorene Runde '+VIEW_RND+' · live Daten unverändert';
