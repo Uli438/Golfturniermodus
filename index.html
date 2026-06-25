@@ -459,6 +459,10 @@ input,select,button{font-family:'DM Sans',sans-serif}
 <div id="view-setup" class="view">
   <div class="hdr"><button class="back-btn" id="setup-back">←</button><div class="hdr-title serif" id="setup-title">Einstellungen</div></div>
   <div id="setup-trn-hint" style="display:none;padding:10px 16px;border-bottom:2px solid #ffa000;font-size:12px;font-weight:700;line-height:1.5"></div>
+  <div id="setup-close-round" style="display:none;padding:14px 16px;background:#fff8e1;border-bottom:2px solid #ffa000">
+    <button id="btn-close-round-setup" style="width:100%;padding:14px;background:linear-gradient(135deg,#e65100,#f57c00);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer">✅ Runde abschließen</button>
+    <div style="font-size:10px;color:#e65100;text-align:center;margin-top:6px">Friert die Scores dieser Runde ein und startet die nächste.</div>
+  </div>
   <div class="setup-body">
     <section>
       <div class="slabel">PLATZ</div>
@@ -848,6 +852,7 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('btn-result').addEventListener('click',function(){showView('result');});
   document.getElementById('btn-total').addEventListener('click',function(){showView('total');});
   document.getElementById('btn-setup').addEventListener('click',function(){showView('setup');});
+  document.getElementById('btn-close-round-setup').addEventListener('click',async function(){await closeRound();initSetup();});
   document.getElementById('btn-home').addEventListener('click',goLobby);
   document.getElementById('btn-close-round').addEventListener('click',function(){if(!IS_ADMIN_VIEW){toast('⚠️ Nur über die Admin-Seite möglich');return;}closeRound();});
   ['brutto','netto','stableford'].forEach(function(m){document.getElementById('mb-'+m).addEventListener('click',function(){setLbMode(m);});});
@@ -1562,6 +1567,18 @@ function initSetup(){
     if(titleEl)titleEl.textContent='Einstellungen · R'+cur;
     if(hint){hint.style.display='block';if(isDone){hint.innerHTML='📋 Runde '+cur+' abgeschlossen. Einstellungen gelten für <b>Runde '+(cur<total?cur+1:cur)+'</b>.';hint.style.background='#e8f5e9';hint.style.borderColor='#4caf50';hint.style.color='#2e7d32';}else{hint.innerHTML='🏆 Turnier · <b>Runde '+cur+' von '+total+'</b>'+(cur>1?' · Neuen Platz und Datum für diese Runde eingeben':'')+'<br><span style="font-weight:400;font-size:11px">Platz, Datum und Wertung können pro Runde geändert werden. Spieler und Vorgaben bleiben erhalten.</span>';hint.style.background='#fff8e1';hint.style.borderColor='#ffa000';hint.style.color='#e65100';}}
   }else{if(titleEl)titleEl.textContent='Einstellungen';if(hint)hint.style.display='none';}
+  // "Runde abschließen" im Setup — nur bei laufendem Mehrtages-Turnier mit offener aktueller Runde
+  var crBox=document.getElementById('setup-close-round');
+  if(crBox){
+    var showCR=false;
+    if(G.tournament&&G.tournament.totalRounds>1){
+      var cCur=G.tournament.currentRound||1,cDone=(G.tournament.rounds||[]).map(function(r){return r.roundNum;});
+      var curIsDone=cDone.indexOf(cCur)>=0,allRoundsDone=cDone.length>=G.tournament.totalRounds;
+      showCR=!curIsDone&&!allRoundsDone;
+      var crBtn=document.getElementById('btn-close-round-setup');if(crBtn)crBtn.textContent='✅ Runde '+cCur+' abschließen';
+    }
+    crBox.style.display=showCR?'block':'none';
+  }
   document.getElementById('man-name').value=G.round.courseName||'';document.getElementById('r-date').value=G.round.date||tod();document.getElementById('r-mode').value=G.round.mode||'stroke';
   var msv=document.getElementById('max-score-val');if(msv)msv.value=G.round.maxScore||'';document.getElementById('max-score-wrap').style.display=G.round.mode==='zaehlen_fix'?'block':'none';
   document.getElementById('api-results').style.display='none';document.getElementById('tee-wrap').style.display='none';document.getElementById('api-sel').style.display='none';document.getElementById('api-search').value='';document.getElementById('api-save-btn').style.display='none';
