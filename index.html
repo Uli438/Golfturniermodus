@@ -1899,8 +1899,10 @@ function ldArm(idx){
   // Startet Live-Signalüberwachung (Ampel) für das Longest-Drive-Loch
   if(!navigator.geolocation){toast('⚠️ GPS nicht verfügbar','rgba(198,40,40,.96)');return;}
   ldArmStop();
-  LD_ARM={idx:idx,best:null};
-  ldArmUpdate(idx,null);
+  LD_ARM={idx:idx,best:null,cur:null};
+  // SOFORT die Ampel-Ansicht zeichnen (zeigt "Suche Signal…"), damit der Tap sichtbar reagiert
+  renderHoles();
+  toast('🛰️ Suche GPS-Signal…','rgba(21,101,192,.96)');
   try{
     LD_ARM_WATCH=navigator.geolocation.watchPosition(function(pos){
       GPS_PERM=true;
