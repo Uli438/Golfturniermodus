@@ -1385,7 +1385,8 @@ function doOpenCard(id){
   if(PRES_REF&&CODE){PRES_REF.update({name:p.name,playerId:id});DB.ref('activity').limitToLast(1).once('value').then(function(snap){if(snap.exists()){var key=Object.keys(snap.val())[0];DB.ref('activity/'+key).update({name:p.name});}});}
   showView('card');renderCard();setTimeout(updateCardSpacer,100);
   // GPS vorwärmen, sobald die Scorecard geöffnet wird (wenn Spieler GPS nutzt oder LD-Loch existiert)
-  if((p.gps||G.round.longestDrive)&&GPS_PERM)gpsWarmup();
+  // GPS: wenn relevant (Spieler-GPS an oder LD-Loch) → beim ersten Mal Erlaubnis anfragen, sonst vorwärmen
+  if(p.gps||G.round.longestDrive){if(GPS_PERM)gpsWarmup();else gpsPrime();}
 }
 function setTab(t){CTAB=t;if(CID)localStorage.setItem(LS_TAB+CID,t);document.getElementById('tab-front').classList.toggle('active',t==='front');document.getElementById('tab-back').classList.toggle('active',t==='back');var opts=G.round.options||{};if(opts.zaehler&&MARK_ID)renderHolesZaehler();else renderHoles();}
 function renderCard(){
@@ -1943,7 +1944,7 @@ async function shareTrn(){var t=buildTrnText();if(navigator.share){try{await nav
 
 // ════ GPS SCHLAGWEITE ════
 function haversine(a,b){var R=6371000,toR=function(d){return d*Math.PI/180;};var dLat=toR(b.lat-a.lat),dLng=toR(b.lng-a.lng);var s=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(toR(a.lat))*Math.cos(toR(b.lat))*Math.sin(dLng/2)*Math.sin(dLng/2);return Math.round(R*2*Math.atan2(Math.sqrt(s),Math.sqrt(1-s)));}
-var GPS_WATCH=null,GPS_LAST=null,GPS_WARM_TIMER=null,GPS_PERM=false;
+var GPS_WATCH=null,GPS_LAST=null,GPS_WARM_TIMER=null,GPS_PERM=false,GPS_PRIMED=false;
 function gpsWarmup(){
   if(!navigator.geolocation)return;
   // Erst vorwärmen, wenn der Nutzer GPS schon einmal aktiv erlaubt/genutzt hat
@@ -1956,6 +1957,21 @@ function gpsWarmup(){
   GPS_WARM_TIMER=setTimeout(function tick(){if(GPS_MEASURE){GPS_WARM_TIMER=setTimeout(tick,30000);return;}gpsStopWarmup();},90000);
 }
 function gpsStopWarmup(){if(GPS_WARM_TIMER){clearTimeout(GPS_WARM_TIMER);GPS_WARM_TIMER=null;}if(GPS_WATCH!=null&&navigator.geolocation){try{navigator.geolocation.clearWatch(GPS_WATCH);}catch(e){}}GPS_WATCH=null;GPS_LAST=null;}
+function gpsPrime(){
+  // Löst beim ersten Öffnen der Scorecard EINMAL die iOS-Standortabfrage aus,
+  // damit GPS_PERM danach gesetzt ist und das automatische Vorwärmen greift.
+  if(!navigator.geolocation)return;
+  if(GPS_PERM)return;            // Erlaubnis schon da → nichts zu tun
+  if(GPS_PRIMED)return;          // In dieser Sitzung schon einmal versucht
+  GPS_PRIMED=true;
+  try{
+    navigator.geolocation.getCurrentPosition(
+      function(pos){GPS_PERM=true;GPS_LAST={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:pos.coords.accuracy,t:Date.now()};},
+      function(){/* abgelehnt oder Fehler – kein Problem, später erneut per Tap */},
+      {enableHighAccuracy:true,timeout:10000,maximumAge:60000}
+    );
+  }catch(e){}
+}
 function getGps(){
   // Sammelt bis zu 6 Messungen über max ~4s und nimmt die genaueste; nutzt vorgewärmte Position als Start.
   return new Promise(function(resolve,reject){
