@@ -153,6 +153,7 @@ input,select,button{font-family:'DM Sans',sans-serif}
 .hrow.filled .hnum{color:var(--accent)}
 .hcell{border-bottom:1px solid var(--border-light)}
 .hcell .hrow{border-bottom:none}
+.hcell .zrow{border-bottom:none}
 .hrow-title{display:flex;align-items:center;gap:10px;padding:9px 14px 5px}
 .hrow-title .lochbadge{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:34px;border-radius:10px;background:var(--accent);color:#fff;font-size:18px;font-weight:800;box-shadow:0 3px 8px rgba(31,143,214,.3)}
 .hrow-title .lochttl{font-size:16px;font-weight:800;color:var(--accent)}
@@ -165,6 +166,7 @@ input,select,button{font-family:'DM Sans',sans-serif}
 .stbtn:active{background:#bbdefb}
 .stval{flex:1;text-align:center;font-size:clamp(30px,8vw,36px);font-weight:900;font-family:'Cormorant Garamond',serif;pointer-events:none}
 .stval.empty{color:#aaa;font-size:clamp(17px,4vw,20px);font-weight:400}
+.stval.nr,.zval.nr{color:#111;font-weight:700}
 .hres{text-align:center}
 .rv{font-size:clamp(13px,3.5vw,15px);font-weight:700}
 .rl{font-size:clamp(8px,2vw,8px);opacity:.7}
@@ -460,6 +462,7 @@ input,select,button{font-family:'DM Sans',sans-serif}
   </div>
   <div class="sc-tabs"><button class="sc-tab active" id="tab-front">FRONT 9 (1–9)</button><button class="sc-tab" id="tab-back">BACK 9 (10–18)</button></div>
   <div class="sc-col-head"><span>LOCH</span><span>SCHLÄGE</span><span>BRUTTO</span><span id="col4lbl">NETTO</span></div>
+  <div id="gps-prime-bar" style="display:none;padding:12px 14px;background:#fff8e6;border-bottom:1px solid #f0e0b0"><button id="gps-prime-btn" style="width:100%;padding:13px;border-radius:11px;border:none;background:#1f8fd6;color:#fff;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(31,143,214,.3)">📍 GPS für Schlagweiten aktivieren</button><div style="font-size:11px;color:#8a7a4a;text-align:center;margin-top:7px;line-height:1.4">Einmal antippen, um Standort zu erlauben — danach misst die App Schlagweiten & Longest Drive.</div></div>
   <div id="sc-holes"></div>
   <div id="half-bar" class="half-bar" style="display:none"><div style="font-size:9px;color:var(--txt3);text-align:center">∑</div><div style="font-size:11px;color:var(--txt2)" id="half-par-lbl"></div><div style="text-align:center;font-size:16px;font-weight:700;font-family:'Cormorant Garamond',serif" id="half-brutto-lbl"></div><div style="text-align:center;font-size:13px;font-weight:700;color:#6a1b9a;font-family:'Cormorant Garamond',serif" id="half-stbl-lbl"></div></div>
   <div style="height:82px"></div>
@@ -904,6 +907,7 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('tmt-agg').addEventListener('click',function(){setTM('aggregat');});
   document.getElementById('admin-back').addEventListener('click',function(){showView('lobby');});
   document.getElementById('card-back').addEventListener('click',function(){var hdr=document.getElementById('card-hdr');if(hdr)hdr.style.top='0px';gpsStopWarmup();showView('lb');});
+  var gpb=document.getElementById('gps-prime-btn');if(gpb)gpb.addEventListener('click',function(){var self=this;self.textContent='⏳ Warte auf Standort…';self.disabled=true;gpsPrimeTap(function(ok){var bar=document.getElementById('gps-prime-bar');if(ok){if(bar)bar.style.display='none';toast('✅ GPS aktiviert');gpsWarmup();}else{self.textContent='📍 GPS für Schlagweiten aktivieren';self.disabled=false;toast('⚠️ Standort nicht erlaubt','rgba(198,40,40,.96)');}});});
   document.getElementById('result-back').addEventListener('click',function(){showView('lb');});
   document.getElementById('total-back').addEventListener('click',function(){showView('lb');});
   document.getElementById('setup-back').addEventListener('click',function(){showView(CODE?'lb':'lobby');});
@@ -1385,8 +1389,12 @@ function doOpenCard(id){
   if(PRES_REF&&CODE){PRES_REF.update({name:p.name,playerId:id});DB.ref('activity').limitToLast(1).once('value').then(function(snap){if(snap.exists()){var key=Object.keys(snap.val())[0];DB.ref('activity/'+key).update({name:p.name});}});}
   showView('card');renderCard();setTimeout(updateCardSpacer,100);
   // GPS vorwärmen, sobald die Scorecard geöffnet wird (wenn Spieler GPS nutzt oder LD-Loch existiert)
-  // GPS: wenn relevant (Spieler-GPS an oder LD-Loch) → beim ersten Mal Erlaubnis anfragen, sonst vorwärmen
-  if(p.gps||G.round.longestDrive){if(GPS_PERM)gpsWarmup();else gpsPrime();}
+  // GPS: wenn relevant (Spieler-GPS an oder LD-Loch)
+  var gpsRelevant=(p.gps||G.round.longestDrive);
+  var primeBar=document.getElementById('gps-prime-bar');
+  if(gpsRelevant&&GPS_PERM){if(primeBar)primeBar.style.display='none';gpsWarmup();}
+  else if(gpsRelevant&&!GPS_PERM){if(primeBar)primeBar.style.display='block';}
+  else{if(primeBar)primeBar.style.display='none';}
 }
 function setTab(t){CTAB=t;if(CID)localStorage.setItem(LS_TAB+CID,t);document.getElementById('tab-front').classList.toggle('active',t==='front');document.getElementById('tab-back').classList.toggle('active',t==='back');var opts=G.round.options||{};if(opts.zaehler&&MARK_ID)renderHolesZaehler();else renderHoles();}
 function renderCard(){
@@ -1431,7 +1439,7 @@ function renderHoles(){
     var capH=(capped||ndbCap)?'<div style="font-size:9px;color:#e65100;font-weight:700;line-height:1">🔒'+(ndbCap||eff)+'</div>':'';
     var brHTML=(isNR&&!ndbCap)?'<div class="rv serif" style="color:#aaa">NR</div>':(bd!=null?'<div class="rv serif" style="color:'+dc(bd)+'">'+fmt(bd)+'</div><div class="rl" style="color:'+dc(bd)+'">'+dl(bd)+'</div>':'<span class="dash">–</span>');
     var c4=(isNR&&!ndbCap)?(isStbl()?'<div class="stbl serif" style="color:#aaa">0</div>':'<div class="rv serif" style="color:#aaa">NR</div>'):(mode==='stableford'?(sv!=null?'<div class="stbl serif">'+sv+'</div>':'<span class="dash">–</span>'):mode==='stableford_brutto'?(raw!=null?'<div class="stbl serif">'+stblBrutto(raw,pv)+'</div>':'<span class="dash">–</span>'):(nd!=null?'<div class="rv serif" style="color:'+dc(nd)+'">'+fmt(nd)+'</div><div class="rl" style="color:'+dc(nd)+'">'+dl(nd)+'</div>':'<span class="dash">–</span>'));
-    var stvalClass=raw==null?'stval empty':(isNR&&!ndbCap)?'stval empty':'stval';
+    var stvalClass=raw==null?'stval empty':(isNR&&!ndbCap)?'stval empty nr':'stval';
     var stvalTxt=raw==null?'–':(isNR&&!ndbCap)?'NR':(ndbCap||raw);
     var titleBar='<div class="hrow-title"><span class="lochbadge">'+(i+1)+'</span><span class="lochttl">Loch '+(i+1)+'</span><span class="lochpar">Par '+pv+(siv!=null&&siv!==''?' · SI '+siv:'')+'</span></div>';
     return'<div class="hcell'+(raw!=null?' filled':'')+'" id="hc-'+i+'">'+titleBar+'<div class="hrow'+(raw!=null?' filled':'')+(capped?' capped':'')+'" id="hr-'+i+'"><div class="hinfo">'+(exH||capH?exH+capH:'<div class="hpar">P'+pv+'</div>')+'</div><div class="stepper"><button class="stbtn" data-idx="'+i+'" data-d="-1">−</button><div class="'+stvalClass+'" id="sv-'+i+'">'+stvalTxt+'</div><button class="stbtn" data-idx="'+i+'" data-d="1">+</button></div><div class="hres" id="br-'+i+'">'+brHTML+'</div><div class="hres" id="ne-'+i+'">'+c4+'</div></div></div>';
@@ -1510,8 +1518,8 @@ function renderHolesZaehler(){
   html+=holes.map(function(i){
     var pv=par[i]||4,siv=si[i]!=null&&si[i]!==''?si[i]:i+1;
     var sR=CS[i],mR=CMARK[i];
-    var sTxt=sR==null?'–':(sR===0?'NR':sR),sCls=sR==null?'zval empty':(sR===0?'zval empty':'zval');
-    var mTxt=mR==null?'–':(mR===0?'NR':mR),mCls=mR==null?'zval empty':(mR===0?'zval empty':'zval');
+    var sTxt=sR==null?'–':(sR===0?'NR':sR),sCls=sR==null?'zval empty':(sR===0?'zval empty nr':'zval');
+    var mTxt=mR==null?'–':(mR===0?'NR':mR),mCls=mR==null?'zval empty':(mR===0?'zval empty nr':'zval');
     // Abgleich gegen Selbsteintrag des gezählten Spielers
     var mpSelf=(mp.scores&&mp.scores[i]!=null)?mp.scores[i]:null;
     var mismatch=(mR!=null&&mpSelf!=null&&mR!==mpSelf);
@@ -1536,9 +1544,12 @@ function renderHolesZaehler(){
         +'<div class="extra-row" style="padding-top:6px"><button class="extra-btn'+(ex.ldFairway?' ld-fw-on':'')+'" data-ldfw="1" data-idx="'+i+'">'+(ex.ldFairway?'✅ Fairway getroffen':'🎯 Fairway getroffen?')+'</button></div>'
         +'<div class="gps-row" style="margin-top:6px"><select class="gps-club" id="gps-club-'+i+'"'+(gstageZ?' disabled':'')+'>'+clubOptsZ+'</select><button class="gps-btn'+(gstageZ?' measuring':'')+'" id="gps-btn-'+i+'" data-gps-idx="'+i+'">'+gLabelZ+'</button>'+shotsHtmlZ+'</div></div>';
     }
-    return'<div class="zrow'+(mismatch?' mismatch':'')+'" id="zr-'+i+'"><div class="zinfo"><div class="hnum serif">'+(i+1)+'</div><div class="hpar">P'+pv+'</div></div>'
+    var zFilled=(sR!=null&&sR!==0);
+    var zTitleBar='<div class="hrow-title"><span class="lochbadge">'+(i+1)+'</span><span class="lochttl">Loch '+(i+1)+'</span><span class="lochpar">Par '+pv+(siv!=null&&siv!==''?' · SI '+siv:'')+'</span></div>';
+    return'<div class="hcell'+(zFilled?' filled':'')+'" id="zc-'+i+'">'+zTitleBar
+      +'<div class="zrow'+(mismatch?' mismatch':'')+'" id="zr-'+i+'"><div class="zinfo"><div class="hpar">P'+pv+'</div></div>'
       +'<div class="zstepwrap"><div class="zstep"><button class="zbtn" data-zs="self" data-idx="'+i+'" data-d="-1">−</button><div class="'+sCls+'" id="zsv-'+i+'">'+sTxt+'</div><button class="zbtn" data-zs="self" data-idx="'+i+'" data-d="1">+</button></div>'+extraBtns+'</div>'
-      +'<div class="zstep mark"><button class="zbtn" data-zs="mark" data-idx="'+i+'" data-d="-1">−</button><div class="'+mCls+'" id="zmv-'+i+'">'+mTxt+'</div><button class="zbtn" data-zs="mark" data-idx="'+i+'" data-d="1">+</button></div></div>';
+      +'<div class="zstep mark"><button class="zbtn" data-zs="mark" data-idx="'+i+'" data-d="-1">−</button><div class="'+mCls+'" id="zmv-'+i+'">'+mTxt+'</div><button class="zbtn" data-zs="mark" data-idx="'+i+'" data-d="1">+</button></div></div></div>';
   }).join('');
   document.getElementById('sc-holes').innerHTML=html;
   document.querySelectorAll('.zbtn').forEach(function(btn){btn.addEventListener('click',function(){zstep(this.dataset.zs,parseInt(this.dataset.idx),parseInt(this.dataset.d));});});
@@ -1568,7 +1579,7 @@ function zstep(slot,idx,delta){
   var arr=slot==='self'?CS:CMARK;
   var cur=arr[idx],next;if(cur==null)next=delta>0?pv:0;else next=cur+delta;if(next<0)next=0;if(next>15)next=15;arr[idx]=next;
   var valEl=document.getElementById((slot==='self'?'zsv-':'zmv-')+idx);
-  if(valEl){if(next===0){valEl.textContent='NR';valEl.className='zval empty';}else{valEl.textContent=next;valEl.className='zval';}}
+  if(valEl){if(next===0){valEl.textContent='NR';valEl.className='zval empty nr';}else{valEl.textContent=next;valEl.className='zval';}}
   // Zeile auf Mismatch prüfen
   var mp=markedPlayer();var row=document.getElementById('zr-'+idx);
   if(mp&&row){var mpSelf=(mp.scores&&mp.scores[idx]!=null)?mp.scores[idx]:null;var mismatch=(CMARK[idx]!=null&&mpSelf!=null&&CMARK[idx]!==mpSelf);row.className='zrow'+(mismatch?' mismatch':'');}
@@ -1578,7 +1589,7 @@ function zstep(slot,idx,delta){
 function step(idx,delta){
   var par=G.round.par||DPAR,pv=par[idx]||4,cur=CS[idx],next;
   if(cur==null)next=delta>0?pv:0;else next=cur+delta;if(next<0)next=0;if(next>15)next=15;CS[idx]=next;
-  var sv=document.getElementById('sv-'+idx);if(sv){if(next===0){sv.textContent='NR';sv.className='stval empty';}else{sv.textContent=next;sv.className='stval';}}
+  var sv=document.getElementById('sv-'+idx);if(sv){if(next===0){sv.textContent='NR';sv.className='stval empty nr';}else{sv.textContent=next;sv.className='stval';}}
   var p=G.players.find(function(p){return p.id===CID;});var hcp=Number(p&&p.handicap)||0,mode=G.round.mode||'stroke';
   var brEl=document.getElementById('br-'+idx),neEl=document.getElementById('ne-'+idx),row=document.getElementById('hr-'+idx);
   if(next===0){if(row)row.className='hrow filled';if(brEl)brEl.innerHTML='<div class="rv serif" style="color:#aaa">NR</div>';if(neEl)neEl.innerHTML=isStbl()?'<div class="stbl serif" style="color:#aaa">0</div>':'<div class="rv serif" style="color:#aaa">NR</div>';}
@@ -1957,20 +1968,16 @@ function gpsWarmup(){
   GPS_WARM_TIMER=setTimeout(function tick(){if(GPS_MEASURE){GPS_WARM_TIMER=setTimeout(tick,30000);return;}gpsStopWarmup();},90000);
 }
 function gpsStopWarmup(){if(GPS_WARM_TIMER){clearTimeout(GPS_WARM_TIMER);GPS_WARM_TIMER=null;}if(GPS_WATCH!=null&&navigator.geolocation){try{navigator.geolocation.clearWatch(GPS_WATCH);}catch(e){}}GPS_WATCH=null;GPS_LAST=null;}
-function gpsPrime(){
-  // Löst beim ersten Öffnen der Scorecard EINMAL die iOS-Standortabfrage aus,
-  // damit GPS_PERM danach gesetzt ist und das automatische Vorwärmen greift.
-  if(!navigator.geolocation)return;
-  if(GPS_PERM)return;            // Erlaubnis schon da → nichts zu tun
-  if(GPS_PRIMED)return;          // In dieser Sitzung schon einmal versucht
-  GPS_PRIMED=true;
+function gpsPrimeTap(cb){
+  // Wird von einem DIREKTEN Button-Tap aufgerufen → iOS zeigt die Standort-Abfrage zuverlässig.
+  if(!navigator.geolocation){if(cb)cb(false);return;}
   try{
     navigator.geolocation.getCurrentPosition(
-      function(pos){GPS_PERM=true;GPS_LAST={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:pos.coords.accuracy,t:Date.now()};},
-      function(){/* abgelehnt oder Fehler – kein Problem, später erneut per Tap */},
+      function(pos){GPS_PERM=true;GPS_LAST={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:pos.coords.accuracy,t:Date.now()};if(cb)cb(true);},
+      function(){if(cb)cb(false);},
       {enableHighAccuracy:true,timeout:10000,maximumAge:60000}
     );
-  }catch(e){}
+  }catch(e){if(cb)cb(false);}
 }
 function getGps(){
   // Sammelt bis zu 6 Messungen über max ~4s und nimmt die genaueste; nutzt vorgewärmte Position als Start.
