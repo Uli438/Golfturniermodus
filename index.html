@@ -1516,11 +1516,24 @@ function renderHolesZaehler(){
     var mismatch=(mR!=null&&mpSelf!=null&&mR!==mpSelf);
     // Ballverlust/Lady nur für sich selbst (eigene Spalte)
     var ex=CEXT[i]||{};var extraBtns='';
+    var ldHoleZ=G.round.longestDrive||0;var isLDz=ldHoleZ&&(i+1)===ldHoleZ;
     if(zopts.ballverlust||zopts.ladies){
       extraBtns='<div class="zextra">';
       if(zopts.ballverlust){var bvCount=Number(ex.bv)||0;extraBtns+='<button class="extra-btn'+(bvCount>0?' active-bv':'')+'" data-zbv="1" data-idx="'+i+'">🔴 Ball'+(bvCount>0?' ×'+bvCount:'')+'</button>'+(bvCount>0?'<button class="extra-btn active-bv" data-zbv="-1" data-idx="'+i+'" style="padding:6px 10px">−</button>':'');}
       if(zopts.ladies)extraBtns+='<button class="extra-btn'+(ex.la?' active-la':'')+'" data-zla="1" data-idx="'+i+'">🚺 Lady'+(ex.la?' 🍺':'')+'</button>';
       extraBtns+='</div>';
+    }
+    // Longest Drive nur an der LD-Bahn, nur für sich selbst
+    if(isLDz){
+      var gz=ex.ldGender||'H';var shotsZ=ex.shots||[];
+      var gstageZ=(GPS_MEASURE&&GPS_MEASURE.idx===i)?GPS_MEASURE.stage:null;
+      var clubOptsZ=CLUBS.map(function(c){return'<option value="'+esc(c)+'">'+esc(c)+'</option>';}).join('');
+      var shotsHtmlZ=shotsZ.length?'<div class="gps-shots">'+shotsZ.map(function(s,si){return'<span class="gps-shot">'+esc(s.club)+' '+s.dist+'m'+(s.acc!=null?' (±'+s.acc+'m)':'')+' <button data-delshot-idx="'+i+'" data-delshot-si="'+si+'">×</button></span>';}).join('')+'</div>':'';
+      var gLabelZ=gstageZ==='ready'?'📍 Start messen (am Abschlag)':gstageZ==='start'?'📍 Ende messen (am Ball)':'📏 GPS vorbereiten';
+      extraBtns+='<div class="zld"><div class="ld-hint">🏆 Longest Drive — nur mit getroffenem Fairway zählt der Drive</div>'
+        +'<div class="extra-row" style="padding-top:6px"><span style="font-size:11px;color:var(--txt3);font-weight:600;align-self:center">Abschlag:</span><button class="extra-btn'+(gz==='H'?' ld-on-h':'')+'" data-ldg="H" data-idx="'+i+'">🚹 Herren</button><button class="extra-btn'+(gz==='D'?' ld-on-d':'')+'" data-ldg="D" data-idx="'+i+'">🚺 Damen</button></div>'
+        +'<div class="extra-row" style="padding-top:6px"><button class="extra-btn'+(ex.ldFairway?' ld-fw-on':'')+'" data-ldfw="1" data-idx="'+i+'">'+(ex.ldFairway?'✅ Fairway getroffen':'🎯 Fairway getroffen?')+'</button></div>'
+        +'<div class="gps-row" style="margin-top:6px"><select class="gps-club" id="gps-club-'+i+'"'+(gstageZ?' disabled':'')+'>'+clubOptsZ+'</select><button class="gps-btn'+(gstageZ?' measuring':'')+'" id="gps-btn-'+i+'" data-gps-idx="'+i+'">'+gLabelZ+'</button>'+shotsHtmlZ+'</div></div>';
     }
     return'<div class="zrow'+(mismatch?' mismatch':'')+'" id="zr-'+i+'"><div class="zinfo"><div class="hnum serif">'+(i+1)+'</div><div class="hpar">P'+pv+'</div></div>'
       +'<div class="zstepwrap"><div class="zstep"><button class="zbtn" data-zs="self" data-idx="'+i+'" data-d="-1">−</button><div class="'+sCls+'" id="zsv-'+i+'">'+sTxt+'</div><button class="zbtn" data-zs="self" data-idx="'+i+'" data-d="1">+</button></div>'+extraBtns+'</div>'
@@ -1530,6 +1543,10 @@ function renderHolesZaehler(){
   document.querySelectorAll('.zbtn').forEach(function(btn){btn.addEventListener('click',function(){zstep(this.dataset.zs,parseInt(this.dataset.idx),parseInt(this.dataset.d));});});
   document.querySelectorAll('[data-zbv]').forEach(function(btn){btn.addEventListener('click',function(){var idx=parseInt(this.dataset.idx),d=parseInt(this.dataset.zbv);CEXT[idx].bv=Math.max(0,(Number(CEXT[idx].bv)||0)+d);renderHolesZaehler();trigAS();});});
   document.querySelectorAll('[data-zla]').forEach(function(btn){btn.addEventListener('click',function(){var idx=parseInt(this.dataset.idx);CEXT[idx].la=!CEXT[idx].la;renderHolesZaehler();trigAS();});});
+  document.querySelectorAll('[data-ldg]').forEach(function(btn){btn.addEventListener('click',function(){var idx=parseInt(this.dataset.idx);CEXT[idx].ldGender=this.dataset.ldg;renderHolesZaehler();trigAS();});});
+  document.querySelectorAll('[data-ldfw]').forEach(function(btn){btn.addEventListener('click',function(){var idx=parseInt(this.dataset.idx);CEXT[idx].ldFairway=!CEXT[idx].ldFairway;renderHolesZaehler();trigAS();});});
+  document.querySelectorAll('.zld [data-gps-idx]').forEach(function(btn){btn.addEventListener('click',function(){gpsMeasure(parseInt(this.dataset.gpsIdx));});});
+  document.querySelectorAll('.zld [data-delshot-idx]').forEach(function(btn){btn.addEventListener('click',function(){var idx=parseInt(this.dataset.delshotIdx),si=parseInt(this.dataset.delshotSi);delShot(idx,si);renderHolesZaehler();});});
   // Vergleichsleiste unter der Tabelle
   renderZCompare();
   refreshHalf(holes);
@@ -1963,6 +1980,7 @@ function getGps(){
   });
 }
 function accColor(acc){if(acc==null)return'rgba(21,101,192,.96)';if(acc<=8)return'rgba(46,125,50,.96)';if(acc<=15)return'rgba(230,81,0,.96)';return'rgba(198,40,40,.96)';}
+function rerenderHoles(){var o=G.round.options||{};if(o.zaehler&&MARK_ID)renderHolesZaehler();else renderHoles();}
 async function gpsMeasure(idx){
   var clubSel=document.getElementById('gps-club-'+idx);var club=clubSel?clubSel.value:CLUBS[0];
   var btn=document.getElementById('gps-btn-'+idx);
@@ -1970,25 +1988,25 @@ async function gpsMeasure(idx){
   if(st==='ready'){
     // 2. Druck: Startpunkt setzen
     if(btn){btn.textContent='⏳ Startpunkt…';btn.disabled=true;}
-    try{var start=await getGps();GPS_MEASURE={idx:idx,stage:'start',start:start,club:club};toast('📍 Start gesetzt — geh zum Ball und tippe „Ende messen"',accColor(start.acc));renderHoles();}
-    catch(e){toast('⚠️ GPS Fehler: '+(e.message||'kein Signal'),'rgba(198,40,40,.96)');GPS_MEASURE=null;renderHoles();}
+    try{var start=await getGps();GPS_MEASURE={idx:idx,stage:'start',start:start,club:club};toast('📍 Start gesetzt — geh zum Ball und tippe „Ende messen"',accColor(start.acc));rerenderHoles();}
+    catch(e){toast('⚠️ GPS Fehler: '+(e.message||'kein Signal'),'rgba(198,40,40,.96)');GPS_MEASURE=null;rerenderHoles();}
   }else if(st==='start'){
     // 3. Druck: Endpunkt messen → Distanz
     if(btn){btn.textContent='⏳ messe…';btn.disabled=true;}
     try{var end=await getGps();var dist=haversine(GPS_MEASURE.start,end);
       var combAcc=Math.round(Math.sqrt(Math.pow(GPS_MEASURE.start.acc||0,2)+Math.pow(end.acc||0,2)));
       if(!CEXT[idx].shots)CEXT[idx].shots=[];CEXT[idx].shots.push({club:GPS_MEASURE.club,dist:dist,acc:combAcc});
-      GPS_MEASURE=null;toast('📏 '+GPS_MEASURE_CLUB(club)+': '+dist+' m  (±'+combAcc+' m)',accColor(combAcc));renderHoles();trigAS();
-    }catch(e){toast('⚠️ GPS Fehler: '+(e.message||'kein Signal'),'rgba(198,40,40,.96)');GPS_MEASURE=null;renderHoles();}
+      GPS_MEASURE=null;toast('📏 '+GPS_MEASURE_CLUB(club)+': '+dist+' m  (±'+combAcc+' m)',accColor(combAcc));rerenderHoles();trigAS();
+    }catch(e){toast('⚠️ GPS Fehler: '+(e.message||'kein Signal'),'rgba(198,40,40,.96)');GPS_MEASURE=null;rerenderHoles();}
   }else{
     // 1. Druck: auf gutes GPS-Signal warten (löst iOS-Popup aus + wärmt vor)
     if(btn){btn.textContent='⏳ Warten auf GPS…';btn.disabled=true;}
-    try{var fix=await getGps();GPS_MEASURE={idx:idx,stage:'ready',club:club};toast('✅ GPS bereit (±'+Math.round(fix.acc)+' m) — tippe „Start messen"',accColor(fix.acc));renderHoles();}
-    catch(e){toast('⚠️ GPS Fehler: '+(e.message||'kein Signal'),'rgba(198,40,40,.96)');GPS_MEASURE=null;renderHoles();}
+    try{var fix=await getGps();GPS_MEASURE={idx:idx,stage:'ready',club:club};toast('✅ GPS bereit (±'+Math.round(fix.acc)+' m) — tippe „Start messen"',accColor(fix.acc));rerenderHoles();}
+    catch(e){toast('⚠️ GPS Fehler: '+(e.message||'kein Signal'),'rgba(198,40,40,.96)');GPS_MEASURE=null;rerenderHoles();}
   }
 }
 function GPS_MEASURE_CLUB(c){return c||'Schlag';}
-function delShot(idx,si){if(CEXT[idx]&&CEXT[idx].shots){CEXT[idx].shots.splice(si,1);renderHoles();trigAS();}}
+function delShot(idx,si){if(CEXT[idx]&&CEXT[idx].shots){CEXT[idx].shots.splice(si,1);rerenderHoles();trigAS();}}
 
 // ════ SPIELANALYSE ════
 function openAnalyse(pid){
