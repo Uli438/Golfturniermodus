@@ -1204,15 +1204,23 @@ async function loadRegistry(){
   try{
     await initFB();
     var snap=await DB.ref('players_registry').get();
-    if(!snap||!snap.exists()){box.innerHTML='<div style="text-align:center;padding:14px;color:var(--txt3);font-size:12px">Noch keine Einträge. Starte ein Turnier mit Spielern.</div>';return;}
+    if(!snap||!snap.exists()){if(box)box.innerHTML='<div style="text-align:center;padding:14px;color:var(--txt3);font-size:12px">Noch keine Einträge. Starte ein Turnier mit Spielern.</div>';return;}
     var all=snap.val();
-    var rows=Object.keys(all).map(function(pid){var e=all[pid]||{};var names=e.names?Object.keys(e.names):(e.lastName?[e.lastName]:[]);return{pid:pid,names:names,lastName:e.lastName||names[0]||'?',hcp:e.handicap,lastSeen:e.lastSeen||''};});
-    rows.sort(function(a,b){return(b.lastSeen||'').localeCompare(a.lastSeen||'');});
-    box.innerHTML='<div style="font-size:11px;color:var(--txt3);margin-bottom:8px">'+rows.length+' Spieler im Verzeichnis</div>'+rows.map(function(r){
+    if(!all||typeof all!=='object'){if(box)box.innerHTML='<div style="text-align:center;padding:14px;color:var(--txt3);font-size:12px">Noch keine Einträge.</div>';return;}
+    var rows=Object.keys(all).map(function(pid){
+      var e=all[pid]||{};
+      var names=[];
+      if(e.names&&typeof e.names==='object')names=Object.keys(e.names);
+      else if(e.lastName)names=[e.lastName];
+      var hcp=(e.handicap!=null&&e.handicap!=='')?e.handicap:null;
+      return{pid:pid,names:names,lastName:e.lastName||names[0]||'?',hcp:hcp,lastSeen:e.lastSeen||''};
+    });
+    rows.sort(function(a,b){return String(b.lastSeen||'').localeCompare(String(a.lastSeen||''));});
+    if(box)box.innerHTML='<div style="font-size:11px;color:var(--txt3);margin-bottom:8px">'+rows.length+' Spieler im Verzeichnis</div>'+rows.map(function(r){
       var alt=r.names.filter(function(n){return n!==r.lastName;});
-      return '<div style="padding:9px 12px;background:var(--card);border:1px solid var(--border-light);border-radius:10px;margin-bottom:6px"><div style="display:flex;align-items:center;gap:8px"><div style="flex:1;font-size:13px;font-weight:700">'+esc(r.lastName)+(r.hcp!=null?' <span style="font-weight:400;color:var(--txt3)">HCP '+esc(String(r.hcp))+'</span>':'')+'</div></div><div style="font-size:10px;color:var(--txt3);font-family:monospace;margin-top:3px">'+esc(r.pid)+'</div>'+(alt.length?'<div style="font-size:10px;color:var(--txt2);margin-top:3px">auch: '+alt.map(esc).join(', ')+'</div>':'')+'</div>';
+      return '<div style="padding:9px 12px;background:var(--card);border:1px solid var(--border-light);border-radius:10px;margin-bottom:6px"><div style="display:flex;align-items:center;gap:8px"><div style="flex:1;font-size:13px;font-weight:700">'+esc(String(r.lastName))+(r.hcp!=null?' <span style="font-weight:400;color:var(--txt3)">HCP '+esc(String(r.hcp))+'</span>':'')+'</div></div><div style="font-size:10px;color:var(--txt3);font-family:monospace;margin-top:3px">'+esc(String(r.pid))+'</div>'+(alt.length?'<div style="font-size:10px;color:var(--txt2);margin-top:3px">auch: '+alt.map(function(n){return esc(String(n));}).join(', ')+'</div>':'')+'</div>';
     }).join('');
-  }catch(e){if(box)box.innerHTML='<div style="text-align:center;padding:14px;color:var(--red);font-size:12px">⚠️ Fehler beim Laden</div>';}
+  }catch(e){if(box)box.innerHTML='<div style="text-align:center;padding:14px;color:var(--red);font-size:12px">⚠️ Fehler beim Laden<div style="font-size:10px;color:var(--txt3);margin-top:6px">'+esc(e&&e.message?e.message:String(e))+'</div></div>';}
 }
 var LIVE_PRES_REF=null;
 function startLiveWatch(){
@@ -1845,7 +1853,21 @@ async function saveSetup(){
   var notifSettings={hio:gv('notif-hio'),eagle:gv('notif-eagle'),birdie:gv('notif-birdie'),par:gv('notif-par'),bogey:gv('notif-bogey'),double:gv('notif-double'),bv:gv('notif-bv'),lady:gv('notif-lady'),putt3:gv('notif-putt3'),scorelog:gv('notif-scorelog')};
   G.round={courseName:cname,par:SPAR,strokeIndex:SSI,tee:tee,date:document.getElementById('r-date').value||tod(),mode:rMode,maxScore:maxScore,teamMode:STM,longestDrive:(parseInt(document.getElementById('longest-drive-hole').value)||0),options:{ballverlust:gv('opt-ballverlust'),ladies:gv('opt-ladies'),putts:gv('opt-putts'),notif:gv('opt-notif'),notifSettings:notifSettings,zaehler:gv('opt-zaehler')}};
   G.players=SP;var trnR=parseInt(document.getElementById('trn-rounds').value)||0;
-  if(trnR>1){if(!G.tournament||G.tournament.totalRounds!==trnR)G.tournament={totalRounds:trnR,currentRound:1,name:cname,rounds:[]};}else G.tournament=null;
+  // SCHUTZ vor Datenverlust: eingefrorene Runden dürfen nicht durch Umschalten gelöscht werden
+  var frozenCount=(G.tournament&&G.tournament.rounds)?G.tournament.rounds.length:0;
+  if(frozenCount>0){
+    if(trnR<=1){
+      await askConfirm('⚠️ Es sind bereits '+frozenCount+' Runde(n) eingefroren.\n\nAuf „Keine Turnierwertung" umzuschalten würde diese Ergebnisse löschen. Das ist gesperrt, um Datenverlust zu vermeiden.\n\nWenn du wirklich umschalten willst, entfriere zuerst die Runden über die Entwickler-Seite („Einfrieren rückgängig").','Verstanden','#e65100');
+      var tSelR=document.getElementById('trn-rounds');if(tSelR)tSelR.value=G.tournament.totalRounds;
+      return;
+    }
+    if(trnR<frozenCount+1){
+      await askConfirm('⚠️ Es sind bereits '+frozenCount+' Runde(n) eingefroren.\n\nDie Rundenzahl kann nicht kleiner als die Zahl der bereits gespielten Runden sein, sonst gingen Ergebnisse verloren.','Verstanden','#e65100');
+      var tSelR2=document.getElementById('trn-rounds');if(tSelR2)tSelR2.value=G.tournament.totalRounds;
+      return;
+    }
+  }
+  if(trnR>1){if(!G.tournament||G.tournament.totalRounds!==trnR){if(G.tournament&&frozenCount>0){G.tournament.totalRounds=trnR;}else{G.tournament={totalRounds:trnR,currentRound:1,name:cname,rounds:[]};}}}else G.tournament=null;
   if(!CODE)CODE=genCode();NOTIF_ON=gv('opt-notif');saveRec(CODE,cname);document.getElementById('code-badge').textContent='🔑 '+CODE;
   try{await initFB();await fbSet(fp('players'),null);await fbSet(fp('round'),G.round);await Promise.all(G.players.map(function(p){return fbSet(fp('players/'+p.id),p);}));await fbSet(fp('tournament'),G.tournament||null);await fbSet(fp('notif'),NOTIF_ON);try{await DB.ref('turniere/'+CODE+'/meta/lastSeen').set(new Date().toISOString());}catch(e){}registerAllPlayers(G.players,CODE);toast('✓ Turnier '+CODE+' gestartet');startListeners();trackPresence(CODE);}catch(e){toast('⚠️ Firebase nicht erreichbar');}
   LIVE_ROUND=G.round;LIVE_PLAYERS=G.players.slice();VIEW_RND=null;renderLB();refreshTrnUI();showView('lb');
