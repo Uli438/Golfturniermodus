@@ -2003,25 +2003,39 @@ function gpsPrimeTap(cb){
   }catch(e){if(cb)cb(false);}
 }
 function getGps(){
-  // Sammelt bis zu 6 Messungen über max ~4s und nimmt die genaueste; nutzt vorgewärmte Position als Start.
+  // Sammelt Messungen über ~4s und MITTELT die guten (gewichtet nach Genauigkeit) → stabiler bei schwankendem GPS.
   return new Promise(function(resolve,reject){
     if(!navigator.geolocation){reject(new Error('GPS nicht verfügbar'));return;}
-    var best=null,count=0,done=false,maxN=6;
+    var samples=[],best=null,done=false,maxN=8;
     // Vorgewärmte Position als erste Referenz (nur wenn frisch, < 3s alt)
-    if(GPS_LAST&&(Date.now()-GPS_LAST.t)<3000)best={lat:GPS_LAST.lat,lng:GPS_LAST.lng,acc:GPS_LAST.acc};
+    if(GPS_LAST&&(Date.now()-GPS_LAST.t)<3000){var w={lat:GPS_LAST.lat,lng:GPS_LAST.lng,acc:GPS_LAST.acc};samples.push(w);best=w;}
     var wid=null,to=null;
-    function finish(){if(done)return;done=true;if(wid!=null)navigator.geolocation.clearWatch(wid);if(to)clearTimeout(to);if(best){GPS_PERM=true;resolve(best);}else reject(new Error('kein Signal'));}
-    function consider(pos){count++;var c={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:pos.coords.accuracy};if(!best||c.acc<best.acc)best=c;if((best.acc<=6&&count>=2)||count>=maxN)finish();}
+    function avg(){
+      // Gewichteter Mittelwert der besten Messungen (Gewicht = 1/Genauigkeit²)
+      if(!samples.length)return best;
+      // Nur die Messungen mit brauchbarer Genauigkeit nehmen (relativ zur besten)
+      var minAcc=Math.min.apply(null,samples.map(function(s){return s.acc||99;}));
+      var good=samples.filter(function(s){return (s.acc||99)<=minAcc+8;}); // innerhalb 8m der besten
+      if(!good.length)good=samples;
+      var sw=0,slat=0,slng=0,accSum=0;
+      good.forEach(function(s){var wgt=1/Math.max(1,(s.acc||10)*(s.acc||10));sw+=wgt;slat+=s.lat*wgt;slng+=s.lng*wgt;accSum+=(s.acc||10);});
+      return{lat:slat/sw,lng:slng/sw,acc:Math.round(accSum/good.length)};
+    }
+    function finish(){if(done)return;done=true;if(wid!=null)navigator.geolocation.clearWatch(wid);if(to)clearTimeout(to);var res=avg();if(res){GPS_PERM=true;resolve(res);}else reject(new Error('kein Signal'));}
+    function consider(pos){var c={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:pos.coords.accuracy};samples.push(c);if(!best||c.acc<best.acc)best=c;
+      // Genug gute Messungen für einen stabilen Mittelwert? (mind. 3 gute ODER maxN erreicht)
+      var goodCount=samples.filter(function(s){return (s.acc||99)<=8;}).length;
+      if((goodCount>=3)||samples.length>=maxN)finish();
+    }
     // 1) Erste Anfrage IMMER über getCurrentPosition → löst auf iOS-PWA zuverlässig das Berechtigungs-Popup aus
     navigator.geolocation.getCurrentPosition(function(pos){
       consider(pos);
       if(done)return;
       // 2) danach kurz verfeinern über watchPosition
       try{wid=navigator.geolocation.watchPosition(consider,function(){},{enableHighAccuracy:true,timeout:12000,maximumAge:0});}catch(e){}
-      to=setTimeout(finish,3500);
+      to=setTimeout(finish,4500);
     },function(err){
-      // Fehler/Ablehnung: wenn wir eine vorgewärmte Position haben, die nehmen, sonst Fehler
-      if(best)finish();else reject(err);
+      if(samples.length)finish();else reject(err);
     },{enableHighAccuracy:true,timeout:12000,maximumAge:0});
   });
 }
