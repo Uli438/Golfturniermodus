@@ -182,6 +182,11 @@ input,select,button{font-family:'DM Sans',sans-serif}
 .extra-btn.active-bv{background:#ffebee;border-color:var(--red);color:var(--red)}
 .extra-btn.active-la{background:#e3f2fd;border-color:var(--accent);color:var(--accent)}
 .analyse-row{padding:8px 14px;background:#f8fbff;border-bottom:1px solid var(--border-light)}
+.track-menu{padding:10px 14px;background:#f2f8ff;border-bottom:1px solid var(--border-light)}
+.track-menu-title{font-size:11px;color:var(--accent);font-weight:700;margin-bottom:8px}
+.track-chips{display:flex;gap:6px;flex-wrap:wrap}
+.tchip{padding:8px 12px;border-radius:18px;border:2px solid var(--border-light);background:var(--card);font-size:12px;font-weight:600;cursor:pointer;color:var(--txt2);transition:all .15s}
+.tchip.on{background:var(--accent);border-color:var(--accent);color:#fff}
 .analyse-row-title{font-size:9px;color:var(--accent);letter-spacing:1px;font-weight:700;margin-bottom:6px}
 .analyse-chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px}
 .achip{padding:5px 10px;border-radius:16px;border:2px solid var(--border-light);background:var(--card);font-size:11px;font-weight:600;cursor:pointer;color:var(--txt2);white-space:nowrap}
@@ -409,6 +414,7 @@ input,select,button{font-family:'DM Sans',sans-serif}
     <div class="lobby-logo" id="lobby-logo-pro" style="display:none"><svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="pl_g1gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6e27a"/><stop offset="0.45" stop-color="#d4af37"/><stop offset="0.7" stop-color="#b8860b"/><stop offset="1" stop-color="#f6e27a"/></linearGradient><filter id="pl_a_ds" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#0c2a18" flood-opacity="0.28"/></filter><filter id="pl_goldglow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="#d4af37" flood-opacity="0.45"/></filter></defs><ellipse cx="300" cy="232" rx="232" ry="186" fill="none" stroke="url(#pl_g1gold)" stroke-width="9" filter="url(#pl_goldglow)"/><ellipse cx="300" cy="232" rx="214" ry="168" fill="none" stroke="url(#pl_g1gold)" stroke-width="2.5" opacity="0.8"/><defs><linearGradient id="pl_a_sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe6ff"/><stop offset="0.6" stop-color="#e3f4ff"/><stop offset="1" stop-color="#f4fbff"/></linearGradient><linearGradient id="pl_a_green" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fcf4f"/><stop offset="1" stop-color="#2f8a1d"/></linearGradient><linearGradient id="pl_a_ribG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8ad13a"/><stop offset="0.5" stop-color="#57b026"/><stop offset="1" stop-color="#2c7d14"/></linearGradient><linearGradient id="pl_a_ribB" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3eb0ec"/><stop offset="0.5" stop-color="#1d84cf"/><stop offset="1" stop-color="#0a5ba2"/></linearGradient><linearGradient id="pl_a_bird" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#33495a"/><stop offset="0.55" stop-color="#1c2c39"/><stop offset="1" stop-color="#0e1920"/></linearGradient><linearGradient id="pl_a_birdWing" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3f5a6e"/><stop offset="1" stop-color="#16242e"/></linearGradient><radialGradient id="pl_a_ball" cx="0.38" cy="0.34" r="0.75"><stop offset="0" stop-color="#fff"/><stop offset="0.7" stop-color="#eef2f4"/><stop offset="1" stop-color="#c7d0d6"/></radialGradient><clipPath id="pl_a_clip"><ellipse cx="300" cy="232" rx="196" ry="150"/></clipPath></defs><g filter="url(#pl_a_ds)"><path d="M300 36 C 470 36 560 130 560 232 C 560 300 520 352 470 380 C 520 330 532 268 510 214 C 478 132 398 86 300 86 C 250 86 206 100 170 124 C 210 70 250 36 300 36 Z" fill="url(#pl_a_ribB)"/><path d="M300 428 C 130 428 40 334 40 232 C 40 164 80 112 130 84 C 80 134 68 196 90 250 C 122 332 202 378 300 378 C 350 378 394 364 430 340 C 390 394 350 428 300 428 Z" fill="url(#pl_a_ribG)"/></g><g clip-path="url(#pl_a_clip)"><rect x="100" y="78" width="400" height="200" fill="url(#pl_a_sky)"/><path d="M104 250 C 200 210 330 214 496 246 L 496 390 L 104 390 Z" fill="url(#pl_a_green)"/><line x1="388" y1="196" x2="388" y2="286" stroke="#3a3a3a" stroke-width="4" stroke-linecap="round"/><path d="M388 198 L 430 210 L 388 224 Z" fill="#e8403a"/><circle cx="250" cy="300" r="26" fill="url(#pl_a_ball)"/><circle cx="243" cy="294" r="3" fill="#d3dade"/><circle cx="255" cy="300" r="3" fill="#d3dade"/><circle cx="248" cy="308" r="3" fill="#d3dade"/><g filter="url(#pl_a_ds)"><path d="M286 168 C 250 120 214 92 168 84 C 206 110 232 146 256 192 Z" fill="url(#pl_a_birdWing)"/><path d="M300 166 C 286 116 300 70 332 40 C 330 92 330 140 318 178 Z" fill="url(#pl_a_bird)"/><path d="M256 196 C 270 176 300 168 332 178 C 360 186 372 200 366 214 C 360 230 332 236 300 230 C 280 226 262 216 256 196 Z" fill="url(#pl_a_bird)"/><circle cx="360" cy="190" r="17" fill="url(#pl_a_bird)"/><path d="M375 186 L 396 191 L 375 199 Z" fill="#f3a51f"/><circle cx="365" cy="187" r="3" fill="#fff"/><circle cx="366" cy="187" r="1.5" fill="#0e1920"/><path d="M262 214 C 240 226 218 228 200 222 C 222 218 240 208 256 196 Z" fill="url(#pl_a_birdWing)"/></g></g><ellipse cx="300" cy="232" rx="196" ry="150" fill="none" stroke="#fff" stroke-width="6" opacity="0.85"/><g transform="translate(300,470)"><rect x="-132" y="-34" width="264" height="60" rx="30" fill="#0e1920" filter="url(#pl_a_ds)"/><rect x="-132" y="-34" width="264" height="60" rx="30" fill="none" stroke="url(#pl_g1gold)" stroke-width="2.5"/><rect x="-126" y="-28" width="252" height="48" rx="24" fill="none" stroke="url(#pl_g1gold)" stroke-width="0.8" opacity="0.5"/><text x="-20" y="9" text-anchor="middle" font-family="'Archivo',sans-serif" font-weight="800" font-size="40" letter-spacing="-1"><tspan fill="#ffffff">Bird</tspan><tspan fill="#8ad13a">ino</tspan></text><text x="92" y="8" text-anchor="middle" font-family="'Archivo',sans-serif" font-weight="900" font-size="28" fill="url(#pl_g1gold)" letter-spacing="1">PRO</text></g><g transform="translate(300,46)"><circle r="17" fill="#0e1920"/><circle r="17" fill="none" stroke="url(#pl_g1gold)" stroke-width="2.5"/><path d="M-8 3 L-5 -6 L0 0 L5 -6 L8 3 Z" fill="url(#pl_g1gold)"/></g></svg></div>
     <div class="lobby-title">Bird<span>ino</span></div>
     <div class="lobby-sub">Turniere organisieren · live mitspielen</div>
+    <div id="beta-badge" style="display:none;margin:8px auto 0;width:fit-content;padding:3px 12px;border-radius:12px;background:linear-gradient(135deg,#ff9800,#f57c00);color:#fff;font-size:11px;font-weight:800;letter-spacing:1.5px;box-shadow:0 2px 8px rgba(245,124,0,.35)">BETA-VERSION</div>
   </div>
   <div class="lobby-body">
     <div class="lcard"><div class="lcard-title">NEUES TURNIER</div><button class="lbtn lbtn-green" id="btn-new-trn">+ Turnier erstellen</button></div>
@@ -432,6 +438,7 @@ input,select,button{font-family:'DM Sans',sans-serif}
 <div id="view-lb" class="view">
   <div id="lb-hero">
     <div class="eyebrow"><div class="sync-dot" id="sync-dot"></div>LIVE SCORING · TURNIERMODUS</div>
+    <img id="lb-logo" style="display:none;max-width:120px;max-height:90px;margin:0 auto 8px;border-radius:10px" alt="Turnier-Logo">
     <div class="lb-title serif" id="lb-course-name">Birdino</div>
     <div class="lb-sub" id="lb-course-meta"></div>
     <div class="code-badge" id="code-badge">🔑 ···</div>
@@ -468,6 +475,7 @@ input,select,button{font-family:'DM Sans',sans-serif}
   <div class="sc-tabs"><button class="sc-tab active" id="tab-front">FRONT 9 (1–9)</button><button class="sc-tab" id="tab-back">BACK 9 (10–18)</button></div>
   <div class="sc-col-head"><span>LOCH</span><span>SCHLÄGE</span><span>BRUTTO</span><span id="col4lbl">NETTO</span></div>
   <div id="gps-prime-bar" style="display:none;padding:12px 14px;background:#fff8e6;border-bottom:1px solid #f0e0b0"><button id="gps-prime-btn" style="width:100%;padding:13px;border-radius:11px;border:none;background:#1f8fd6;color:#fff;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(31,143,214,.3)">📍 GPS für Schlagweiten aktivieren</button><div style="font-size:11px;color:#8a7a4a;text-align:center;margin-top:7px;line-height:1.4">Einmal antippen, um Standort zu erlauben — danach misst die App Schlagweiten & Longest Drive.</div></div>
+  <div id="pate-bar" style="display:none;padding:10px 14px;background:#f5eefb;border-bottom:1px solid #e0d0ee"></div>
   <div id="sc-holes"></div>
   <div id="half-bar" class="half-bar" style="display:none"><div style="font-size:9px;color:var(--txt3);text-align:center">∑</div><div style="font-size:11px;color:var(--txt2)" id="half-par-lbl"></div><div style="text-align:center;font-size:16px;font-weight:700;font-family:'Cormorant Garamond',serif" id="half-brutto-lbl"></div><div style="text-align:center;font-size:13px;font-weight:700;color:#6a1b9a;font-family:'Cormorant Garamond',serif" id="half-stbl-lbl"></div></div>
   <div style="height:82px"></div>
@@ -556,7 +564,7 @@ input,select,button{font-family:'DM Sans',sans-serif}
       <div style="display:flex;flex-direction:column;gap:8px">
         <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card);border:2px solid var(--border-light);border-radius:10px;cursor:pointer"><input type="checkbox" id="opt-ballverlust" style="width:18px;height:18px;cursor:pointer;accent-color:var(--accent)"><div><div style="font-size:13px;font-weight:700">🔴 Ballverlust markieren</div><div style="font-size:10px;color:var(--txt3)">Pro Loch zählbar — nur zur Info, kein Strafschlag</div></div></label>
         <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card);border:2px solid var(--border-light);border-radius:10px;cursor:pointer"><input type="checkbox" id="opt-ladies" style="width:18px;height:18px;cursor:pointer;accent-color:var(--accent)"><div><div style="font-size:13px;font-weight:700">🚺 Lady-Button</div><div style="font-size:10px;color:var(--txt3)">Abschlag nicht über Damenabschlag — Getränk-Tracker 🍺</div></div></label>
-        <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card);border:2px solid var(--border-light);border-radius:10px;cursor:pointer"><input type="checkbox" id="opt-putts" style="width:18px;height:18px;cursor:pointer;accent-color:var(--accent)"><div><div style="font-size:13px;font-weight:700">🏌️ Putts pro Loch</div><div style="font-size:10px;color:var(--txt3)">Putts eintragen — Statistik im Leaderboard</div></div></label>
+        <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card);border:2px solid var(--border-light);border-radius:10px;cursor:pointer;opacity:.6" title="Putts werden jetzt pro Spieler im 📊-Menü gewählt"><div><div style="font-size:13px;font-weight:700">🏌️ Putts &amp; Statistik</div><div style="font-size:10px;color:var(--txt3)">Jetzt pro Spieler im 📊-Menü wählbar</div></div></label>
         <label id="opt-zaehler-label" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card);border:2px solid var(--border-light);border-radius:10px;cursor:pointer"><input type="checkbox" id="opt-zaehler" style="width:18px;height:18px;cursor:pointer;accent-color:var(--accent)"><div><div style="font-size:13px;font-weight:700">🖊️ Zähler-Modus (Marker)</div><div style="font-size:10px;color:var(--txt3)">Jeder trägt eigenen Score + den eines Mitspielers ein</div></div></label>
         <div id="zaehler-flights" style="display:none;background:var(--bg2);border:2px solid var(--border-light);border-radius:10px;padding:12px;margin-top:-4px">
           <div style="font-size:9px;color:var(--accent);letter-spacing:2px;font-weight:700;margin-bottom:8px">FLIGHTS & ZÄHLER-ZUORDNUNG</div>
@@ -664,6 +672,19 @@ input,select,button{font-family:'DM Sans',sans-serif}
       </div>
     </div>
 
+    <div class="dev-sec">TURNIER-LOGO</div>
+    <div class="lcard">
+      <div class="lcard-title">🖼️ EIGENES LOGO FÜR EIN TURNIER</div>
+      <div style="font-size:11px;color:var(--txt2);margin-bottom:12px;line-height:1.5">Lade ein kleines Logo hoch, das oben auf dem Leaderboard eines bestimmten Turniers erscheint. Wird automatisch verkleinert.</div>
+      <input type="text" id="logo-code" inputmode="numeric" placeholder="Turnier-Code (z.B. 123)" maxlength="3" style="width:100%;padding:11px;border-radius:9px;border:2px solid var(--border-light);font-size:14px;text-align:center;font-weight:700;margin-bottom:10px;box-sizing:border-box">
+      <input type="file" id="logo-file" accept="image/*" style="display:none">
+      <button id="logo-pick" style="width:100%;padding:12px;border-radius:9px;border:2px dashed var(--accent);background:var(--card);color:var(--accent);font-size:13px;font-weight:700;cursor:pointer;margin-bottom:10px">📁 Bild auswählen</button>
+      <div id="logo-preview" style="text-align:center;margin-bottom:10px"></div>
+      <button id="logo-save" style="width:100%;padding:12px;border-radius:9px;border:none;background:var(--green);color:#fff;font-size:13px;font-weight:700;cursor:pointer;display:none;margin-bottom:8px">✅ Logo für Turnier speichern</button>
+      <button id="logo-remove" style="width:100%;padding:10px;border-radius:9px;border:2px solid var(--red);background:var(--card);color:var(--red);font-size:12px;font-weight:700;cursor:pointer;display:none">🗑 Logo entfernen</button>
+      <div id="logo-status" style="font-size:11px;text-align:center;margin-top:8px"></div>
+    </div>
+
     <div class="dev-sec">BIRDINO PRO</div>
     <div class="lcard">
       <div class="lcard-title">⭐ PRO-FUNKTIONEN</div>
@@ -734,6 +755,17 @@ input,select,button{font-family:'DM Sans',sans-serif}
 
 <script>
 // ════ KONSTANTEN ════
+// ════ BETA-BADGE KONFIGURATION ════
+// Hier die Adressen eintragen, auf denen "BETA" unter dem Logo erscheinen soll.
+// Es wird der Pfad der aktuellen Adresse geprüft (nach github.io/).
+// Aktuell: nur die Entwickler-Version zeigt BETA, die Hauptversion nicht.
+var BETA_PATHS=['/GolfTurnierEntwickler'];   // z.B. auch '/Golfturniermodus' ergänzen, wenn gewünscht
+function isBetaHost(){
+  try{
+    var path=location.pathname||'';
+    return BETA_PATHS.some(function(p){return path.toLowerCase().indexOf(p.toLowerCase())===0;});
+  }catch(e){return false;}
+}
 var DPAR=[4,5,3,4,4,3,5,4,4,4,4,3,5,4,3,4,5,4];
 var DSI=[7,1,15,11,5,17,3,9,13,8,2,16,12,6,18,4,10,14];
 var AKEY='CE54DA6SHLKW3NBV27VE7SF4TY',ABASE='https://api.golfcourseapi.com/v1';
@@ -752,6 +784,7 @@ var CLEANUP_DAYS=30;
 var CLEANUP_PROTECT='';
 var IS_ADMIN_VIEW=false;
 var CMARK=Array(18).fill(null),MARK_ID=null,Z_SLOT='self';
+var WARD_ID=null,WARD_CS=Array(18).fill(null),WARD_EXT=Array(18).fill(null);
 var GPS_MEASURE=null;
 var CLUBS=['Driver','Holz 3','Holz 5','Hybrid','Eisen 4','Eisen 5','Eisen 6','Eisen 7','Eisen 8','Eisen 9','Pitching Wedge','Gap Wedge','Sand Wedge','Lob Wedge'];
 var FB_CFG={apiKey:'AIzaSyDWzTqMaEa2U9MF_k84MBvbHj1wK30LuuA',authDomain:'ulis-golfscore.firebaseapp.com',databaseURL:'https://ulis-golfscore-default-rtdb.europe-west1.firebasedatabase.app',projectId:'ulis-golfscore',storageBucket:'ulis-golfscore.firebasestorage.app',messagingSenderId:'752079349846',appId:'1:752079349846:web:5fe4656acf7722f743b3f7'};
@@ -767,7 +800,7 @@ var CID=null,CS=Array(18).fill(null),CTAB='front';
 var CEXT=Array(18).fill(null).map(function(){return{bv:0,la:false,putts:0,absch:null,abschLaenge:null,annDist:null,annTref:false};});
 var LBM='brutto',LBV='einzel',TM='bestball';
 var pSync=false,aTimer=null;
-var SP=[],SPAR=DPAR.slice(),SSI=DSI.slice(),SAC=null,SAT=null,CTM='manual',SDB=null,STM='none';
+var SP=[],SPAR=DPAR.slice(),SSI=DSI.slice(),SAC=null,SAT=null,CTM='manual',SDB=null,STM='none',TRACK_OPEN=null,PAT_OPEN=null;
 var NOTIF_ON=false,PREV_SNAP={},LOG_OPEN=false;
 var PRES_REF=null;
 
@@ -873,7 +906,7 @@ function checkEvents(prev,np){
   }
   if(opts.ballverlust&&on('bv')){for(var j=0;j<18;j++){var obv=Number((oEx[j]&&oEx[j].bv)||0),nbv=Number((nEx[j]&&nEx[j].bv)||0);if(nbv>obv){showBanner('🔴','Ballverlust'+(nbv>1?' ×'+nbv:'')+' — '+name+' · Loch '+(j+1),'bv');break;}}}
   if(opts.ladies&&on('lady')){for(var k=0;k<18;k++){if(!(oEx[k]&&oEx[k].la)&&(nEx[k]&&nEx[k].la)){showBanner('🚺',name+' · Loch '+(k+1)+' — Lady 🍺','lady');break;}}}
-  if(opts.putts&&on('putt3')){for(var l=0;l<18;l++){var op=Number((oEx[l]&&oEx[l].putts)||0),np2=Number((nEx[l]&&nEx[l].putts)||0);if(np2>=3&&op<3&&nSc[l]!=null){showBanner('🏌️‍♂️','3-Putt! '+name+' · Loch '+(l+1),'putt3');break;}}}
+  if(np&&np.track&&np.track.putts&&on('putt3')){for(var l=0;l<18;l++){var op=Number((oEx[l]&&oEx[l].putts)||0),np2=Number((nEx[l]&&nEx[l].putts)||0);if(np2>=3&&op<3&&nSc[l]!=null){showBanner('🏌️‍♂️','3-Putt! '+name+' · Loch '+(l+1),'putt3');break;}}}
 }
 
 // ════ GERÄTE-ID & NUTZUNGSBEDINGUNGEN ════
@@ -890,6 +923,7 @@ function showView(name){document.querySelectorAll('.view').forEach(function(v){v
 
 // ════ EVENT LISTENERS ════
 document.addEventListener('DOMContentLoaded',function(){
+  if(isBetaHost()){var bb=document.getElementById('beta-badge');if(bb)bb.style.display='block';}
   var sp=localStorage.getItem(LS_PIN);if(sp)ADMIN_PIN=sp;
   var scp=localStorage.getItem(LS_COURSE_PIN);if(scp)COURSE_PIN=scp;
   document.getElementById('nb-close').addEventListener('click',hideBanner);
@@ -942,7 +976,7 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('btn-save-setup').addEventListener('click',saveSetup);
   document.querySelectorAll('.tms-opt').forEach(function(el){el.addEventListener('click',function(){selectTM(this.dataset.tm);});});
   document.getElementById('opt-notif').addEventListener('change',function(){document.getElementById('notif-submenu').style.display=this.checked?'block':'none';});
-  document.getElementById('opt-zaehler').addEventListener('change',function(){document.getElementById('zaehler-flights').style.display=this.checked?'block':'none';if(this.checked)renderFlights();});
+  document.getElementById('opt-zaehler').addEventListener('change',function(){document.getElementById('zaehler-flights').style.display=this.checked?'block':'none';if(this.checked){renderFlights();SP.forEach(function(p){if(p.guardOf)unassignWard(SP,p.id);});PAT_OPEN=null;}renderPList();});
   document.getElementById('btn-flight-random').addEventListener('click',assignMarkersRandom);
   document.getElementById('btn-test-banner').addEventListener('click',function(){var ev=[{i:'🐦',m:'Birdie! Max · Loch 7',t:'birdie'},{i:'🦅',m:'Eagle! Anna · Loch 3',t:'eagle'},{i:'⚪',m:'Par — Klaus · Loch 12',t:'par'},{i:'😬',m:'Bogey — Peter · Loch 5',t:'bogey'},{i:'💀',m:'Doppelbogey — Franz · Loch 15',t:'double'},{i:'🏌️',m:'HOLE IN ONE!!! Uli · Loch 9',t:'hio'}];var e=ev[Math.floor(Math.random()*ev.length)];showBanner(e.i,e.m,e.t);});
   document.getElementById('dev-back').addEventListener('click',function(){stopLiveWatch();showView('lobby');});
@@ -965,6 +999,7 @@ document.addEventListener('DOMContentLoaded',function(){
   var clProt=document.getElementById('dev-cleanup-protect');if(clProt)clProt.addEventListener('change',function(){saveCleanupCfg('protect',this.value.trim());});
   var clCheck=document.getElementById('dev-cleanup-check');if(clCheck)clCheck.addEventListener('click',cleanupPreview);
   var regBtn=document.getElementById('dev-registry-load');if(regBtn)regBtn.addEventListener('click',loadRegistry);
+  initLogoUpload();
   document.getElementById('dev-sw-code').addEventListener('change',function(){var v=this.value.trim();if(/^\d{3}$/.test(v))saveScorecardWarn(v,null);});
   document.getElementById('dev-sw-except').addEventListener('change',function(){var v=this.value.trim();if(/^\d{3}$/.test(v))saveScorecardWarn('all',v);});
   DEVICE_ID=getDeviceId();
@@ -979,6 +1014,50 @@ function fp(sub){return'turniere/'+CODE+(sub?'/'+sub:'');}
 function stopListeners(){OFF.forEach(function(fn){fn();});OFF=[];}
 function genPid(){return 'p_'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
 function ensurePid(p){if(p&&!p.pid)p.pid=genPid();return p;}
+var TRACK_FIELDS=['putts','fir','gir','ann','absch'];
+function ensureTrack(p){
+  if(!p)return p;
+  if(!p.track||typeof p.track!=='object'){
+    // Abwärtskompatibel: altes analyse:true → alle Standardfelder an; sonst alles aus
+    var on=!!p.analyse;
+    p.track={putts:on,fir:on,gir:on,ann:on,absch:on};
+  }
+  // Fehlende Felder defensiv ergänzen
+  TRACK_FIELDS.forEach(function(f){if(typeof p.track[f]!=='boolean')p.track[f]=false;});
+  return p;
+}
+function trackAny(p){if(!p||!p.track)return false;return TRACK_FIELDS.some(function(f){return p.track[f];});}
+// ════ PATENSCHAFT (Baustein 3) ════
+// Pate: guardOf = pid des Mündels. Mündel: phoneless:true + guardedBy = pid des Paten.
+function findByPid(pid){if(!pid||!G||!G.players)return null;return G.players.find(function(p){return p.pid===pid;})||null;}
+function findByPidIn(players,pid){if(!pid||!players)return null;return players.find(function(p){return p.pid===pid;})||null;}
+function wardOf(pate){if(!pate||!pate.guardOf)return null;return findByPid(pate.guardOf);}      // gibt das Mündel eines Paten
+function guardianOf(ward){if(!ward||!ward.guardedBy)return null;return findByPid(ward.guardedBy);} // gibt den Paten eines Mündels
+function isWard(p){return!!(p&&p.phoneless&&p.guardedBy);}
+function isGuardian(p){return!!(p&&p.guardOf);}
+// Zuweisung: Pate (by id) betreut Mündel (by id). Arbeitet auf einem players-Array.
+function assignWard(players,guardianId,wardId){
+  var g=players.find(function(p){return p.id===guardianId;});
+  var w=players.find(function(p){return p.id===wardId;});
+  if(!g||!w||g.id===w.id)return false;
+  if(!g.pid)ensurePid(g);if(!w.pid)ensurePid(w);
+  // Alte Bindungen dieses Paten und dieses Mündels lösen (max. 1 Mündel-Regel)
+  if(g.guardOf){var oldW=players.find(function(p){return p.pid===g.guardOf;});if(oldW){delete oldW.phoneless;delete oldW.guardedBy;}}
+  if(w.guardedBy){var oldG=players.find(function(p){return p.pid===w.guardedBy;});if(oldG)delete oldG.guardOf;}
+  // Neue Bindung setzen
+  g.guardOf=w.pid;
+  w.phoneless=true;w.guardedBy=g.pid;
+  return true;
+}
+function unassignWard(players,guardianId){
+  var g=players.find(function(p){return p.id===guardianId;});
+  if(!g||!g.guardOf)return false;
+  var w=players.find(function(p){return p.pid===g.guardOf;});
+  if(w){delete w.phoneless;delete w.guardedBy;}
+  delete g.guardOf;
+  return true;
+}
+function anyTracksPutts(){if(!G||!G.players)return false;return G.players.some(function(p){return p&&p.track&&p.track.putts;});}
 function registerPlayer(pid,name,hcp,code){
   if(!DB||!pid||!name)return;
   try{
@@ -993,12 +1072,13 @@ function registerPlayer(pid,name,hcp,code){
   }catch(e){}
 }
 function registerAllPlayers(players,code){if(!players)return;players.forEach(function(p){if(p&&p.pid)registerPlayer(p.pid,p.name,p.handicap,code);});}
-function parsePlayers(val){if(!val)return[];var arr=Array.isArray(val)?val.filter(Boolean):Object.values(val).filter(Boolean);return arr.map(ensurePid);}
+function parsePlayers(val){if(!val)return[];var arr=Array.isArray(val)?val.filter(Boolean):Object.values(val).filter(Boolean);return arr.map(ensurePid).map(ensureTrack);}
 function startListeners(){
   stopListeners();var firstPlayers=true;
   var r4=DB.ref(fp('notif')).on('value',function(snap){NOTIF_ON=!!snap.val();});
+  DB.ref('turniere/'+CODE+'/logo').on('value',function(snap){G_LOGO=(snap&&snap.exists())?snap.val():null;applyTournamentLogo();});
   var r1=DB.ref(fp('round')).on('value',function(snap){if(!snap.exists())return;LIVE_ROUND=snap.val();if(LIVE_ROUND.options&&LIVE_ROUND.options.notif!==undefined)NOTIF_ON=!!LIVE_ROUND.options.notif;if(VIEW_RND===null){G.round=LIVE_ROUND;renderLB();renderResult();}});
-  var r2=DB.ref(fp('players')).on('value',function(snap){if(!snap.exists())return;var fresh=parsePlayers(snap.val());LIVE_PLAYERS=fresh;if(firstPlayers){fresh.forEach(saveSnap);firstPlayers=false;}else{fresh.forEach(function(np){checkEvents(PREV_SNAP[np.id]||null,np);saveSnap(np);});}if(VIEW_RND===null){G.players=fresh;renderLB();renderResult();if(scoreLogEnabled())renderScoreLog();if(document.getElementById('view-card').classList.contains('active')&&CID){var p2=G.players.find(function(p){return p.id===CID;});if(p2&&!aTimer){CS=p2.scores?p2.scores.slice():Array(18).fill(null);var zo=G.round.options||{};if(zo.zaehler&&MARK_ID)renderHolesZaehler();else renderHoles();updatePills();}}}});
+  var r2=DB.ref(fp('players')).on('value',function(snap){if(!snap.exists())return;var fresh=parsePlayers(snap.val());LIVE_PLAYERS=fresh;if(firstPlayers){fresh.forEach(saveSnap);firstPlayers=false;}else{fresh.forEach(function(np){checkEvents(PREV_SNAP[np.id]||null,np);saveSnap(np);});}if(VIEW_RND===null){G.players=fresh;renderLB();renderResult();if(scoreLogEnabled())renderScoreLog();if(document.getElementById('view-card').classList.contains('active')&&CID){var p2=G.players.find(function(p){return p.id===CID;});if(p2&&!aTimer){CS=p2.scores?p2.scores.slice():Array(18).fill(null);var zo=G.round.options||{};if(zo.zaehler&&MARK_ID)renderHolesZaehler();else if(!zo.zaehler&&WARD_ID){var wp=G.players.find(function(x){return x.id===WARD_ID;});if(wp){WARD_CS=wp.scores?wp.scores.slice():Array(18).fill(null);WARD_EXT=extToCext(wp.extras);}renderHolesPate();}else renderHoles();updatePills();}}}});
   var r3=DB.ref(fp('tournament')).on('value',function(snap){if(!snap.exists())return;G.tournament=snap.val();refreshTrnUI();if(document.getElementById('view-total').classList.contains('active'))renderTotal();});
   OFF=[function(){DB.ref(fp('notif')).off('value',r4);},function(){DB.ref(fp('round')).off('value',r1);},function(){DB.ref(fp('players')).off('value',r2);},function(){DB.ref(fp('tournament')).off('value',r3);}];
 }
@@ -1082,7 +1162,7 @@ async function enterTournament(code,fromAdmin){
     try{var swSnap=await DB.ref('config/scorecard_warning').get();if(swSnap&&swSnap.exists()&&swSnap.val())SCORECARD_WARN=String(swSnap.val());var swEx=await DB.ref('config/scorecard_warning_except').get();if(swEx&&swEx.exists()&&swEx.val())SCORECARD_WARN_EXCEPT=String(swEx.val());}catch(e){}
   }catch(e){toast('⚠️ Verbindungsfehler');CODE=null;}
 }
-function goLobby(){stopListeners();stopPresence();gpsStopWarmup();CODE=null;IS_ADMIN_VIEW=false;PREV_SNAP={};NOTIF_ON=false;hideBanner();resetScoreLog();LIVE_ROUND=null;LIVE_PLAYERS=null;VIEW_RND=null;G={players:[],tournament:null,round:{courseName:'',par:DPAR.slice(),strokeIndex:DSI.slice(),date:tod(),mode:'stroke',maxScore:null,tee:'',teamMode:'none',options:{}}};showView('lobby');}
+function goLobby(){stopListeners();stopPresence();gpsStopWarmup();CODE=null;IS_ADMIN_VIEW=false;PREV_SNAP={};NOTIF_ON=false;hideBanner();resetScoreLog();LIVE_ROUND=null;LIVE_PLAYERS=null;VIEW_RND=null;G_LOGO=null;applyTournamentLogo();G={players:[],tournament:null,round:{courseName:'',par:DPAR.slice(),strokeIndex:DSI.slice(),date:tod(),mode:'stroke',maxScore:null,tee:'',teamMode:'none',options:{}}};showView('lobby');}
 function showQR(){if(!CODE)return;document.getElementById('qr-code-txt').textContent=CODE;document.getElementById('qr-modal').classList.add('show');}
 
 // ════ PRESENCE & ACTIVITY ════
@@ -1226,6 +1306,82 @@ async function loadRegistry(){
     }).join('');
   }catch(e){if(box)box.innerHTML='<div style="text-align:center;padding:14px;color:var(--red);font-size:12px">⚠️ Fehler beim Laden<div style="font-size:10px;color:var(--txt3);margin-top:6px">'+esc(e&&e.message?e.message:String(e))+'</div></div>';}
 }
+var LOGO_DATA=null;
+var G_LOGO=null;
+function applyTournamentLogo(){
+  var img=document.getElementById('lb-logo');if(!img)return;
+  if(G_LOGO){img.src=G_LOGO;img.style.display='block';}else{img.style.display='none';img.removeAttribute('src');}
+}
+function initLogoUpload(){
+  var pick=document.getElementById('logo-pick'),file=document.getElementById('logo-file');
+  if(!pick||!file)return;
+  pick.addEventListener('click',function(){file.click();});
+  file.addEventListener('change',function(){
+    var f=this.files&&this.files[0];if(!f)return;
+    var st=document.getElementById('logo-status');if(st){st.textContent='⏳ Verkleinere…';st.style.color='var(--txt3)';}
+    resizeImage(f,240,function(dataUrl){
+      LOGO_DATA=dataUrl;
+      var pv=document.getElementById('logo-preview');if(pv)pv.innerHTML='<img src="'+dataUrl+'" style="max-width:120px;max-height:120px;border-radius:10px;border:2px solid var(--border-light)">';
+      document.getElementById('logo-save').style.display='block';
+      if(st){st.textContent='Bereit zum Speichern (ca. '+Math.round(dataUrl.length/1024)+' KB)';st.style.color='var(--txt3)';}
+    },function(err){if(st){st.textContent='⚠️ '+err;st.style.color='var(--red)';}});
+  });
+  document.getElementById('logo-save').addEventListener('click',saveTournamentLogo);
+  document.getElementById('logo-remove').addEventListener('click',removeTournamentLogo);
+  var codeEl=document.getElementById('logo-code');if(codeEl)codeEl.addEventListener('input',checkExistingLogo);
+}
+function resizeImage(file,maxSize,onOk,onErr){
+  try{
+    var reader=new FileReader();
+    reader.onload=function(e){
+      var img=new Image();
+      img.onload=function(){
+        var w=img.width,h=img.height;
+        if(w>h){if(w>maxSize){h=Math.round(h*maxSize/w);w=maxSize;}}else{if(h>maxSize){w=Math.round(w*maxSize/h);h=maxSize;}}
+        var canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+        var ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,w,h);
+        // PNG behält Transparenz; als JPEG wäre kleiner, aber Logos brauchen oft Transparenz
+        var out=canvas.toDataURL('image/png');
+        // Falls zu groß (>400KB), stärker als JPEG komprimieren
+        if(out.length>400000)out=canvas.toDataURL('image/jpeg',0.8);
+        onOk(out);
+      };
+      img.onerror=function(){onErr&&onErr('Bild konnte nicht gelesen werden');};
+      img.src=e.target.result;
+    };
+    reader.onerror=function(){onErr&&onErr('Datei-Lesefehler');};
+    reader.readAsDataURL(file);
+  }catch(e){onErr&&onErr(e.message);}
+}
+async function checkExistingLogo(){
+  var code=(document.getElementById('logo-code').value||'').trim();
+  var rmBtn=document.getElementById('logo-remove');
+  if(!code||code.length<3){if(rmBtn)rmBtn.style.display='none';return;}
+  try{await initFB();var snap=await DB.ref('turniere/'+code+'/logo').get();if(rmBtn)rmBtn.style.display=(snap&&snap.exists())?'block':'none';}catch(e){}
+}
+async function saveTournamentLogo(){
+  var code=(document.getElementById('logo-code').value||'').trim();
+  var st=document.getElementById('logo-status');
+  if(!code||code.length<3){if(st){st.textContent='⚠️ Bitte gültigen 3-stelligen Turnier-Code eingeben';st.style.color='var(--red)';}return;}
+  if(!LOGO_DATA){if(st){st.textContent='⚠️ Erst ein Bild auswählen';st.style.color='var(--red)';}return;}
+  if(st){st.textContent='⏳ Speichere…';st.style.color='var(--txt3)';}
+  try{
+    await initFB();
+    var snap=await DB.ref('turniere/'+code).get();
+    if(!snap||!snap.exists()){if(st){st.textContent='⚠️ Turnier '+code+' existiert nicht';st.style.color='var(--red)';}return;}
+    await DB.ref('turniere/'+code+'/logo').set(LOGO_DATA);
+    if(st){st.textContent='✅ Logo für Turnier '+code+' gespeichert';st.style.color='var(--green)';}
+    document.getElementById('logo-remove').style.display='block';
+  }catch(e){if(st){st.textContent='⚠️ Fehler: '+(e&&e.message?e.message:e);st.style.color='var(--red)';}}
+}
+async function removeTournamentLogo(){
+  var code=(document.getElementById('logo-code').value||'').trim();
+  var st=document.getElementById('logo-status');
+  if(!code||code.length<3)return;
+  var ok=await askConfirm('Logo für Turnier '+code+' entfernen?','Entfernen','var(--red)');if(!ok)return;
+  try{await initFB();await DB.ref('turniere/'+code+'/logo').set(null);if(st){st.textContent='🗑 Logo entfernt';st.style.color='var(--txt3)';}document.getElementById('logo-remove').style.display='none';var pv=document.getElementById('logo-preview');if(pv)pv.innerHTML='';LOGO_DATA=null;document.getElementById('logo-save').style.display='none';}catch(e){if(st){st.textContent='⚠️ Fehler beim Entfernen';st.style.color='var(--red)';}}
+}
+function loadRegistryPlaceholder(){}
 var LIVE_PRES_REF=null;
 function startLiveWatch(){
   var box=document.getElementById('dev-live-list');if(!box)return;
@@ -1311,7 +1467,7 @@ function setLbView(v){LBV=v;document.getElementById('tab-einzel').classList.togg
 function setTM(m){TM=m;document.getElementById('tmt-bb').classList.toggle('active',m==='bestball');document.getElementById('tmt-agg').classList.toggle('active',m==='aggregat');renderTeamView();}
 function renderLB(){
   var r=G.round,par=r.par||DPAR;
-  document.getElementById('lb-course-name').textContent=r.courseName||'–';
+  document.getElementById('lb-course-name').textContent=r.courseName||'–';applyTournamentLogo();
   document.getElementById('lb-course-meta').textContent=(r.date||'')+' · Par '+par.reduce(function(a,b){return a+b;},0)+' · '+modeName(r)+(r.tee?' · '+r.tee:'')+(r.teamMode&&r.teamMode!=='none'?' · '+(r.teamMode==='americans'?'Americans':'Teams'):'');
   var hasTeam=r.teamMode&&r.teamMode!=='none'&&G.players.length>=4;
   document.getElementById('lbview-tabs').style.display=hasTeam?'flex':'none';
@@ -1328,7 +1484,7 @@ function renderLB(){
     else if(LBM==='netto'&&p.nvp!=null){dv=fmt(p.nvp);dco=dc(p.nvp);}
     else if(LBM==='brutto'&&p.bvp!=null){dv=fmt(p.bvp);dco=dc(p.bvp);}
     var tm=r.teamMode||'none',tco=tm!=='none'&&p.team!=null?TC[p.team]:'transparent';
-    var sub=[];if(p.pl>0)sub.push(p.pl+'/18');if(opts2.putts&&p.totalPutts>0)sub.push('🏌️'+p.totalPutts+'P');if(opts2.ballverlust&&p.totalBV>0)sub.push('🔴'+p.totalBV+'BV');if(opts2.ladies&&p.totalLA>0)sub.push('🚺'+p.totalLA+'🍺');
+    var sub=[];if(p.pl>0)sub.push(p.pl+'/18');if(p.track&&p.track.putts&&p.totalPutts>0)sub.push('🏌️'+p.totalPutts+'P');if(opts2.ballverlust&&p.totalBV>0)sub.push('🔴'+p.totalBV+'BV');if(opts2.ladies&&p.totalLA>0)sub.push('🚺'+p.totalLA+'🍺');
     return'<div class="prow'+(i===0&&p.pl>0?' leader':'')+'" style="border-left-color:'+tco+'" data-pid="'+esc(p.id)+'"><div class="pr-rank serif">'+(medal||i+1)+'</div><div><div class="pr-name serif">'+esc(p.name)+'</div><div class="pr-sub">'+(sub.length?sub.join('  '):'Noch nicht gestartet')+'</div></div><div class="pr-ctr">'+hd(p.handicap)+'</div><div class="pr-ctr">'+(p.pl>0?'L'+p.pl:'–')+'</div><div class="pr-score serif" style="color:'+dco+'">'+dv+'</div></div>';
   }).join('');
   list.querySelectorAll('.prow').forEach(function(el){el.addEventListener('click',function(){openCard(this.dataset.pid);});});
@@ -1376,10 +1532,12 @@ async function openCard(id){
   }
   doOpenCard(id);
 }
+function blankExt(){return{bv:0,la:false,putts:0,absch:null,abschLaenge:null,annDist:null,annTref:false,fir:false,gir:false,sand:false,shots:[],ldGender:null,ldFairway:false};}
+function extToCext(extras){return Array(18).fill(null).map(function(_,i){var ex=(extras&&extras[i])||{};return{bv:Number(ex.bv)||0,la:!!ex.la,putts:Number(ex.putts)||0,absch:ex.absch||null,abschLaenge:ex.abschLaenge||null,annDist:ex.annDist||null,annTref:!!ex.annTref,fir:!!ex.fir,gir:!!ex.gir,sand:!!ex.sand,shots:Array.isArray(ex.shots)?ex.shots.slice():[],ldGender:ex.ldGender||null,ldFairway:!!ex.ldFairway};});}
 function doOpenCard(id){
   var p=G.players.find(function(p){return p.id===id;});if(!p)return;
   CID=id;CS=p.scores?p.scores.slice():Array(18).fill(null);
-  CEXT=Array(18).fill(null).map(function(_,i){var ex=(p.extras&&p.extras[i])||{};return{bv:Number(ex.bv)||0,la:!!ex.la,putts:Number(ex.putts)||0,absch:ex.absch||null,abschLaenge:ex.abschLaenge||null,annDist:ex.annDist||null,annTref:!!ex.annTref,fir:!!ex.fir,sand:!!ex.sand,shots:Array.isArray(ex.shots)?ex.shots.slice():[],ldGender:ex.ldGender||null,ldFairway:!!ex.ldFairway};});
+  CEXT=Array(18).fill(null).map(function(_,i){var ex=(p.extras&&p.extras[i])||{};return{bv:Number(ex.bv)||0,la:!!ex.la,putts:Number(ex.putts)||0,absch:ex.absch||null,abschLaenge:ex.abschLaenge||null,annDist:ex.annDist||null,annTref:!!ex.annTref,fir:!!ex.fir,gir:!!ex.gir,sand:!!ex.sand,shots:Array.isArray(ex.shots)?ex.shots.slice():[],ldGender:ex.ldGender||null,ldFairway:!!ex.ldFairway};});
   // Zähler-Modus: Marker-Daten laden (robust)
   var opts=G.round.options||{};
   if(opts.zaehler){
@@ -1396,6 +1554,15 @@ function doOpenCard(id){
     MARK_ID=markId;
     CMARK=(p.markedScores&&Array.isArray(p.markedScores))?p.markedScores.slice():Array(18).fill(null);while(CMARK.length<18)CMARK.push(null);
   }else{MARK_ID=null;CMARK=Array(18).fill(null);}
+  // Patenschaft: Mündel-Daten laden (nur normaler Modus)
+  if(!opts.zaehler&&p.guardOf){
+    var ward=findByPid(p.guardOf);
+    if(ward){
+      WARD_ID=ward.id;
+      WARD_CS=ward.scores?ward.scores.slice():Array(18).fill(null);while(WARD_CS.length<18)WARD_CS.push(null);
+      WARD_EXT=extToCext(ward.extras);
+    }else{WARD_ID=null;WARD_CS=Array(18).fill(null);WARD_EXT=Array(18).fill(null).map(function(){return blankExt();});}
+  }else{WARD_ID=null;WARD_CS=Array(18).fill(null);WARD_EXT=Array(18).fill(null).map(function(){return blankExt();});}
   Z_SLOT='self';
   var loc=loadLoc(id);if(loc&&Array.isArray(loc)&&loc.length===18&&loc.filter(function(s){return s!=null;}).length>CS.filter(function(s){return s!=null;}).length){CS=loc.slice();setTimeout(pushFB,300);}
   CTAB=localStorage.getItem(LS_TAB+id)||(pc(CS)>=9?'back':'front');
@@ -1408,8 +1575,56 @@ function doOpenCard(id){
   if(gpsRelevant&&GPS_PERM){if(primeBar)primeBar.style.display='none';gpsWarmup();}
   else if(gpsRelevant&&!GPS_PERM){if(primeBar)primeBar.style.display='block';}
   else{if(primeBar)primeBar.style.display='none';}
+  renderPateBar();
 }
-function setTab(t){CTAB=t;if(CID)localStorage.setItem(LS_TAB+CID,t);document.getElementById('tab-front').classList.toggle('active',t==='front');document.getElementById('tab-back').classList.toggle('active',t==='back');var opts=G.round.options||{};if(opts.zaehler&&MARK_ID)renderHolesZaehler();else renderHoles();}
+function renderPateBar(){
+  var bar=document.getElementById('pate-bar');if(!bar)return;
+  var opts=G.round.options||{};
+  // Nur im normalen Modus (nicht Zähler), nur Pro
+  if(opts.zaehler||!PRO_ON){bar.style.display='none';return;}
+  var me=G.players.find(function(p){return p.id===CID;});if(!me){bar.style.display='none';return;}
+  // Mündel dürfen selbst kein Banner sehen (sie werden ja geführt)
+  if(isWard(me)){bar.style.display='none';return;}
+  if(me.guardOf){
+    var w=findByPid(me.guardOf);
+    bar.innerHTML='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:12px;font-weight:700;color:#8e44ad">🤝 Du betreust: '+esc(w?w.name:'?')+'</span><button id="pate-clear-btn" style="margin-left:auto;padding:6px 12px;border-radius:16px;border:2px solid var(--red);background:#fff;color:var(--red);font-size:11px;font-weight:700;cursor:pointer">Aufheben</button></div>';
+    bar.style.display='block';
+    var cb=document.getElementById('pate-clear-btn');if(cb)cb.addEventListener('click',pateClear);
+  }else{
+    // Freie Spieler (kein Pate, kein Mündel), außer mir selbst und außer denen im Turnier ohne Handy-Bedarf
+    var free=G.players.filter(function(p){return p.id!==me.id&&!p.guardOf&&!isWard(p);});
+    if(!free.length){bar.style.display='none';return;}
+    var opt='<option value="">— handylosen Spieler wählen —</option>'+free.map(function(p){return '<option value="'+esc(p.id)+'">'+esc(p.name)+'</option>';}).join('');
+    bar.innerHTML='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:12px;font-weight:700;color:#8e44ad">🤝 Handylosen Spieler betreuen?</span><select id="pate-select" style="flex:1;min-width:130px;padding:7px 8px;border-radius:8px;border:2px solid #d0b0e8;font-size:12px;font-weight:600">'+opt+'</select></div>';
+    bar.style.display='block';
+    var sel=document.getElementById('pate-select');if(sel)sel.addEventListener('change',function(){if(this.value)pateAssign(this.value);});
+  }
+}
+async function pateAssign(wardId){
+  if(!CID)return;
+  var w=G.players.find(function(p){return p.id===wardId;});
+  var ok=await askConfirm('Du übernimmst die Karte von '+(w?w.name:'diesem Spieler')+' (handylos). Du trägst dann auch dessen Scores ein. Fortfahren?','Übernehmen','#8e44ad');
+  if(!ok){renderPateBar();return;}
+  if(assignWard(G.players,CID,wardId)){
+    var me=G.players.find(function(p){return p.id===CID;});
+    if(CODE)try{await fbSet(fp('players/'+me.id),me);await fbSet(fp('players/'+wardId),w);}catch(e){}
+    toast('🤝 Du betreust jetzt '+(w?w.name:'den Spieler'),'#8e44ad');
+    renderPateBar();renderHoles();
+  }
+}
+async function pateClear(){
+  if(!CID)return;
+  var me=G.players.find(function(p){return p.id===CID;});
+  var w=me&&me.guardOf?findByPid(me.guardOf):null;
+  var ok=await askConfirm('Patenschaft für '+(w?w.name:'den Spieler')+' aufheben?','Aufheben','var(--red)');
+  if(!ok)return;
+  if(unassignWard(G.players,CID)){
+    if(CODE)try{await fbSet(fp('players/'+me.id),me);if(w)await fbSet(fp('players/'+w.id),w);}catch(e){}
+    toast('Patenschaft aufgehoben');
+    renderPateBar();renderHoles();
+  }
+}
+function setTab(t){CTAB=t;if(CID)localStorage.setItem(LS_TAB+CID,t);document.getElementById('tab-front').classList.toggle('active',t==='front');document.getElementById('tab-back').classList.toggle('active',t==='back');rerenderHoles();}
 function renderCard(){
   var p=G.players.find(function(p){return p.id===CID;});if(!p)return;
   document.getElementById('sc-pname').textContent=p.name;
@@ -1420,7 +1635,7 @@ function renderCard(){
   document.getElementById('pill-netto-lbl').textContent=isStbl()?'Stbl.':'Netto';
   document.getElementById('tab-front').classList.toggle('active',CTAB==='front');document.getElementById('tab-back').classList.toggle('active',CTAB==='back');
   updatePills();
-  if(zMode)renderHolesZaehler();else renderHoles();
+  if(zMode)renderHolesZaehler();else if(WARD_ID)renderHolesPate();else renderHoles();
 }
 function updatePills(){
   var p=G.players.find(function(p){return p.id===CID;});if(!p)return;
@@ -1460,11 +1675,12 @@ function renderHoles(){
   document.querySelectorAll('.stbtn').forEach(function(btn){btn.addEventListener('click',function(){step(parseInt(this.dataset.idx),parseInt(this.dataset.d));});});
   var opts=G.round.options||{};
   holes.forEach(function(i){
-    var curPlayerAnalyse=!!(G.players.find(function(p){return p.id===CID;})||{}).analyse;
-    var curPlayerGps=!!(G.players.find(function(p){return p.id===CID;})||{}).gps;
+    var curPlayer=G.players.find(function(p){return p.id===CID;})||{};ensureTrack(curPlayer);var tr=curPlayer.track||{};
+    var curPlayerAnalyse=trackAny(curPlayer);
+    var curPlayerGps=!!curPlayer.gps;
     var ldHole=G.round.longestDrive||0;var isLD=ldHole&&(i+1)===ldHole;
     var gpsActive=curPlayerGps||isLD;
-    if(!opts.ballverlust&&!opts.ladies&&!opts.putts&&!curPlayerAnalyse&&!gpsActive)return;
+    if(!opts.ballverlust&&!opts.ladies&&!tr.putts&&!curPlayerAnalyse&&!gpsActive)return;
     var ex=CEXT[i],row=document.getElementById('hr-'+i);if(!row)return;
     var old=document.getElementById('ex-'+i);if(old)old.remove();
     var exDiv=document.createElement('div');exDiv.id='ex-'+i;var html='';
@@ -1474,7 +1690,7 @@ function renderHoles(){
       if(opts.ladies)html+='<button class="extra-btn'+(ex.la?' active-la':'')+'" data-ex="la" data-idx="'+i+'">🚺 Lady'+(ex.la?' 🍺':'')+'</button>';
       html+='</div>';
     }
-    if(opts.putts){
+    if(tr.putts){
       var hasAnalyse=curPlayerAnalyse&&CS.filter(function(s){return s!=null;}).length>0;
       html+='<div class="putt-row"><div class="putt-lbl">🏌️ Putts</div><div class="putt-stepper"><button class="putt-btn" data-pu="-1" data-idx="'+i+'">−</button><div class="putt-val" id="pv-'+i+'">'+(ex.putts||0)+'</div><button class="putt-btn" data-pu="1" data-idx="'+i+'">+</button></div>'+(hasAnalyse?'<button class="extra-btn btn-analyse-open" data-pid="'+esc(CID)+'" style="margin-left:auto;background:#e3f2fd;border-color:var(--accent);color:var(--accent);font-weight:700">📊 Analyse</button>':'')+'</div>';
     }else if(curPlayerAnalyse&&CS.filter(function(s){return s!=null;}).length>0){
@@ -1483,8 +1699,13 @@ function renderHoles(){
     if(curPlayerAnalyse&&CS[i]!=null){
       var ab=ex.absch||null,al=ex.abschLaenge||null,ad=ex.annDist||'',at=!!ex.annTref;
       var pvH=(G.round.par||DPAR)[i]||4;
-      var firRow=pvH>=4?'<div class="analyse-row-title" style="margin-top:4px">🎯 FAIRWAY</div><div class="analyse-chips"><div class="achip'+(ex.fir?' on':'')+'" data-fir="1" data-idx="'+i+'">✓ Fairway getroffen</div></div>':'';
-      html+='<div class="analyse-row"><div class="analyse-row-title">🏌️ ABSCHLAG RICHTUNG</div><div class="analyse-chips">'+['L','M','R'].map(function(o){return'<div class="achip'+(ab===o?' on':'')+'" data-ab="'+o+'" data-idx="'+i+'">'+o+'</div>';}).join('')+'</div><div class="analyse-row-title" style="margin-top:4px">📏 ABSCHLAG LÄNGE</div><div class="analyse-chips">'+['Lang','Kurz'].map(function(o){return'<div class="achip'+(al===o?' on':'')+'" data-al="'+o+'" data-idx="'+i+'">'+o+'</div>';}).join('')+'</div>'+firRow+'<div class="analyse-row-title" style="margin-top:4px">📍 ANNÄHERUNG</div><div class="ann-row"><input class="ann-inp" type="number" placeholder="Meter" value="'+ad+'" data-ann-idx="'+i+'" min="0" max="999"><div class="achip'+(at?' on':'')+'" data-at="1" data-idx="'+i+'">✓ Grün getroffen</div></div><div class="analyse-row-title" style="margin-top:4px">🏖️ BUNKER</div><div class="analyse-chips"><div class="achip'+(ex.sand?' on':'')+'" data-sand="1" data-idx="'+i+'">Im Bunker</div></div></div>';
+      var abschRow=tr.absch?'<div class="analyse-row-title">🏌️ ABSCHLAG RICHTUNG</div><div class="analyse-chips">'+['L','M','R'].map(function(o){return'<div class="achip'+(ab===o?' on':'')+'" data-ab="'+o+'" data-idx="'+i+'">'+o+'</div>';}).join('')+'</div><div class="analyse-row-title" style="margin-top:4px">📏 ABSCHLAG LÄNGE</div><div class="analyse-chips">'+['Lang','Kurz'].map(function(o){return'<div class="achip'+(al===o?' on':'')+'" data-al="'+o+'" data-idx="'+i+'">'+o+'</div>';}).join('')+'</div>':'';
+      var firRow=(tr.fir&&pvH>=4)?'<div class="analyse-row-title" style="margin-top:4px">🎯 FAIRWAY</div><div class="analyse-chips"><div class="achip'+(ex.fir?' on':'')+'" data-fir="1" data-idx="'+i+'">✓ Fairway getroffen</div></div>':'';
+      var girRow=tr.gir?'<div class="analyse-row-title" style="margin-top:4px">🟢 GRÜN IN REGULATION</div><div class="analyse-chips"><div class="achip'+(ex.gir?' on':'')+'" data-gir="1" data-idx="'+i+'">✓ GIR</div></div>':'';
+      var annRow=tr.ann?'<div class="analyse-row-title" style="margin-top:4px">📍 ANNÄHERUNG</div><div class="ann-row"><input class="ann-inp" type="number" placeholder="Meter" value="'+ad+'" data-ann-idx="'+i+'" min="0" max="999"><div class="achip'+(at?' on':'')+'" data-at="1" data-idx="'+i+'">✓ Grün getroffen</div></div>':'';
+      var sandRow=tr.fir?'<div class="analyse-row-title" style="margin-top:4px">🏖️ BUNKER</div><div class="analyse-chips"><div class="achip'+(ex.sand?' on':'')+'" data-sand="1" data-idx="'+i+'">Im Bunker</div></div>':'';
+      var inner=abschRow+firRow+girRow+annRow+sandRow;
+      if(inner)html+='<div class="analyse-row">'+inner+'</div>';
     }
     if(isLD){
       var g=ex.ldGender||'H';
@@ -1510,6 +1731,7 @@ function renderHoles(){
   document.querySelectorAll('[data-al]').forEach(function(chip){chip.addEventListener('click',function(){var idx=parseInt(this.dataset.idx),val=this.dataset.al;CEXT[idx].abschLaenge=CEXT[idx].abschLaenge===val?null:val;renderHoles();trigAS();});});
   document.querySelectorAll('[data-at]').forEach(function(chip){chip.addEventListener('click',function(){var idx=parseInt(this.dataset.idx);CEXT[idx].annTref=!CEXT[idx].annTref;renderHoles();trigAS();});});
   document.querySelectorAll('[data-fir]').forEach(function(chip){chip.addEventListener('click',function(){var idx=parseInt(this.dataset.idx);CEXT[idx].fir=!CEXT[idx].fir;renderHoles();trigAS();});});
+  document.querySelectorAll('[data-gir]').forEach(function(chip){chip.addEventListener('click',function(){var idx=parseInt(this.dataset.idx);CEXT[idx].gir=!CEXT[idx].gir;renderHoles();trigAS();});});
   document.querySelectorAll('[data-sand]').forEach(function(chip){chip.addEventListener('click',function(){var idx=parseInt(this.dataset.idx);CEXT[idx].sand=!CEXT[idx].sand;renderHoles();trigAS();});});
   document.querySelectorAll('[data-ann-idx]').forEach(function(inp){inp.addEventListener('change',function(){CEXT[parseInt(this.dataset.annIdx)].annDist=this.value?Number(this.value):null;trigAS();});});
   document.querySelectorAll('[data-pu]').forEach(function(btn){btn.addEventListener('click',function(){var idx=parseInt(this.dataset.idx),d=parseInt(this.dataset.pu);CEXT[idx].putts=Math.max(0,Math.min(9,(CEXT[idx].putts||0)+d));var pvEl=document.getElementById('pv-'+idx);if(pvEl)pvEl.textContent=CEXT[idx].putts;trigAS();});});
@@ -1541,11 +1763,27 @@ function renderHolesZaehler(){
     // Ballverlust/Lady nur für sich selbst (eigene Spalte)
     var ex=CEXT[i]||{};var extraBtns='';
     var ldHoleZ=G.round.longestDrive||0;var isLDz=ldHoleZ&&(i+1)===ldHoleZ;
+    ensureTrack(p);var trZ=p.track||{};
     if(zopts.ballverlust||zopts.ladies){
       extraBtns='<div class="zextra">';
       if(zopts.ballverlust){var bvCount=Number(ex.bv)||0;extraBtns+='<button class="extra-btn'+(bvCount>0?' active-bv':'')+'" data-zbv="1" data-idx="'+i+'">🔴 Ball'+(bvCount>0?' ×'+bvCount:'')+'</button>'+(bvCount>0?'<button class="extra-btn active-bv" data-zbv="-1" data-idx="'+i+'" style="padding:6px 10px">−</button>':'');}
       if(zopts.ladies)extraBtns+='<button class="extra-btn'+(ex.la?' active-la':'')+'" data-zla="1" data-idx="'+i+'">🚺 Lady'+(ex.la?' 🍺':'')+'</button>';
       extraBtns+='</div>';
+    }
+    // Putts (eigene Spalte, nur wenn selbst getrackt)
+    if(trZ.putts){
+      extraBtns+='<div class="putt-row" style="padding:6px 4px"><div class="putt-lbl">🏌️ Putts</div><div class="putt-stepper"><button class="putt-btn" data-pu="-1" data-idx="'+i+'">−</button><div class="putt-val" id="pv-'+i+'">'+(ex.putts||0)+'</div><button class="putt-btn" data-pu="1" data-idx="'+i+'">+</button></div></div>';
+    }
+    // Analyse-Felder (eigene Spalte, nur wenn selbst getrackt + Score gesetzt)
+    if(trackAny(p)&&sR!=null){
+      var abZ=ex.absch||null,alZ=ex.abschLaenge||null,adZ=ex.annDist||'',atZ=!!ex.annTref;
+      var abschRowZ=trZ.absch?'<div class="analyse-row-title">🏌️ ABSCHLAG RICHTUNG</div><div class="analyse-chips">'+['L','M','R'].map(function(o){return'<div class="achip'+(abZ===o?' on':'')+'" data-ab="'+o+'" data-idx="'+i+'">'+o+'</div>';}).join('')+'</div><div class="analyse-row-title" style="margin-top:4px">📏 ABSCHLAG LÄNGE</div><div class="analyse-chips">'+['Lang','Kurz'].map(function(o){return'<div class="achip'+(alZ===o?' on':'')+'" data-al="'+o+'" data-idx="'+i+'">'+o+'</div>';}).join('')+'</div>':'';
+      var firRowZ=(trZ.fir&&pv>=4)?'<div class="analyse-row-title" style="margin-top:4px">🎯 FAIRWAY</div><div class="analyse-chips"><div class="achip'+(ex.fir?' on':'')+'" data-fir="1" data-idx="'+i+'">✓ Fairway getroffen</div></div>':'';
+      var girRowZ=trZ.gir?'<div class="analyse-row-title" style="margin-top:4px">🟢 GRÜN IN REGULATION</div><div class="analyse-chips"><div class="achip'+(ex.gir?' on':'')+'" data-gir="1" data-idx="'+i+'">✓ GIR</div></div>':'';
+      var annRowZ=trZ.ann?'<div class="analyse-row-title" style="margin-top:4px">📍 ANNÄHERUNG</div><div class="ann-row"><input class="ann-inp" type="number" placeholder="Meter" value="'+adZ+'" data-ann-idx="'+i+'" min="0" max="999"><div class="achip'+(atZ?' on':'')+'" data-at="1" data-idx="'+i+'">✓ Grün getroffen</div></div>':'';
+      var sandRowZ=trZ.fir?'<div class="analyse-row-title" style="margin-top:4px">🏖️ BUNKER</div><div class="analyse-chips"><div class="achip'+(ex.sand?' on':'')+'" data-sand="1" data-idx="'+i+'">Im Bunker</div></div>':'';
+      var innerZ=abschRowZ+firRowZ+girRowZ+annRowZ+sandRowZ;
+      if(innerZ)extraBtns+='<div class="analyse-row" style="margin:4px 0 0">'+innerZ+'</div>';
     }
     // Longest Drive nur an der LD-Bahn, nur für sich selbst
     if(isLDz){
@@ -1576,9 +1814,156 @@ function renderHolesZaehler(){
   document.querySelectorAll('.zld [data-gps-idx]').forEach(function(btn){btn.addEventListener('click',function(){gpsMeasure(parseInt(this.dataset.gpsIdx));});});
   document.querySelectorAll('.zld [data-gpsmanual-idx]').forEach(function(btn){btn.addEventListener('click',function(){addManualDrive(parseInt(this.dataset.gpsmanualIdx));});});
   document.querySelectorAll('.zld [data-delshot-idx]').forEach(function(btn){btn.addEventListener('click',function(){var idx=parseInt(this.dataset.delshotIdx),si=parseInt(this.dataset.delshotSi);delShot(idx,si);renderHolesZaehler();});});
+  // Putts + Analyse-Felder (eigene Spalte)
+  document.querySelectorAll('#sc-holes [data-pu]').forEach(function(btn){btn.addEventListener('click',function(){var idx=parseInt(this.dataset.idx),d=parseInt(this.dataset.pu);CEXT[idx].putts=Math.max(0,(Number(CEXT[idx].putts)||0)+d);var pvEl=document.getElementById('pv-'+idx);if(pvEl)pvEl.textContent=CEXT[idx].putts;trigAS();});});
+  document.querySelectorAll('#sc-holes [data-ab]').forEach(function(chip){chip.addEventListener('click',function(){var idx=parseInt(this.dataset.idx);CEXT[idx].absch=(CEXT[idx].absch===this.dataset.ab)?null:this.dataset.ab;renderHolesZaehler();trigAS();});});
+  document.querySelectorAll('#sc-holes [data-al]').forEach(function(chip){chip.addEventListener('click',function(){var idx=parseInt(this.dataset.idx);CEXT[idx].abschLaenge=(CEXT[idx].abschLaenge===this.dataset.al)?null:this.dataset.al;renderHolesZaehler();trigAS();});});
+  document.querySelectorAll('#sc-holes .analyse-row [data-fir]').forEach(function(chip){chip.addEventListener('click',function(){var idx=parseInt(this.dataset.idx);CEXT[idx].fir=!CEXT[idx].fir;renderHolesZaehler();trigAS();});});
+  document.querySelectorAll('#sc-holes [data-gir]').forEach(function(chip){chip.addEventListener('click',function(){var idx=parseInt(this.dataset.idx);CEXT[idx].gir=!CEXT[idx].gir;renderHolesZaehler();trigAS();});});
+  document.querySelectorAll('#sc-holes [data-at]').forEach(function(chip){chip.addEventListener('click',function(){var idx=parseInt(this.dataset.idx);CEXT[idx].annTref=!CEXT[idx].annTref;renderHolesZaehler();trigAS();});});
+  document.querySelectorAll('#sc-holes [data-sand]').forEach(function(chip){chip.addEventListener('click',function(){var idx=parseInt(this.dataset.idx);CEXT[idx].sand=!CEXT[idx].sand;renderHolesZaehler();trigAS();});});
+  document.querySelectorAll('#sc-holes [data-ann-idx]').forEach(function(inp){inp.addEventListener('input',function(){var idx=parseInt(this.dataset.annIdx);CEXT[idx].annDist=this.value===''?null:Number(this.value);trigAS();});});
   // Vergleichsleiste unter der Tabelle
   renderZCompare();
   refreshHalf(holes);
+}
+function renderHolesPate(){
+  var me=G.players.find(function(p){return p.id===CID;});if(!me){renderHoles();return;}
+  var ward=G.players.find(function(p){return p.id===WARD_ID;});if(!ward){WARD_ID=null;renderHoles();return;}
+  ensureTrack(me);ensureTrack(ward);
+  var par=G.round.par||DPAR,si=G.round.strokeIndex||DSI;
+  var start=CTAB==='front'?0:9,holes=Array.from({length:9},function(_,i){return start+i;});
+  var ldHole=G.round.longestDrive||0;
+  var html='<div class="z-colhead"><div></div><div class="zc self">ICH ('+esc((me.name||'').split(' ')[0])+')</div><div class="zc mark" style="color:#8e44ad">📵 '+esc((ward.name||'').split(' ')[0])+'</div></div>';
+  html+=holes.map(function(i){
+    var pv=par[i]||4,siv=si[i]!=null&&si[i]!==''?si[i]:i+1;
+    var sR=CS[i],wR=WARD_CS[i];
+    var sTxt=sR==null?'–':(sR===0?'NR':sR),sCls=sR==null?'zval empty':(sR===0?'zval empty nr':'zval');
+    var wTxt=wR==null?'–':(wR===0?'NR':wR),wCls=wR==null?'zval empty':(wR===0?'zval empty nr':'zval');
+    var zFilled=(sR!=null&&sR!==0)||(wR!=null&&wR!==0);
+    var titleBar='<div class="hrow-title"><span class="lochbadge">'+(i+1)+'</span><span class="lochttl">Loch '+(i+1)+'</span><span class="lochpar">Par '+pv+(siv!=null&&siv!==''?' · SI '+siv:'')+'</span></div>';
+    var selfExtra=pateColExtra('self',i,me,CEXT[i]||{},pv,ldHole);
+    var wardExtra=pateColExtra('ward',i,ward,WARD_EXT[i]||{},pv,ldHole);
+    return '<div class="hcell'+(zFilled?' filled':'')+'" id="pc-'+i+'">'+titleBar
+      +'<div class="zrow" id="pr-'+i+'"><div class="zinfo"><div class="hpar">P'+pv+'</div></div>'
+      +'<div class="zstepwrap"><div class="zstep"><button class="zbtn" data-ps="self" data-idx="'+i+'" data-d="-1">−</button><div class="'+sCls+'" id="psv-'+i+'">'+sTxt+'</div><button class="zbtn" data-ps="self" data-idx="'+i+'" data-d="1">+</button></div>'+selfExtra+'</div>'
+      +'<div class="zstepwrap"><div class="zstep mark"><button class="zbtn" data-ps="ward" data-idx="'+i+'" data-d="-1">−</button><div class="'+wCls+'" id="pwv-'+i+'">'+wTxt+'</div><button class="zbtn" data-ps="ward" data-idx="'+i+'" data-d="1">+</button></div>'+wardExtra+'</div></div></div>';
+  }).join('');
+  document.getElementById('sc-holes').innerHTML=html;
+  document.querySelectorAll('#sc-holes [data-ps]').forEach(function(btn){btn.addEventListener('click',function(){pateStep(this.dataset.ps,parseInt(this.dataset.idx),parseInt(this.dataset.d));});});
+  bindPateExtraHandlers();
+  if(GPS_MEASURE){var cs=document.getElementById('gps-club-'+GPS_MEASURE.idx);if(cs)cs.value=GPS_MEASURE.club;}
+  refreshHalf(holes);
+}
+function pateColExtra(slot,i,player,ex,pv,ldHole){
+  var tr=player.track||{};var zopts=G.round.options||{};var out='';
+  var sc=(slot==='self'?CS:WARD_CS)[i];
+  if(zopts.ballverlust||zopts.ladies){
+    out+='<div class="zextra">';
+    if(zopts.ballverlust){var bv=Number(ex.bv)||0;out+='<button class="extra-btn'+(bv>0?' active-bv':'')+'" data-pbv="1" data-slot="'+slot+'" data-idx="'+i+'">🔴 Ball'+(bv>0?' ×'+bv:'')+'</button>'+(bv>0?'<button class="extra-btn active-bv" data-pbv="-1" data-slot="'+slot+'" data-idx="'+i+'" style="padding:6px 10px">−</button>':'');}
+    if(zopts.ladies)out+='<button class="extra-btn'+(ex.la?' active-la':'')+'" data-pla="1" data-slot="'+slot+'" data-idx="'+i+'">🚺 Lady'+(ex.la?' 🍺':'')+'</button>';
+    out+='</div>';
+  }
+  if(tr.putts){
+    out+='<div class="putt-row" style="padding:6px 4px"><div class="putt-lbl">🏌️ Putts</div><div class="putt-stepper"><button class="putt-btn" data-ppu="-1" data-slot="'+slot+'" data-idx="'+i+'">−</button><div class="putt-val" id="'+(slot==='self'?'ppv':'pwpv')+'-'+i+'">'+(ex.putts||0)+'</div><button class="putt-btn" data-ppu="1" data-slot="'+slot+'" data-idx="'+i+'">+</button></div></div>';
+  }
+  if(trackAny(player)&&sc!=null){
+    var ab=ex.absch||null,al=ex.abschLaenge||null,ad=ex.annDist||'',at=!!ex.annTref;
+    var r='';
+    if(tr.absch)r+='<div class="analyse-row-title">🏌️ ABSCHLAG</div><div class="analyse-chips">'+['L','M','R'].map(function(o){return'<div class="achip'+(ab===o?' on':'')+'" data-pab="'+o+'" data-slot="'+slot+'" data-idx="'+i+'">'+o+'</div>';}).join('')+['Lang','Kurz'].map(function(o){return'<div class="achip'+(al===o?' on':'')+'" data-pal="'+o+'" data-slot="'+slot+'" data-idx="'+i+'">'+o+'</div>';}).join('')+'</div>';
+    if(tr.fir&&pv>=4)r+='<div class="analyse-chips" style="margin-top:3px"><div class="achip'+(ex.fir?' on':'')+'" data-pfir="1" data-slot="'+slot+'" data-idx="'+i+'">🎯 Fairway</div></div>';
+    if(tr.gir)r+='<div class="analyse-chips" style="margin-top:3px"><div class="achip'+(ex.gir?' on':'')+'" data-pgir="1" data-slot="'+slot+'" data-idx="'+i+'">🟢 GIR</div></div>';
+    if(tr.ann)r+='<div class="ann-row" style="margin-top:3px"><input class="ann-inp" type="number" placeholder="m" value="'+ad+'" data-pann="1" data-slot="'+slot+'" data-idx="'+i+'" min="0" max="999"><div class="achip'+(at?' on':'')+'" data-pat="1" data-slot="'+slot+'" data-idx="'+i+'">✓ Grün</div></div>';
+    if(tr.fir)r+='<div class="analyse-chips" style="margin-top:3px"><div class="achip'+(ex.sand?' on':'')+'" data-psand="1" data-slot="'+slot+'" data-idx="'+i+'">🏖️ Bunker</div></div>';
+    if(r)out+='<div class="analyse-row" style="margin:4px 0 0">'+r+'</div>';
+  }
+  if(ldHole&&(i+1)===ldHole){
+    var gz=ex.ldGender||'H',shots=ex.shots||[];
+    var gstage=(GPS_MEASURE&&GPS_MEASURE.idx===i&&GPS_MEASURE.slot===slot)?GPS_MEASURE.stage:null;
+    var clubOpts=CLUBS.map(function(c){return'<option value="'+esc(c)+'">'+esc(c)+'</option>';}).join('');
+    var shotsHtml=shots.length?'<div class="gps-shots">'+shots.map(function(s,si){return'<span class="gps-shot">'+esc(s.club)+' '+s.dist+'m'+(s.manual?' ✍️':(s.acc!=null?' (±'+s.acc+'m)':''))+' <button data-pdelshot-slot="'+slot+'" data-pdelshot-idx="'+i+'" data-pdelshot-si="'+si+'">×</button></span>';}).join('')+'</div>':'';
+    var gLabel=gstage==='ready'?'📍 Start':gstage==='start'?'📍 Ende':'📏 GPS';
+    out+='<div class="zld"><div class="ld-hint">🏆 Longest Drive</div>'
+      +'<div class="extra-row" style="padding-top:4px"><button class="extra-btn'+(gz==='H'?' ld-on-h':'')+'" data-pldg="H" data-slot="'+slot+'" data-idx="'+i+'">🚹</button><button class="extra-btn'+(gz==='D'?' ld-on-d':'')+'" data-pldg="D" data-slot="'+slot+'" data-idx="'+i+'">🚺</button><button class="extra-btn'+(ex.ldFairway?' ld-fw-on':'')+'" data-pldfw="1" data-slot="'+slot+'" data-idx="'+i+'">'+(ex.ldFairway?'✅ FW':'🎯 FW')+'</button></div>'
+      +'<div class="gps-row" style="margin-top:4px"><select class="gps-club" id="gps-club-'+i+'"'+(gstage?' disabled':'')+'>'+clubOpts+'</select><button class="gps-btn'+(gstage?' measuring':'')+'" id="gps-btn-'+i+'" data-pgps-slot="'+slot+'" data-pgps-idx="'+i+'">'+gLabel+'</button></div>'
+      +'<div class="gps-manual"><span class="gps-or">oder</span><input type="number" inputmode="numeric" class="gps-mdist" id="gps-mdist-'+slot+'-'+i+'" placeholder="m"><button class="gps-mbtn" data-pmanual-slot="'+slot+'" data-pmanual-idx="'+i+'">✍️</button></div>'+shotsHtml+'</div>';
+  }
+  return out;
+}
+// ── Patenschaft: Score ändern (self = Pate, ward = Mündel) ──
+function pateStep(slot,idx,delta){
+  var arr=slot==='self'?CS:WARD_CS;
+  var cur=arr[idx];var max=G.round.maxScore||null;
+  var next;
+  if(cur==null)next=(G.round.par||DPAR)[idx]||4;
+  else next=cur+delta;
+  if(next<0)next=0;if(max&&next>max)next=max;
+  arr[idx]=next;
+  var valEl=document.getElementById((slot==='self'?'psv-':'pwv-')+idx);
+  if(valEl){if(next===0){valEl.textContent='NR';valEl.className='zval empty nr';}else{valEl.textContent=next;valEl.className='zval';}}
+  var cell=document.getElementById('pc-'+idx);if(cell){var f=(CS[idx]!=null&&CS[idx]!==0)||(WARD_CS[idx]!=null&&WARD_CS[idx]!==0);cell.classList.toggle('filled',f);}
+  // GPS vorwärmen bei LD-Nähe
+  if(next!=null&&gpsContextActive(idx))gpsWarmup();
+  pateSaveSoon();
+  renderHolesPate();
+}
+var pateTimer=null;
+function pateSaveSoon(){if(pateTimer)clearTimeout(pateTimer);pateTimer=setTimeout(pateSave,600);}
+async function pateSave(){
+  pateTimer=null;if(!CID||!CODE)return;
+  syncDot('save');
+  try{
+    // Eigene Karte
+    var meUpd=Object.assign({},G.players.find(function(p){return p.id===CID;}),{scores:CS.slice(),extras:CEXT.slice()});
+    G.players=G.players.map(function(p){return p.id===CID?meUpd:p;});
+    saveSnap(meUpd);await fbSet(fp('players/'+CID),meUpd);
+    // Mündel-Karte (echter Eintrag des Mündels!)
+    if(WARD_ID){
+      var wardUpd=Object.assign({},G.players.find(function(p){return p.id===WARD_ID;}),{scores:WARD_CS.slice(),extras:WARD_EXT.slice()});
+      G.players=G.players.map(function(p){return p.id===WARD_ID?wardUpd:p;});
+      saveSnap(wardUpd);await fbSet(fp('players/'+WARD_ID),wardUpd);
+    }
+    syncDot('on');if(scoreLogEnabled())renderScoreLog();
+  }catch(e){syncDot('off');}
+}
+function pateArrExt(slot){return slot==='self'?{cs:CS,ext:CEXT}:{cs:WARD_CS,ext:WARD_EXT};}
+function bindPateExtraHandlers(){
+  var H=document.querySelectorAll.bind(document);
+  H('#sc-holes [data-ppu]').forEach(function(b){b.addEventListener('click',function(){var s=this.dataset.slot,idx=parseInt(this.dataset.idx),d=parseInt(this.dataset.ppu);var e=pateArrExt(s).ext;e[idx].putts=Math.max(0,(Number(e[idx].putts)||0)+d);var pvEl=document.getElementById((s==='self'?'ppv':'pwpv')+'-'+idx);if(pvEl)pvEl.textContent=e[idx].putts;pateSaveSoon();});});
+  H('#sc-holes [data-pbv]').forEach(function(b){b.addEventListener('click',function(){var s=this.dataset.slot,idx=parseInt(this.dataset.idx),d=parseInt(this.dataset.pbv);var e=pateArrExt(s).ext;e[idx].bv=Math.max(0,(Number(e[idx].bv)||0)+d);renderHolesPate();pateSaveSoon();});});
+  H('#sc-holes [data-pla]').forEach(function(b){b.addEventListener('click',function(){var s=this.dataset.slot,idx=parseInt(this.dataset.idx);var e=pateArrExt(s).ext;e[idx].la=!e[idx].la;renderHolesPate();pateSaveSoon();});});
+  H('#sc-holes [data-pab]').forEach(function(b){b.addEventListener('click',function(){var s=this.dataset.slot,idx=parseInt(this.dataset.idx);var e=pateArrExt(s).ext;e[idx].absch=(e[idx].absch===this.dataset.pab)?null:this.dataset.pab;renderHolesPate();pateSaveSoon();});});
+  H('#sc-holes [data-pal]').forEach(function(b){b.addEventListener('click',function(){var s=this.dataset.slot,idx=parseInt(this.dataset.idx);var e=pateArrExt(s).ext;e[idx].abschLaenge=(e[idx].abschLaenge===this.dataset.pal)?null:this.dataset.pal;renderHolesPate();pateSaveSoon();});});
+  H('#sc-holes [data-pfir]').forEach(function(b){b.addEventListener('click',function(){var s=this.dataset.slot,idx=parseInt(this.dataset.idx);var e=pateArrExt(s).ext;e[idx].fir=!e[idx].fir;renderHolesPate();pateSaveSoon();});});
+  H('#sc-holes [data-pgir]').forEach(function(b){b.addEventListener('click',function(){var s=this.dataset.slot,idx=parseInt(this.dataset.idx);var e=pateArrExt(s).ext;e[idx].gir=!e[idx].gir;renderHolesPate();pateSaveSoon();});});
+  H('#sc-holes [data-pat]').forEach(function(b){b.addEventListener('click',function(){var s=this.dataset.slot,idx=parseInt(this.dataset.idx);var e=pateArrExt(s).ext;e[idx].annTref=!e[idx].annTref;renderHolesPate();pateSaveSoon();});});
+  H('#sc-holes [data-psand]').forEach(function(b){b.addEventListener('click',function(){var s=this.dataset.slot,idx=parseInt(this.dataset.idx);var e=pateArrExt(s).ext;e[idx].sand=!e[idx].sand;renderHolesPate();pateSaveSoon();});});
+  H('#sc-holes [data-pann]').forEach(function(inp){inp.addEventListener('input',function(){var s=this.dataset.slot,idx=parseInt(this.dataset.idx);var e=pateArrExt(s).ext;e[idx].annDist=this.value===''?null:Number(this.value);pateSaveSoon();});});
+  H('#sc-holes [data-pldg]').forEach(function(b){b.addEventListener('click',function(){var s=this.dataset.slot,idx=parseInt(this.dataset.idx);var e=pateArrExt(s).ext;e[idx].ldGender=this.dataset.pldg;renderHolesPate();pateSaveSoon();});});
+  H('#sc-holes [data-pldfw]').forEach(function(b){b.addEventListener('click',function(){var s=this.dataset.slot,idx=parseInt(this.dataset.idx);var e=pateArrExt(s).ext;e[idx].ldFairway=!e[idx].ldFairway;renderHolesPate();pateSaveSoon();});});
+  H('#sc-holes [data-pgps-idx]').forEach(function(b){b.addEventListener('click',function(){pateGpsMeasure(this.dataset.pgpsSlot,parseInt(this.dataset.pgpsIdx));});});
+  H('#sc-holes [data-pmanual-idx]').forEach(function(b){b.addEventListener('click',function(){pateAddManualDrive(this.dataset.pmanualSlot,parseInt(this.dataset.pmanualIdx));});});
+  H('#sc-holes [data-pdelshot-idx]').forEach(function(b){b.addEventListener('click',function(){var s=this.dataset.pdelshotSlot,idx=parseInt(this.dataset.pdelshotIdx),si=parseInt(this.dataset.pdelshotSi);var e=pateArrExt(s).ext;if(e[idx].shots)e[idx].shots.splice(si,1);renderHolesPate();pateSaveSoon();});});
+}
+function pateAddManualDrive(slot,idx){
+  var distEl=document.getElementById('gps-mdist-'+slot+'-'+idx);if(!distEl)return;
+  var dist=parseInt(distEl.value);
+  if(!dist||dist<=0||dist>500){toast('⚠️ Weite 1–500 m','rgba(198,40,40,.96)');return;}
+  var e=pateArrExt(slot).ext;if(!e[idx].shots)e[idx].shots=[];
+  e[idx].shots.push({club:CLUBS[0],dist:dist,manual:true});
+  distEl.value='';toast('✍️ '+dist+' m eingetragen','#1f9e3a');renderHolesPate();pateSaveSoon();
+}
+async function pateGpsMeasure(slot,idx){
+  // GPS-Messung für die jeweilige Spalte (self/ward)
+  var e=pateArrExt(slot).ext;
+  if(!GPS_MEASURE||GPS_MEASURE.idx!==idx||GPS_MEASURE.slot!==slot){
+    var clubEl=document.getElementById('gps-club-'+idx);var club=clubEl?clubEl.value:CLUBS[0];
+    GPS_MEASURE={idx:idx,slot:slot,stage:'ready',club:club,startPos:null};renderHolesPate();return;
+  }
+  try{
+    if(GPS_MEASURE.stage==='ready'){var pos=await getGps();GPS_MEASURE.startPos=pos;GPS_MEASURE.stage='start';renderHolesPate();toast('📍 Start gesetzt');}
+    else if(GPS_MEASURE.stage==='start'){var pos2=await getGps();var d=Math.round(distMeters(GPS_MEASURE.startPos,pos2));var acc=Math.round(((GPS_MEASURE.startPos.acc||0)+(pos2.acc||0))/2);if(!e[idx].shots)e[idx].shots=[];e[idx].shots.push({club:GPS_MEASURE.club,dist:d,acc:acc});GPS_MEASURE=null;renderHolesPate();pateSaveSoon();toast('📏 '+d+' m gemessen','#1f9e3a');}
+  }catch(err){GPS_MEASURE=null;renderHolesPate();toast('⚠️ GPS-Fehler: '+(err&&err.message?err.message:'kein Signal'),'rgba(198,40,40,.96)');}
 }
 function renderZCompare(){
   var mp=markedPlayer();if(!mp)return;
@@ -1614,7 +1999,7 @@ function step(idx,delta){
   updatePills();refreshHalf(Array.from({length:9},function(_,i){return(CTAB==='front'?0:9)+i;}));trigAS();
   if(next!=null&&gpsContextActive(idx))gpsWarmup();
   var opts=G.round.options||{};var cpa=!!(G.players.find(function(p){return p.id===CID;})||{}).analyse;
-  if((opts.ballverlust||opts.ladies||opts.putts||cpa))renderHoles();
+  if((opts.ballverlust||opts.ladies||anyTracksPutts()||cpa))renderHoles();
 }
 function gpsContextActive(idx){
   var p=G.players.find(function(p){return p.id===CID;});
@@ -1676,18 +2061,19 @@ function buildScDetail(sc,hcp,par,mode,rnd){
 function renderResult(){
   if(!document.getElementById('view-result').classList.contains('active'))return;
   var r=G.round,par=r.par||DPAR,ropts=r.options||{},isSB=(r.mode==='stableford_brutto');
+  var showPutts=anyTracksPutts();
   document.getElementById('res-course').textContent=(r.courseName||'–')+(CODE?' ['+CODE+']':'');
   document.getElementById('res-meta').textContent=(r.date||'')+' · Par '+par.reduce(function(a,b){return a+b;},0)+' · '+modeName(r);
   var sorted=G.players.map(enrich).sort(function(a,b){if(a.bvp==null&&b.bvp==null)return 0;if(a.bvp==null)return 1;if(b.bvp==null)return -1;return a.bvp-b.bvp;});
   var head='<th>#</th><th>SPIELER</th><th>BRUTTO</th><th>NETTO</th><th>'+(isSB?'STBL.B':'STBL.N')+'</th><th>LOCH</th>';
-  if(ropts.putts)head+='<th>PUTTS</th>';if(ropts.ballverlust)head+='<th>🔴BV</th>';if(ropts.ladies)head+='<th>🍺</th>';
+  if(showPutts)head+='<th>PUTTS</th>';if(ropts.ballverlust)head+='<th>🔴BV</th>';if(ropts.ladies)head+='<th>🍺</th>';
   document.getElementById('res-head-row').innerHTML=head;
-  var colSpan=6+(ropts.putts?1:0)+(ropts.ballverlust?1:0)+(ropts.ladies?1:0);
+  var colSpan=6+(showPutts?1:0)+(ropts.ballverlust?1:0)+(ropts.ladies?1:0);
   document.getElementById('res-rows').innerHTML=sorted.map(function(p,i){
     var medal=i===0&&p.pl>0?'🥇':i===1&&p.pl>0?'🥈':i===2&&p.pl>0?'🥉':(i+1)+'.';
     var stblVal=isSB?(p.stpB!=null?p.stpB:'–'):(p.stp!=null?p.stp:'–');
     var row='<td>'+medal+'</td><td><div class="serif" style="font-size:14px;font-weight:700">'+esc(p.name)+'</div><div style="font-size:10px;color:var(--txt3)">HCP '+hd(p.handicap)+'</div></td><td style="font-weight:700;color:'+(p.bvp!=null?dc(p.bvp):'var(--txt3)')+'">'+(p.bvp!=null?fmt(p.bvp):'–')+'</td><td style="font-weight:700;color:'+(p.nvp!=null?dc(p.nvp):'var(--txt3)')+'">'+(p.nvp!=null?fmt(p.nvp):'–')+'</td><td style="font-weight:700;color:#6a1b9a">'+stblVal+'</td><td style="color:var(--txt3)">'+p.pl+'/18</td>';
-    if(ropts.putts)row+='<td style="color:var(--txt2);font-weight:700">'+(p.totalPutts||0)+'</td>';if(ropts.ballverlust)row+='<td style="color:var(--red);font-weight:700">'+(p.totalBV||0)+'</td>';if(ropts.ladies)row+='<td style="color:#e65100;font-weight:700">'+(p.totalLA||0)+'</td>';
+    if(showPutts)row+='<td style="color:var(--txt2);font-weight:700">'+((p.track&&p.track.putts)?(p.totalPutts||0):'–')+'</td>';if(ropts.ballverlust)row+='<td style="color:var(--red);font-weight:700">'+(p.totalBV||0)+'</td>';if(ropts.ladies)row+='<td style="color:#e65100;font-weight:700">'+(p.totalLA||0)+'</td>';
     var scDetail=buildScDetail(p.scores||Array(18).fill(null),Number(p.handicap)||0,par,r.mode,r);
     return'<tr class="res-player-row" data-pid="'+esc(p.id)+'" style="cursor:pointer">'+row+'</tr><tr><td colspan="'+colSpan+'" style="padding:0"><div class="sc-detail" id="scd-'+esc(p.id)+'">'+scDetail+'</div></td></tr>';
   }).join('');
@@ -1725,7 +2111,7 @@ function buildShareText(){
   var r=G.round,par=r.par||DPAR,sopts=r.options||{};
   var sorted=G.players.map(enrich).sort(function(a,b){if(a.bvp==null&&b.bvp==null)return 0;if(a.bvp==null)return 1;if(b.bvp==null)return -1;return a.bvp-b.bvp;});
   var t='⛳ '+(r.courseName||'Golf')+(CODE?' ['+CODE+']':'')+'\n📅 '+(r.date||'')+' · Par '+par.reduce(function(a,b){return a+b;},0)+' · '+modeName(r)+'\n\n';
-  sorted.forEach(function(p,i){var m=i===0&&p.pl>0?'🥇':i===1&&p.pl>0?'🥈':i===2&&p.pl>0?'🥉':(i+1)+'.';var extra='';if(sopts.putts&&p.totalPutts>0)extra+='  🏌️'+p.totalPutts+'P';if(sopts.ballverlust&&p.totalBV>0)extra+='  🔴'+p.totalBV+'BV';if(sopts.ladies&&p.totalLA>0)extra+='  🚺'+p.totalLA+'🍺';t+=m+' '+p.name+'  B:'+(p.bvp!=null?fmt(p.bvp):'–')+'  N:'+(p.nvp!=null?fmt(p.nvp):'–')+'  S:'+(p.stp!=null?p.stp:'–')+'  ('+p.pl+'/18)'+extra+'\n';});
+  sorted.forEach(function(p,i){var m=i===0&&p.pl>0?'🥇':i===1&&p.pl>0?'🥈':i===2&&p.pl>0?'🥉':(i+1)+'.';var extra='';if(p.track&&p.track.putts&&p.totalPutts>0)extra+='  🏌️'+p.totalPutts+'P';if(sopts.ballverlust&&p.totalBV>0)extra+='  🔴'+p.totalBV+'BV';if(sopts.ladies&&p.totalLA>0)extra+='  🚺'+p.totalLA+'🍺';t+=m+' '+p.name+'  B:'+(p.bvp!=null?fmt(p.bvp):'–')+'  N:'+(p.nvp!=null?fmt(p.nvp):'–')+'  S:'+(p.stp!=null?p.stp:'–')+'  ('+p.pl+'/18)'+extra+'\n';});
   var ld=longestDriveStandings();if(ld&&ld.total){var ldLine=function(title,rows){if(!rows.length)return'';var s='\n📏 LONGEST DRIVE '+title+' · Bahn '+ld.hole+':\n';rows.forEach(function(r,i){var m=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.';s+=m+' '+r.name+'  '+r.dist+'m'+(r.club?' ('+r.club+')':'')+'\n';});return s;};t+=ldLine('HERREN',ld.herren)+ldLine('DAMEN',ld.damen);}
   return t+'\n🐦 Birdino';
 }
@@ -1759,7 +2145,7 @@ function initSetup(){
   var tSel=document.getElementById('trn-rounds');if(tSel)tSel.value=G.tournament?G.tournament.totalRounds:0;
   var ldSel=document.getElementById('longest-drive-hole');if(ldSel){var par=SPAR||DPAR;ldSel.innerHTML='<option value="0">Kein Longest Drive</option>'+Array.from({length:18},function(_,i){return i;}).map(function(i){return'<option value="'+(i+1)+'">Bahn '+(i+1)+' (Par '+(par[i]||4)+')</option>';}).join('');ldSel.value=G.round.longestDrive||0;}
   var opts=G.round.options||{};var cb=function(id,val){var el=document.getElementById(id);if(el)el.checked=!!val;};
-  cb('opt-ballverlust',opts.ballverlust);cb('opt-ladies',opts.ladies);cb('opt-putts',opts.putts);cb('opt-notif',opts.notif);cb('opt-zaehler',opts.zaehler);
+  cb('opt-ballverlust',opts.ballverlust);cb('opt-ladies',opts.ladies);cb('opt-notif',opts.notif);cb('opt-zaehler',opts.zaehler);
   var ns=opts.notifSettings||{};var nDef=function(id,def){var el=document.getElementById(id);if(el)el.checked=(id.replace('notif-','') in ns)?ns[id.replace('notif-','')]:def;};
   nDef('notif-hio',true);nDef('notif-eagle',true);nDef('notif-birdie',true);nDef('notif-par',false);nDef('notif-bogey',true);nDef('notif-double',true);nDef('notif-bv',true);nDef('notif-lady',true);nDef('notif-putt3',true);
   var slEl=document.getElementById('notif-scorelog');if(slEl)slEl.checked=ns.scorelog!==false;
@@ -1779,7 +2165,7 @@ function applyProGating(){
     // Bei Pro AUS: Pro-Optionen sicher zurücksetzen, damit nichts aktiv bleibt
     STM='none';
     var zc=document.getElementById('opt-zaehler');if(zc&&zc.checked){zc.checked=false;var zf=document.getElementById('zaehler-flights');if(zf)zf.style.display='none';}
-    SP.forEach(function(p){p.analyse=false;p.gps=false;});
+    SP.forEach(function(p){p.track={putts:false,fir:false,gir:false,ann:false,absch:false};p.gps=false;});
     renderPList();
   }
   // Hinweis im Spieler-Bereich (Analyse/GPS nur mit Pro)
@@ -1838,19 +2224,46 @@ function renderAmPrev(){
 function renderPList(){
   var showT=STM==='fixed',showO=STM==='americans';
   document.getElementById('p-list').innerHTML=SP.map(function(p,idx){
+    ensureTrack(p);
     var extra=showT?'<div style="display:flex;gap:4px"><div class="tdot" style="background:'+(p.team===0?TC[0]:'#ccc')+'" data-id="'+esc(p.id)+'" data-t="0">1</div><div class="tdot" style="background:'+(p.team===1?TC[1]:'#ccc')+'" data-id="'+esc(p.id)+'" data-t="1">2</div></div>':showO?'<div style="width:28px;height:28px;border-radius:6px;background:var(--bg2);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--accent)">'+(idx+1)+'</div>':'';
-    var anBtn=PRO_ON?'<button class="tdot" style="background:'+(p.analyse?'var(--accent)':'#ccc')+';color:#fff;font-size:11px;flex-shrink:0" title="Spielanalyse" data-anid="'+esc(p.id)+'">📊</button>':'';
+    var anActive=trackAny(p);
+    var anBtn=PRO_ON?'<button class="tdot" style="background:'+(anActive?'var(--accent)':'#ccc')+';color:#fff;font-size:11px;flex-shrink:0" title="Erfassen-Menü" data-anid="'+esc(p.id)+'">📊</button>':'';
     var gpsBtn=PRO_ON?'<button class="tdot" style="background:'+(p.gps?'var(--green)':'#ccc')+';color:#fff;font-size:11px;flex-shrink:0" title="GPS Schlagweite" data-gpsid="'+esc(p.id)+'">📍</button>':'';
-    return'<div class="pli"><div class="pname serif">'+esc(p.name)+'</div><input class="inp" type="number" step="0.1" min="-10" max="54" value="'+(p.handicap!=null?p.handicap:'')+'" placeholder="HCP" style="text-align:center;padding-left:4px;padding-right:4px" data-hid="'+esc(p.id)+'">'+anBtn+gpsBtn+extra+'<button class="rmbtn" data-rmid="'+esc(p.id)+'">×</button></div>';
+    var isGuard=!!p.guardOf,isW=isWard(p);
+    var zChk=document.getElementById('opt-zaehler');var zaehlerAn=zChk&&zChk.checked;
+    var patBtn=(PRO_ON&&!zaehlerAn)?'<button class="tdot" style="background:'+(isGuard?'#8e44ad':(isW?'#b39ddb':'#ccc'))+';color:#fff;font-size:11px;flex-shrink:0" title="Patenschaft (handyloser Spieler)" data-patid="'+esc(p.id)+'">🤝</button>':'';
+    var nameTag=isW?' <span style="font-size:9px;color:#8e44ad;font-weight:700">📵 handylos</span>':(isGuard?' <span style="font-size:9px;color:#8e44ad;font-weight:700">🤝 Pate</span>':'');
+    var row='<div class="pli"><div class="pname serif">'+esc(p.name)+nameTag+'</div><input class="inp" type="number" step="0.1" min="-10" max="54" value="'+(p.handicap!=null?p.handicap:'')+'" placeholder="HCP" style="text-align:center;padding-left:4px;padding-right:4px" data-hid="'+esc(p.id)+'">'+anBtn+gpsBtn+patBtn+extra+'<button class="rmbtn" data-rmid="'+esc(p.id)+'">×</button></div>';
+    // Aufklappbares Erfassen-Menü
+    if(TRACK_OPEN===p.id){
+      var labels={putts:'🏌️ Putts',fir:'🎯 Fairway',gir:'🟢 Grün i.R. (GIR)',ann:'📍 Annäherung',absch:'↔️ Abschlag'};
+      var chips=TRACK_FIELDS.map(function(f){return '<div class="tchip'+(p.track[f]?' on':'')+'" data-track="'+f+'" data-tid="'+esc(p.id)+'">'+(p.track[f]?'✓ ':'')+labels[f]+'</div>';}).join('');
+      row+='<div class="track-menu"><div class="track-menu-title">Was soll erfasst werden?</div><div class="track-chips">'+chips+'</div></div>';
+    }
+    // Aufklappbares Patenschafts-Menü
+    if(PAT_OPEN===p.id){
+      var cur=p.guardOf?findByPidIn(SP,p.guardOf):null;
+      var opts=SP.filter(function(x){return x.id!==p.id&&!x.guardOf&&(!x.guardedBy||x.guardedBy===p.pid);}).map(function(x){
+        var sel=(cur&&cur.id===x.id);
+        return '<div class="tchip'+(sel?' on':'')+'" data-patward="'+esc(x.id)+'" data-patguard="'+esc(p.id)+'">'+(sel?'✓ ':'')+esc(x.name)+'</div>';
+      }).join('');
+      var clearBtn=p.guardOf?'<div class="tchip" data-patclear="'+esc(p.id)+'" style="border-color:var(--red);color:var(--red)">✕ Patenschaft aufheben</div>':'';
+      row+='<div class="track-menu"><div class="track-menu-title">🤝 '+esc(p.name)+' betreut (handyloser Spieler):</div><div class="track-chips">'+(opts||'<span style="font-size:11px;color:var(--txt3)">Keine freien Spieler verfügbar</span>')+clearBtn+'</div></div>';
+    }
+    return row;
   }).join('');
   document.querySelectorAll('[data-hid]').forEach(function(el){el.addEventListener('input',function(){var p=SP.find(function(p){return p.id===this.dataset.hid;}.bind(this));if(p)p.handicap=this.value===''?0:Number(this.value);}.bind(el));});
-  document.querySelectorAll('[data-anid]').forEach(function(el){el.addEventListener('click',function(){var p=SP.find(function(p){return p.id===this.dataset.anid;}.bind(this));if(p){p.analyse=!p.analyse;renderPList();}}.bind(el));});
+  document.querySelectorAll('[data-anid]').forEach(function(el){el.addEventListener('click',function(){var id=this.dataset.anid;TRACK_OPEN=(TRACK_OPEN===id)?null:id;renderPList();}.bind(el));});
+  document.querySelectorAll('[data-track]').forEach(function(el){el.addEventListener('click',function(){var p=SP.find(function(x){return x.id===this.dataset.tid;}.bind(this));if(p){ensureTrack(p);p.track[this.dataset.track]=!p.track[this.dataset.track];renderPList();}}.bind(el));});
+  document.querySelectorAll('[data-patid]').forEach(function(el){el.addEventListener('click',function(){var id=this.dataset.patid;PAT_OPEN=(PAT_OPEN===id)?null:id;TRACK_OPEN=null;renderPList();}.bind(el));});
+  document.querySelectorAll('[data-patward]').forEach(function(el){el.addEventListener('click',function(){var guardId=this.dataset.patguard,wardId=this.dataset.patward;var cur=SP.find(function(x){return x.id===guardId;});if(cur&&cur.guardOf){var curW=findByPidIn(SP,cur.guardOf);if(curW&&curW.id===wardId){unassignWard(SP,guardId);renderPList();return;}}assignWard(SP,guardId,wardId);renderPList();}.bind(el));});
+  document.querySelectorAll('[data-patclear]').forEach(function(el){el.addEventListener('click',function(){unassignWard(SP,this.dataset.patclear);renderPList();}.bind(el));});
   document.querySelectorAll('[data-gpsid]').forEach(function(el){el.addEventListener('click',function(){var p=SP.find(function(p){return p.id===this.dataset.gpsid;}.bind(this));if(p){p.gps=!p.gps;renderPList();}}.bind(el));});
   document.querySelectorAll('[data-rmid]').forEach(function(el){el.addEventListener('click',async function(){var id=this.dataset.rmid,pl=SP.find(function(p){return p.id===id;});var ok=await askConfirm((pl&&pl.name||'Spieler')+' wirklich löschen?','Löschen','var(--red)');if(!ok)return;SP=SP.filter(function(p){return p.id!==id;});renderPList();if(CODE)try{await fbSet(fp('players/'+id),null);}catch(e){}});});
   if(showT){document.querySelectorAll('.tdot').forEach(function(el){if(el.dataset.id)el.addEventListener('click',function(){var p=SP.find(function(p){return p.id===this.dataset.id;}.bind(this));if(p){p.team=parseInt(this.dataset.t);renderPList();}}.bind(el));});}
   if(STM==='americans'&&SP.length>=4)renderAmPrev();
 }
-function addPlayer(){var name=document.getElementById('new-name').value.trim();if(!name)return;var hcp=document.getElementById('new-hcp').value;SP.push({id:Date.now().toString(),pid:genPid(),name:name,handicap:hcp!==''?Number(hcp):0,scores:Array(18).fill(null),team:SP.length%2,flight:1,gps:false});document.getElementById('new-name').value='';document.getElementById('new-hcp').value='';renderPList();renderFlights();}
+function addPlayer(){var name=document.getElementById('new-name').value.trim();if(!name)return;var hcp=document.getElementById('new-hcp').value;SP.push({id:Date.now().toString(),pid:genPid(),name:name,handicap:hcp!==''?Number(hcp):0,scores:Array(18).fill(null),team:SP.length%2,flight:1,gps:false,track:{putts:false,fir:false,gir:false,ann:false,absch:false}});document.getElementById('new-name').value='';document.getElementById('new-hcp').value='';renderPList();renderFlights();}
 async function resetScores(){var ok=await askConfirm('Alle Scores zurücksetzen?','Zurücksetzen','var(--red)');if(!ok)return;SP=SP.map(function(p){return Object.assign({},p,{scores:Array(18).fill(null)});});renderPList();if(CODE)try{await Promise.all(SP.map(function(p){return fbSet(fp('players/'+p.id),p);}));toast('✅ Scores zurückgesetzt');}catch(e){toast('📶 Lokal zurückgesetzt');}}
 async function saveSetup(){
   for(var i=0;i<18;i++){var pe=document.getElementById('par-'+i),se=document.getElementById('si-'+i);if(pe)SPAR[i]=Number(pe.value)||4;if(se)SSI[i]=se.value!==''?Number(se.value)||i+1:i+1;}
@@ -1859,7 +2272,7 @@ async function saveSetup(){
   if(rMode==='zaehlen_fix'){var msv=document.getElementById('max-score-val');maxScore=parseInt(msv&&msv.value)||8;}
   var gv=function(id){var el=document.getElementById(id);return el?el.checked:false;};
   var notifSettings={hio:gv('notif-hio'),eagle:gv('notif-eagle'),birdie:gv('notif-birdie'),par:gv('notif-par'),bogey:gv('notif-bogey'),double:gv('notif-double'),bv:gv('notif-bv'),lady:gv('notif-lady'),putt3:gv('notif-putt3'),scorelog:gv('notif-scorelog')};
-  G.round={courseName:cname,par:SPAR,strokeIndex:SSI,tee:tee,date:document.getElementById('r-date').value||tod(),mode:rMode,maxScore:maxScore,teamMode:STM,longestDrive:(parseInt(document.getElementById('longest-drive-hole').value)||0),options:{ballverlust:gv('opt-ballverlust'),ladies:gv('opt-ladies'),putts:gv('opt-putts'),notif:gv('opt-notif'),notifSettings:notifSettings,zaehler:gv('opt-zaehler')}};
+  G.round={courseName:cname,par:SPAR,strokeIndex:SSI,tee:tee,date:document.getElementById('r-date').value||tod(),mode:rMode,maxScore:maxScore,teamMode:STM,longestDrive:(parseInt(document.getElementById('longest-drive-hole').value)||0),options:{ballverlust:gv('opt-ballverlust'),ladies:gv('opt-ladies'),notif:gv('opt-notif'),notifSettings:notifSettings,zaehler:gv('opt-zaehler')}};
   G.players=SP;var trnR=parseInt(document.getElementById('trn-rounds').value)||0;
   // SCHUTZ vor Datenverlust: eingefrorene Runden dürfen nicht durch Umschalten gelöscht werden
   var frozenCount=(G.tournament&&G.tournament.rounds)?G.tournament.rounds.length:0;
@@ -2048,7 +2461,7 @@ function getGps(){
   });
 }
 function accColor(acc){if(acc==null)return'rgba(21,101,192,.96)';if(acc<=8)return'rgba(46,125,50,.96)';if(acc<=15)return'rgba(230,81,0,.96)';return'rgba(198,40,40,.96)';}
-function rerenderHoles(){var o=G.round.options||{};if(o.zaehler&&MARK_ID)renderHolesZaehler();else renderHoles();}
+function rerenderHoles(){var o=G.round.options||{};if(o.zaehler&&MARK_ID)renderHolesZaehler();else if(!o.zaehler&&WARD_ID)renderHolesPate();else renderHoles();}
 async function gpsMeasure(idx){
   var clubSel=document.getElementById('gps-club-'+idx);var club=clubSel?clubSel.value:CLUBS[0];
   var btn=document.getElementById('gps-btn-'+idx);
