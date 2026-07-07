@@ -16,12 +16,12 @@
 <style>
 :root{--bg:#daeeff;--bg2:#c8e6fa;--bg3:#b8d8f5;--card:#fff;--border:#2c2c2c;--border-light:#8bb8d8;--txt:#111;--txt2:#334455;--txt3:#556677;--accent:#1565c0;--accent2:#0d47a1;--green:#2e7d32;--red:#e53935;--t1:#1565c0;--t2:#c62828;}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{height:100%;background:var(--bg)}
-body{min-height:100%;background:var(--bg);color:var(--txt);font-family:'DM Sans',sans-serif;-webkit-tap-highlight-color:transparent}
+html{height:100%;background:var(--bg);overflow-x:hidden}
+body{min-height:100%;background:var(--bg);color:var(--txt);font-family:'DM Sans',sans-serif;-webkit-tap-highlight-color:transparent;overflow-x:hidden;width:100%;max-width:100%}
 input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 input,select,button{font-family:'DM Sans',sans-serif}
 .serif{font-family:'Cormorant Garamond',serif}
-.view{display:none;flex-direction:column;min-height:100vh}
+.view{display:none;flex-direction:column;min-height:100vh;overflow-x:hidden}
 .view.active{display:flex}
 .toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(21,101,192,.96);color:#fff;padding:16px 28px;border-radius:16px;font-size:17px;font-weight:700;z-index:9999;opacity:0;transition:opacity .25s;pointer-events:none;box-shadow:0 8px 32px rgba(0,0,0,.25);text-align:center;max-width:90vw}
 .toast.show{opacity:1}
@@ -197,6 +197,10 @@ input,select,button{font-family:'DM Sans',sans-serif}
 .putt-row{display:flex;align-items:center;gap:8px;padding:4px 14px 8px;background:var(--card);border-bottom:1px solid var(--border-light)}
 .putt-lbl{font-size:10px;color:var(--txt3);font-weight:600;min-width:50px}
 .putt-stepper{display:flex;align-items:center;gap:6px}
+.pate-putts{display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 2px}
+.pate-putts-lbl{font-size:11px;font-weight:700;color:var(--txt2)}
+.pate-putts .putt-btn{width:28px;height:28px;font-size:16px}
+.pate-putts .putt-val{font-size:24px;min-width:24px}
 .putt-btn{width:32px;height:32px;border-radius:50%;border:2px solid var(--border-light);background:var(--card);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--accent);font-weight:700;line-height:1}
 .putt-val{font-size:32px;font-weight:900;min-width:32px;text-align:center;font-family:'Cormorant Garamond',serif;line-height:1}
 .result-body{padding:16px;padding-bottom:100px}
@@ -334,7 +338,7 @@ input,select,button{font-family:'DM Sans',sans-serif}
 .zinfo{text-align:center}
 .zinfo .hnum{font-size:14px;font-weight:700}
 .zinfo .hpar{font-size:10px;color:var(--txt3);font-weight:600}
-.zstep{display:flex;align-items:center;background:var(--card);border:2px solid var(--border);border-radius:11px;overflow:hidden;height:clamp(58px,15vw,66px)}
+.zstep{display:flex;align-items:center;background:var(--card);border:2px solid var(--border);border-radius:11px;overflow:hidden;height:clamp(58px,15vw,66px);width:100%;box-sizing:border-box}
 .zstep.mark{border-color:#6a1b9a}
 .zbtn{background:none;border:none;color:var(--accent);font-size:clamp(24px,6.5vw,28px);width:clamp(36px,10vw,42px);height:100%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;user-select:none;-webkit-user-select:none;touch-action:manipulation;font-weight:900}
 .zstep.mark .zbtn{color:#6a1b9a}
@@ -475,6 +479,7 @@ input,select,button{font-family:'DM Sans',sans-serif}
   <div class="sc-tabs"><button class="sc-tab active" id="tab-front">FRONT 9 (1–9)</button><button class="sc-tab" id="tab-back">BACK 9 (10–18)</button></div>
   <div class="sc-col-head"><span>LOCH</span><span>SCHLÄGE</span><span>BRUTTO</span><span id="col4lbl">NETTO</span></div>
   <div id="gps-prime-bar" style="display:none;padding:12px 14px;background:#fff8e6;border-bottom:1px solid #f0e0b0"><button id="gps-prime-btn" style="width:100%;padding:13px;border-radius:11px;border:none;background:#1f8fd6;color:#fff;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(31,143,214,.3)">📍 GPS für Schlagweiten aktivieren</button><div style="font-size:11px;color:#8a7a4a;text-align:center;margin-top:7px;line-height:1.4">Einmal antippen, um Standort zu erlauben — danach misst die App Schlagweiten & Longest Drive.</div></div>
+  <div id="pate-bar" style="display:none;padding:10px 14px;background:#f5eefb;border-bottom:1px solid #e0d0ee"></div>
   <div id="sc-holes"></div>
   <div id="half-bar" class="half-bar" style="display:none"><div style="font-size:9px;color:var(--txt3);text-align:center">∑</div><div style="font-size:11px;color:var(--txt2)" id="half-par-lbl"></div><div style="text-align:center;font-size:16px;font-weight:700;font-family:'Cormorant Garamond',serif" id="half-brutto-lbl"></div><div style="text-align:center;font-size:13px;font-weight:700;color:#6a1b9a;font-family:'Cormorant Garamond',serif" id="half-stbl-lbl"></div></div>
   <div style="height:82px"></div>
@@ -783,6 +788,7 @@ var CLEANUP_DAYS=30;
 var CLEANUP_PROTECT='';
 var IS_ADMIN_VIEW=false;
 var CMARK=Array(18).fill(null),MARK_ID=null,Z_SLOT='self';
+var WARD_ID=null,WARD_CS=Array(18).fill(null),WARD_EXT=Array(18).fill(null);
 var GPS_MEASURE=null;
 var CLUBS=['Driver','Holz 3','Holz 5','Hybrid','Eisen 4','Eisen 5','Eisen 6','Eisen 7','Eisen 8','Eisen 9','Pitching Wedge','Gap Wedge','Sand Wedge','Lob Wedge'];
 var FB_CFG={apiKey:'AIzaSyDWzTqMaEa2U9MF_k84MBvbHj1wK30LuuA',authDomain:'ulis-golfscore.firebaseapp.com',databaseURL:'https://ulis-golfscore-default-rtdb.europe-west1.firebasedatabase.app',projectId:'ulis-golfscore',storageBucket:'ulis-golfscore.firebasestorage.app',messagingSenderId:'752079349846',appId:'1:752079349846:web:5fe4656acf7722f743b3f7'};
@@ -798,7 +804,7 @@ var CID=null,CS=Array(18).fill(null),CTAB='front';
 var CEXT=Array(18).fill(null).map(function(){return{bv:0,la:false,putts:0,absch:null,abschLaenge:null,annDist:null,annTref:false};});
 var LBM='brutto',LBV='einzel',TM='bestball';
 var pSync=false,aTimer=null;
-var SP=[],SPAR=DPAR.slice(),SSI=DSI.slice(),SAC=null,SAT=null,CTM='manual',SDB=null,STM='none',TRACK_OPEN=null;
+var SP=[],SPAR=DPAR.slice(),SSI=DSI.slice(),SAC=null,SAT=null,CTM='manual',SDB=null,STM='none',TRACK_OPEN=null,PAT_OPEN=null;
 var NOTIF_ON=false,PREV_SNAP={},LOG_OPEN=false;
 var PRES_REF=null;
 
@@ -974,7 +980,7 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('btn-save-setup').addEventListener('click',saveSetup);
   document.querySelectorAll('.tms-opt').forEach(function(el){el.addEventListener('click',function(){selectTM(this.dataset.tm);});});
   document.getElementById('opt-notif').addEventListener('change',function(){document.getElementById('notif-submenu').style.display=this.checked?'block':'none';});
-  document.getElementById('opt-zaehler').addEventListener('change',function(){document.getElementById('zaehler-flights').style.display=this.checked?'block':'none';if(this.checked)renderFlights();});
+  document.getElementById('opt-zaehler').addEventListener('change',function(){document.getElementById('zaehler-flights').style.display=this.checked?'block':'none';if(this.checked){renderFlights();SP.forEach(function(p){if(p.guardOf)unassignWard(SP,p.id);});PAT_OPEN=null;}renderPList();});
   document.getElementById('btn-flight-random').addEventListener('click',assignMarkersRandom);
   document.getElementById('btn-test-banner').addEventListener('click',function(){var ev=[{i:'🐦',m:'Birdie! Max · Loch 7',t:'birdie'},{i:'🦅',m:'Eagle! Anna · Loch 3',t:'eagle'},{i:'⚪',m:'Par — Klaus · Loch 12',t:'par'},{i:'😬',m:'Bogey — Peter · Loch 5',t:'bogey'},{i:'💀',m:'Doppelbogey — Franz · Loch 15',t:'double'},{i:'🏌️',m:'HOLE IN ONE!!! Uli · Loch 9',t:'hio'}];var e=ev[Math.floor(Math.random()*ev.length)];showBanner(e.i,e.m,e.t);});
   document.getElementById('dev-back').addEventListener('click',function(){stopLiveWatch();showView('lobby');});
@@ -1025,6 +1031,36 @@ function ensureTrack(p){
   return p;
 }
 function trackAny(p){if(!p||!p.track)return false;return TRACK_FIELDS.some(function(f){return p.track[f];});}
+// ════ PATENSCHAFT (Baustein 3) ════
+// Pate: guardOf = pid des Mündels. Mündel: phoneless:true + guardedBy = pid des Paten.
+function findByPid(pid){if(!pid||!G||!G.players)return null;return G.players.find(function(p){return p.pid===pid;})||null;}
+function findByPidIn(players,pid){if(!pid||!players)return null;return players.find(function(p){return p.pid===pid;})||null;}
+function wardOf(pate){if(!pate||!pate.guardOf)return null;return findByPid(pate.guardOf);}      // gibt das Mündel eines Paten
+function guardianOf(ward){if(!ward||!ward.guardedBy)return null;return findByPid(ward.guardedBy);} // gibt den Paten eines Mündels
+function isWard(p){return!!(p&&p.phoneless&&p.guardedBy);}
+function isGuardian(p){return!!(p&&p.guardOf);}
+// Zuweisung: Pate (by id) betreut Mündel (by id). Arbeitet auf einem players-Array.
+function assignWard(players,guardianId,wardId){
+  var g=players.find(function(p){return p.id===guardianId;});
+  var w=players.find(function(p){return p.id===wardId;});
+  if(!g||!w||g.id===w.id)return false;
+  if(!g.pid)ensurePid(g);if(!w.pid)ensurePid(w);
+  // Alte Bindungen dieses Paten und dieses Mündels lösen (max. 1 Mündel-Regel)
+  if(g.guardOf){var oldW=players.find(function(p){return p.pid===g.guardOf;});if(oldW){delete oldW.phoneless;delete oldW.guardedBy;}}
+  if(w.guardedBy){var oldG=players.find(function(p){return p.pid===w.guardedBy;});if(oldG)delete oldG.guardOf;}
+  // Neue Bindung setzen
+  g.guardOf=w.pid;
+  w.phoneless=true;w.guardedBy=g.pid;
+  return true;
+}
+function unassignWard(players,guardianId){
+  var g=players.find(function(p){return p.id===guardianId;});
+  if(!g||!g.guardOf)return false;
+  var w=players.find(function(p){return p.pid===g.guardOf;});
+  if(w){delete w.phoneless;delete w.guardedBy;}
+  delete g.guardOf;
+  return true;
+}
 function anyTracksPutts(){if(!G||!G.players)return false;return G.players.some(function(p){return p&&p.track&&p.track.putts;});}
 function registerPlayer(pid,name,hcp,code){
   if(!DB||!pid||!name)return;
@@ -1046,7 +1082,7 @@ function startListeners(){
   var r4=DB.ref(fp('notif')).on('value',function(snap){NOTIF_ON=!!snap.val();});
   DB.ref('turniere/'+CODE+'/logo').on('value',function(snap){G_LOGO=(snap&&snap.exists())?snap.val():null;applyTournamentLogo();});
   var r1=DB.ref(fp('round')).on('value',function(snap){if(!snap.exists())return;LIVE_ROUND=snap.val();if(LIVE_ROUND.options&&LIVE_ROUND.options.notif!==undefined)NOTIF_ON=!!LIVE_ROUND.options.notif;if(VIEW_RND===null){G.round=LIVE_ROUND;renderLB();renderResult();}});
-  var r2=DB.ref(fp('players')).on('value',function(snap){if(!snap.exists())return;var fresh=parsePlayers(snap.val());LIVE_PLAYERS=fresh;if(firstPlayers){fresh.forEach(saveSnap);firstPlayers=false;}else{fresh.forEach(function(np){checkEvents(PREV_SNAP[np.id]||null,np);saveSnap(np);});}if(VIEW_RND===null){G.players=fresh;renderLB();renderResult();if(scoreLogEnabled())renderScoreLog();if(document.getElementById('view-card').classList.contains('active')&&CID){var p2=G.players.find(function(p){return p.id===CID;});if(p2&&!aTimer){CS=p2.scores?p2.scores.slice():Array(18).fill(null);var zo=G.round.options||{};if(zo.zaehler&&MARK_ID)renderHolesZaehler();else renderHoles();updatePills();}}}});
+  var r2=DB.ref(fp('players')).on('value',function(snap){if(!snap.exists())return;var fresh=parsePlayers(snap.val());LIVE_PLAYERS=fresh;if(firstPlayers){fresh.forEach(saveSnap);firstPlayers=false;}else{fresh.forEach(function(np){checkEvents(PREV_SNAP[np.id]||null,np);saveSnap(np);});}if(VIEW_RND===null){G.players=fresh;renderLB();renderResult();if(scoreLogEnabled())renderScoreLog();if(document.getElementById('view-card').classList.contains('active')&&CID){var p2=G.players.find(function(p){return p.id===CID;});if(p2&&!aTimer){CS=p2.scores?p2.scores.slice():Array(18).fill(null);var zo=G.round.options||{};if(zo.zaehler&&MARK_ID)renderHolesZaehler();else if(!zo.zaehler&&WARD_ID){var wp=G.players.find(function(x){return x.id===WARD_ID;});if(wp){WARD_CS=wp.scores?wp.scores.slice():Array(18).fill(null);WARD_EXT=extToCext(wp.extras);}renderHolesPate();}else renderHoles();updatePills();}}}});
   var r3=DB.ref(fp('tournament')).on('value',function(snap){if(!snap.exists())return;G.tournament=snap.val();refreshTrnUI();if(document.getElementById('view-total').classList.contains('active'))renderTotal();});
   OFF=[function(){DB.ref(fp('notif')).off('value',r4);},function(){DB.ref(fp('round')).off('value',r1);},function(){DB.ref(fp('players')).off('value',r2);},function(){DB.ref(fp('tournament')).off('value',r3);}];
 }
@@ -1479,6 +1515,27 @@ function renderTeamView(){
 // ════ SCORECARD ════
 async function openCard(id){
   var p=G.players.find(function(p){return p.id===id;});if(!p)return;
+  // ── Stufe 4: Schutz der Mündel-Karte ──
+  // Ein Mündel darf nur der Admin oder der zugehörige Pate öffnen.
+  if(isWard(p)&&!IS_ADMIN_VIEW){
+    var guardian=findByPid(p.guardedBy);  // der Pate dieses Mündels
+    var devId2=DEVICE_ID||getDeviceId();
+    var allowed=false;
+    if(guardian&&DB){
+      try{
+        var gsnap=await DB.ref('device_player/'+devId2).get();
+        var myPid=gsnap.exists()?gsnap.val():null;  // welchem Spieler gehört dieses Gerät
+        // Erlaubt, wenn dieses Gerät zum Paten gehört
+        if(myPid&&myPid===guardian.id)allowed=true;
+        // Kulanz: wenn dieses Gerät noch keinem Spieler zugeordnet ist, erlauben (erstes Öffnen durch den Paten)
+        if(!myPid)allowed=true;
+      }catch(e){allowed=true;} // im Zweifel nicht blockieren (Fehler beim Lesen)
+    }else{allowed=true;} // kein Firebase/kein Pate bekannt → nicht blockieren
+    if(!allowed){
+      await askConfirm('🔒 '+esc(p.name)+' ist ein handyloser Spieler und wird von '+esc(guardian?guardian.name:'einem Paten')+' betreut.\n\nNur der Pate oder die Turnierleitung kann diese Karte öffnen.','Verstanden','#8e44ad');
+      return;
+    }
+  }
   // Scorecard-Warnung prüfen
   var warnMode=SCORECARD_WARN;
   var exceptMatch=SCORECARD_WARN_EXCEPT&&CODE&&SCORECARD_WARN_EXCEPT===CODE;
@@ -1500,6 +1557,8 @@ async function openCard(id){
   }
   doOpenCard(id);
 }
+function blankExt(){return{bv:0,la:false,putts:0,absch:null,abschLaenge:null,annDist:null,annTref:false,fir:false,gir:false,sand:false,shots:[],ldGender:null,ldFairway:false};}
+function extToCext(extras){return Array(18).fill(null).map(function(_,i){var ex=(extras&&extras[i])||{};return{bv:Number(ex.bv)||0,la:!!ex.la,putts:Number(ex.putts)||0,absch:ex.absch||null,abschLaenge:ex.abschLaenge||null,annDist:ex.annDist||null,annTref:!!ex.annTref,fir:!!ex.fir,gir:!!ex.gir,sand:!!ex.sand,shots:Array.isArray(ex.shots)?ex.shots.slice():[],ldGender:ex.ldGender||null,ldFairway:!!ex.ldFairway};});}
 function doOpenCard(id){
   var p=G.players.find(function(p){return p.id===id;});if(!p)return;
   CID=id;CS=p.scores?p.scores.slice():Array(18).fill(null);
@@ -1520,6 +1579,15 @@ function doOpenCard(id){
     MARK_ID=markId;
     CMARK=(p.markedScores&&Array.isArray(p.markedScores))?p.markedScores.slice():Array(18).fill(null);while(CMARK.length<18)CMARK.push(null);
   }else{MARK_ID=null;CMARK=Array(18).fill(null);}
+  // Patenschaft: Mündel-Daten laden (nur normaler Modus)
+  if(!opts.zaehler&&p.guardOf){
+    var ward=findByPid(p.guardOf);
+    if(ward){
+      WARD_ID=ward.id;
+      WARD_CS=ward.scores?ward.scores.slice():Array(18).fill(null);while(WARD_CS.length<18)WARD_CS.push(null);
+      WARD_EXT=extToCext(ward.extras);
+    }else{WARD_ID=null;WARD_CS=Array(18).fill(null);WARD_EXT=Array(18).fill(null).map(function(){return blankExt();});}
+  }else{WARD_ID=null;WARD_CS=Array(18).fill(null);WARD_EXT=Array(18).fill(null).map(function(){return blankExt();});}
   Z_SLOT='self';
   var loc=loadLoc(id);if(loc&&Array.isArray(loc)&&loc.length===18&&loc.filter(function(s){return s!=null;}).length>CS.filter(function(s){return s!=null;}).length){CS=loc.slice();setTimeout(pushFB,300);}
   CTAB=localStorage.getItem(LS_TAB+id)||(pc(CS)>=9?'back':'front');
@@ -1532,8 +1600,57 @@ function doOpenCard(id){
   if(gpsRelevant&&GPS_PERM){if(primeBar)primeBar.style.display='none';gpsWarmup();}
   else if(gpsRelevant&&!GPS_PERM){if(primeBar)primeBar.style.display='block';}
   else{if(primeBar)primeBar.style.display='none';}
+  renderPateBar();
 }
-function setTab(t){CTAB=t;if(CID)localStorage.setItem(LS_TAB+CID,t);document.getElementById('tab-front').classList.toggle('active',t==='front');document.getElementById('tab-back').classList.toggle('active',t==='back');var opts=G.round.options||{};if(opts.zaehler&&MARK_ID)renderHolesZaehler();else renderHoles();}
+function renderPateBar(){
+  var bar=document.getElementById('pate-bar');if(!bar)return;
+  var opts=G.round.options||{};
+  // Nur im normalen Modus (nicht Zähler), nur Pro
+  if(opts.zaehler||!PRO_ON){bar.style.display='none';return;}
+  var me=G.players.find(function(p){return p.id===CID;});if(!me){bar.style.display='none';return;}
+  // Mündel dürfen selbst kein Banner sehen (sie werden ja geführt)
+  if(isWard(me)){bar.style.display='none';return;}
+  if(me.guardOf){
+    var w=findByPid(me.guardOf);
+    bar.innerHTML='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:12px;font-weight:700;color:#8e44ad">🤝 Du betreust: '+esc(w?w.name:'?')+'</span><button id="pate-clear-btn" style="margin-left:auto;padding:6px 12px;border-radius:16px;border:2px solid var(--red);background:#fff;color:var(--red);font-size:11px;font-weight:700;cursor:pointer">Aufheben</button></div>';
+    bar.style.display='block';
+    var cb=document.getElementById('pate-clear-btn');if(cb)cb.addEventListener('click',pateClear);
+  }else{
+    // Freie Spieler (kein Pate, kein Mündel), außer mir selbst und außer denen im Turnier ohne Handy-Bedarf
+    var free=G.players.filter(function(p){return p.id!==me.id&&!p.guardOf&&!isWard(p);});
+    if(!free.length){bar.style.display='none';return;}
+    var opt='<option value="">— handylosen Spieler wählen —</option>'+free.map(function(p){return '<option value="'+esc(p.id)+'">'+esc(p.name)+'</option>';}).join('');
+    bar.innerHTML='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:12px;font-weight:700;color:#8e44ad">🤝 Handylosen Spieler betreuen?</span><select id="pate-select" style="flex:1;min-width:130px;padding:7px 8px;border-radius:8px;border:2px solid #d0b0e8;font-size:12px;font-weight:600">'+opt+'</select></div>';
+    bar.style.display='block';
+    var sel=document.getElementById('pate-select');if(sel)sel.addEventListener('change',function(){if(this.value)pateAssign(this.value);});
+  }
+}
+async function pateAssign(wardId){
+  if(!CID)return;
+  var w=G.players.find(function(p){return p.id===wardId;});
+  var ok=await askConfirm('Du übernimmst die Karte von '+(w?w.name:'diesem Spieler')+' (handylos). Du trägst dann auch dessen Scores ein. Fortfahren?','Übernehmen','#8e44ad');
+  if(!ok){renderPateBar();return;}
+  if(assignWard(G.players,CID,wardId)){
+    var me=G.players.find(function(p){return p.id===CID;});
+    if(CODE)try{await fbSet(fp('players/'+me.id),me);await fbSet(fp('players/'+wardId),w);}catch(e){}
+    toast('🤝 Du betreust jetzt '+(w?w.name:'den Spieler'),'#8e44ad');
+    doOpenCard(CID);   // lädt WARD-Daten + rendert Karte + Banner
+  }
+}
+async function pateClear(){
+  if(!CID)return;
+  var me=G.players.find(function(p){return p.id===CID;});
+  var w=me&&me.guardOf?findByPid(me.guardOf):null;
+  var ok=await askConfirm('Patenschaft für '+(w?w.name:'den Spieler')+' aufheben?','Aufheben','var(--red)');
+  if(!ok)return;
+  if(unassignWard(G.players,CID)){
+    if(CODE)try{await fbSet(fp('players/'+me.id),me);if(w)await fbSet(fp('players/'+w.id),w);}catch(e){}
+    toast('Patenschaft aufgehoben');
+    WARD_ID=null;
+    doOpenCard(CID);   // WARD-Daten zurücksetzen + normale Ansicht + Banner
+  }
+}
+function setTab(t){CTAB=t;if(CID)localStorage.setItem(LS_TAB+CID,t);document.getElementById('tab-front').classList.toggle('active',t==='front');document.getElementById('tab-back').classList.toggle('active',t==='back');rerenderHoles();}
 function renderCard(){
   var p=G.players.find(function(p){return p.id===CID;});if(!p)return;
   document.getElementById('sc-pname').textContent=p.name;
@@ -1544,7 +1661,7 @@ function renderCard(){
   document.getElementById('pill-netto-lbl').textContent=isStbl()?'Stbl.':'Netto';
   document.getElementById('tab-front').classList.toggle('active',CTAB==='front');document.getElementById('tab-back').classList.toggle('active',CTAB==='back');
   updatePills();
-  if(zMode)renderHolesZaehler();else renderHoles();
+  if(zMode)renderHolesZaehler();else if(WARD_ID)renderHolesPate();else renderHoles();
 }
 function updatePills(){
   var p=G.players.find(function(p){return p.id===CID;});if(!p)return;
@@ -1735,6 +1852,154 @@ function renderHolesZaehler(){
   // Vergleichsleiste unter der Tabelle
   renderZCompare();
   refreshHalf(holes);
+}
+function renderHolesPate(){
+  var me=G.players.find(function(p){return p.id===CID;});if(!me){renderHoles();return;}
+  var ward=G.players.find(function(p){return p.id===WARD_ID;});if(!ward){WARD_ID=null;renderHoles();return;}
+  ensureTrack(me);ensureTrack(ward);
+  var par=G.round.par||DPAR,si=G.round.strokeIndex||DSI;
+  var start=CTAB==='front'?0:9,holes=Array.from({length:9},function(_,i){return start+i;});
+  var ldHole=G.round.longestDrive||0;
+  var html='<div class="z-colhead"><div></div><div class="zc self">ICH ('+esc((me.name||'').split(' ')[0])+')</div><div class="zc mark" style="color:#8e44ad">📵 '+esc((ward.name||'').split(' ')[0])+'</div></div>';
+  html+=holes.map(function(i){
+    var pv=par[i]||4,siv=si[i]!=null&&si[i]!==''?si[i]:i+1;
+    var sR=CS[i],wR=WARD_CS[i];
+    var sTxt=sR==null?'–':(sR===0?'NR':sR),sCls=sR==null?'zval empty':(sR===0?'zval empty nr':'zval');
+    var wTxt=wR==null?'–':(wR===0?'NR':wR),wCls=wR==null?'zval empty':(wR===0?'zval empty nr':'zval');
+    var zFilled=(sR!=null&&sR!==0)||(wR!=null&&wR!==0);
+    var titleBar='<div class="hrow-title"><span class="lochbadge">'+(i+1)+'</span><span class="lochttl">Loch '+(i+1)+'</span><span class="lochpar">Par '+pv+(siv!=null&&siv!==''?' · SI '+siv:'')+'</span></div>';
+    var selfExtra=pateColExtra('self',i,me,CEXT[i]||{},pv,ldHole);
+    var wardExtra=pateColExtra('ward',i,ward,WARD_EXT[i]||{},pv,ldHole);
+    return '<div class="hcell'+(zFilled?' filled':'')+'" id="pc-'+i+'">'+titleBar
+      +'<div class="zrow" id="pr-'+i+'"><div class="zinfo"><div class="hpar">P'+pv+'</div></div>'
+      +'<div class="zstepwrap"><div class="zstep"><button class="zbtn" data-ps="self" data-idx="'+i+'" data-d="-1">−</button><div class="'+sCls+'" id="psv-'+i+'">'+sTxt+'</div><button class="zbtn" data-ps="self" data-idx="'+i+'" data-d="1">+</button></div>'+selfExtra+'</div>'
+      +'<div class="zstepwrap"><div class="zstep mark"><button class="zbtn" data-ps="ward" data-idx="'+i+'" data-d="-1">−</button><div class="'+wCls+'" id="pwv-'+i+'">'+wTxt+'</div><button class="zbtn" data-ps="ward" data-idx="'+i+'" data-d="1">+</button></div>'+wardExtra+'</div></div></div>';
+  }).join('');
+  document.getElementById('sc-holes').innerHTML=html;
+  document.querySelectorAll('#sc-holes [data-ps]').forEach(function(btn){btn.addEventListener('click',function(){pateStep(this.dataset.ps,parseInt(this.dataset.idx),parseInt(this.dataset.d));});});
+  bindPateExtraHandlers();
+  if(GPS_MEASURE){var cs=document.getElementById('gps-club-'+GPS_MEASURE.idx);if(cs)cs.value=GPS_MEASURE.club;}
+  refreshHalf(holes);
+}
+function pateColExtra(slot,i,player,ex,pv,ldHole){
+  var tr=player.track||{};var zopts=G.round.options||{};var out='';
+  var sc=(slot==='self'?CS:WARD_CS)[i];
+  if(zopts.ballverlust||zopts.ladies){
+    out+='<div class="zextra">';
+    if(zopts.ballverlust){var bv=Number(ex.bv)||0;out+='<button class="extra-btn'+(bv>0?' active-bv':'')+'" data-pbv="1" data-slot="'+slot+'" data-idx="'+i+'">🔴 Ball'+(bv>0?' ×'+bv:'')+'</button>'+(bv>0?'<button class="extra-btn active-bv" data-pbv="-1" data-slot="'+slot+'" data-idx="'+i+'" style="padding:6px 10px">−</button>':'');}
+    if(zopts.ladies)out+='<button class="extra-btn'+(ex.la?' active-la':'')+'" data-pla="1" data-slot="'+slot+'" data-idx="'+i+'">🚺 Lady'+(ex.la?' 🍺':'')+'</button>';
+    out+='</div>';
+  }
+  if(tr.putts){
+    out+='<div class="pate-putts"><div class="pate-putts-lbl">🏌️ Putts</div><div class="putt-stepper" style="justify-content:center"><button class="putt-btn" data-ppu="-1" data-slot="'+slot+'" data-idx="'+i+'">−</button><div class="putt-val" id="'+(slot==='self'?'ppv':'pwpv')+'-'+i+'">'+(ex.putts||0)+'</div><button class="putt-btn" data-ppu="1" data-slot="'+slot+'" data-idx="'+i+'">+</button></div></div>';
+  }
+  if(trackAny(player)&&sc!=null){
+    var ab=ex.absch||null,al=ex.abschLaenge||null,ad=ex.annDist||'',at=!!ex.annTref;
+    var r='';
+    if(tr.absch)r+='<div class="analyse-row-title">🏌️ ABSCHLAG</div><div class="analyse-chips">'+['L','M','R'].map(function(o){return'<div class="achip'+(ab===o?' on':'')+'" data-pab="'+o+'" data-slot="'+slot+'" data-idx="'+i+'">'+o+'</div>';}).join('')+['Lang','Kurz'].map(function(o){return'<div class="achip'+(al===o?' on':'')+'" data-pal="'+o+'" data-slot="'+slot+'" data-idx="'+i+'">'+o+'</div>';}).join('')+'</div>';
+    if(tr.fir&&pv>=4)r+='<div class="analyse-chips" style="margin-top:3px"><div class="achip'+(ex.fir?' on':'')+'" data-pfir="1" data-slot="'+slot+'" data-idx="'+i+'">🎯 Fairway</div></div>';
+    if(tr.gir)r+='<div class="analyse-chips" style="margin-top:3px"><div class="achip'+(ex.gir?' on':'')+'" data-pgir="1" data-slot="'+slot+'" data-idx="'+i+'">🟢 GIR</div></div>';
+    if(tr.ann)r+='<div class="ann-row" style="margin-top:3px"><input class="ann-inp" type="number" placeholder="m" value="'+ad+'" data-pann="1" data-slot="'+slot+'" data-idx="'+i+'" min="0" max="999"><div class="achip'+(at?' on':'')+'" data-pat="1" data-slot="'+slot+'" data-idx="'+i+'">✓ Grün</div></div>';
+    if(tr.fir)r+='<div class="analyse-chips" style="margin-top:3px"><div class="achip'+(ex.sand?' on':'')+'" data-psand="1" data-slot="'+slot+'" data-idx="'+i+'">🏖️ Bunker</div></div>';
+    if(r)out+='<div class="analyse-row" style="margin:4px 0 0">'+r+'</div>';
+  }
+  if(ldHole&&(i+1)===ldHole){
+    var gz=ex.ldGender||'H',shots=ex.shots||[];
+    var gstage=(GPS_MEASURE&&GPS_MEASURE.idx===i&&GPS_MEASURE.slot===slot)?GPS_MEASURE.stage:null;
+    var clubOpts=CLUBS.map(function(c){return'<option value="'+esc(c)+'">'+esc(c)+'</option>';}).join('');
+    var shotsHtml=shots.length?'<div class="gps-shots">'+shots.map(function(s,si){return'<span class="gps-shot">'+esc(s.club)+' '+s.dist+'m'+(s.manual?' ✍️':(s.acc!=null?' (±'+s.acc+'m)':''))+' <button data-pdelshot-slot="'+slot+'" data-pdelshot-idx="'+i+'" data-pdelshot-si="'+si+'">×</button></span>';}).join('')+'</div>':'';
+    var gLabel=gstage==='ready'?'📍 Start':gstage==='start'?'📍 Ende':'📏 GPS';
+    out+='<div class="zld"><div class="ld-hint">🏆 Longest Drive</div>'
+      +'<div class="extra-row" style="padding-top:4px"><button class="extra-btn'+(gz==='H'?' ld-on-h':'')+'" data-pldg="H" data-slot="'+slot+'" data-idx="'+i+'">🚹</button><button class="extra-btn'+(gz==='D'?' ld-on-d':'')+'" data-pldg="D" data-slot="'+slot+'" data-idx="'+i+'">🚺</button><button class="extra-btn'+(ex.ldFairway?' ld-fw-on':'')+'" data-pldfw="1" data-slot="'+slot+'" data-idx="'+i+'">'+(ex.ldFairway?'✅ FW':'🎯 FW')+'</button></div>'
+      +'<div class="gps-row" style="margin-top:4px"><select class="gps-club" id="gps-club-'+i+'"'+(gstage?' disabled':'')+'>'+clubOpts+'</select><button class="gps-btn'+(gstage?' measuring':'')+'" id="gps-btn-'+i+'" data-pgps-slot="'+slot+'" data-pgps-idx="'+i+'">'+gLabel+'</button></div>'
+      +'<div class="gps-manual"><span class="gps-or">oder</span><input type="number" inputmode="numeric" class="gps-mdist" id="gps-mdist-'+slot+'-'+i+'" placeholder="m"><button class="gps-mbtn" data-pmanual-slot="'+slot+'" data-pmanual-idx="'+i+'">✍️</button></div>'+shotsHtml+'</div>';
+  }
+  return out;
+}
+// ── Patenschaft: Score ändern (self = Pate, ward = Mündel) ──
+function pateStep(slot,idx,delta){
+  var arr=slot==='self'?CS:WARD_CS;
+  var cur=arr[idx];var max=G.round.maxScore||null;
+  var next;
+  if(cur==null)next=(G.round.par||DPAR)[idx]||4;
+  else next=cur+delta;
+  if(next<0)next=0;if(max&&next>max)next=max;
+  arr[idx]=next;
+  var valEl=document.getElementById((slot==='self'?'psv-':'pwv-')+idx);
+  if(valEl){if(next===0){valEl.textContent='NR';valEl.className='zval empty nr';}else{valEl.textContent=next;valEl.className='zval';}}
+  var cell=document.getElementById('pc-'+idx);if(cell){var f=(CS[idx]!=null&&CS[idx]!==0)||(WARD_CS[idx]!=null&&WARD_CS[idx]!==0);cell.classList.toggle('filled',f);}
+  // GPS vorwärmen bei LD-Nähe
+  if(next!=null&&gpsContextActive(idx))gpsWarmup();
+  pateSaveSoon();
+  renderHolesPate();
+}
+var pateTimer=null;
+function pateSaveSoon(){if(pateTimer)clearTimeout(pateTimer);pateTimer=setTimeout(pateSave,600);}
+async function pateSave(){
+  pateTimer=null;if(!CID||!CODE)return;
+  syncDot('save');
+  try{
+    // Eigene Karte
+    var meUpd=Object.assign({},G.players.find(function(p){return p.id===CID;}),{scores:CS.slice(),extras:CEXT.slice()});
+    G.players=G.players.map(function(p){return p.id===CID?meUpd:p;});
+    saveSnap(meUpd);await fbSet(fp('players/'+CID),meUpd);
+    // Mündel-Karte (echter Eintrag des Mündels!)
+    if(WARD_ID){
+      var wardUpd=Object.assign({},G.players.find(function(p){return p.id===WARD_ID;}),{scores:WARD_CS.slice(),extras:WARD_EXT.slice()});
+      G.players=G.players.map(function(p){return p.id===WARD_ID?wardUpd:p;});
+      saveSnap(wardUpd);await fbSet(fp('players/'+WARD_ID),wardUpd);
+    }
+    syncDot('on');if(scoreLogEnabled())renderScoreLog();
+  }catch(e){syncDot('off');}
+}
+function pateArrExt(slot){return slot==='self'?{cs:CS,ext:CEXT}:{cs:WARD_CS,ext:WARD_EXT};}
+function bindPateExtraHandlers(){
+  var H=document.querySelectorAll.bind(document);
+  H('#sc-holes [data-ppu]').forEach(function(b){b.addEventListener('click',function(){var s=this.dataset.slot,idx=parseInt(this.dataset.idx),d=parseInt(this.dataset.ppu);var e=pateArrExt(s).ext;e[idx].putts=Math.max(0,(Number(e[idx].putts)||0)+d);var pvEl=document.getElementById((s==='self'?'ppv':'pwpv')+'-'+idx);if(pvEl)pvEl.textContent=e[idx].putts;pateSaveSoon();});});
+  H('#sc-holes [data-pbv]').forEach(function(b){b.addEventListener('click',function(){var s=this.dataset.slot,idx=parseInt(this.dataset.idx),d=parseInt(this.dataset.pbv);var e=pateArrExt(s).ext;e[idx].bv=Math.max(0,(Number(e[idx].bv)||0)+d);renderHolesPate();pateSaveSoon();});});
+  H('#sc-holes [data-pla]').forEach(function(b){b.addEventListener('click',function(){var s=this.dataset.slot,idx=parseInt(this.dataset.idx);var e=pateArrExt(s).ext;e[idx].la=!e[idx].la;renderHolesPate();pateSaveSoon();});});
+  H('#sc-holes [data-pab]').forEach(function(b){b.addEventListener('click',function(){var s=this.dataset.slot,idx=parseInt(this.dataset.idx);var e=pateArrExt(s).ext;e[idx].absch=(e[idx].absch===this.dataset.pab)?null:this.dataset.pab;renderHolesPate();pateSaveSoon();});});
+  H('#sc-holes [data-pal]').forEach(function(b){b.addEventListener('click',function(){var s=this.dataset.slot,idx=parseInt(this.dataset.idx);var e=pateArrExt(s).ext;e[idx].abschLaenge=(e[idx].abschLaenge===this.dataset.pal)?null:this.dataset.pal;renderHolesPate();pateSaveSoon();});});
+  H('#sc-holes [data-pfir]').forEach(function(b){b.addEventListener('click',function(){var s=this.dataset.slot,idx=parseInt(this.dataset.idx);var e=pateArrExt(s).ext;e[idx].fir=!e[idx].fir;renderHolesPate();pateSaveSoon();});});
+  H('#sc-holes [data-pgir]').forEach(function(b){b.addEventListener('click',function(){var s=this.dataset.slot,idx=parseInt(this.dataset.idx);var e=pateArrExt(s).ext;e[idx].gir=!e[idx].gir;renderHolesPate();pateSaveSoon();});});
+  H('#sc-holes [data-pat]').forEach(function(b){b.addEventListener('click',function(){var s=this.dataset.slot,idx=parseInt(this.dataset.idx);var e=pateArrExt(s).ext;e[idx].annTref=!e[idx].annTref;renderHolesPate();pateSaveSoon();});});
+  H('#sc-holes [data-psand]').forEach(function(b){b.addEventListener('click',function(){var s=this.dataset.slot,idx=parseInt(this.dataset.idx);var e=pateArrExt(s).ext;e[idx].sand=!e[idx].sand;renderHolesPate();pateSaveSoon();});});
+  H('#sc-holes [data-pann]').forEach(function(inp){inp.addEventListener('input',function(){var s=this.dataset.slot,idx=parseInt(this.dataset.idx);var e=pateArrExt(s).ext;e[idx].annDist=this.value===''?null:Number(this.value);pateSaveSoon();});});
+  H('#sc-holes [data-pldg]').forEach(function(b){b.addEventListener('click',function(){var s=this.dataset.slot,idx=parseInt(this.dataset.idx);var e=pateArrExt(s).ext;e[idx].ldGender=this.dataset.pldg;renderHolesPate();pateSaveSoon();});});
+  H('#sc-holes [data-pldfw]').forEach(function(b){b.addEventListener('click',function(){var s=this.dataset.slot,idx=parseInt(this.dataset.idx);var e=pateArrExt(s).ext;e[idx].ldFairway=!e[idx].ldFairway;renderHolesPate();pateSaveSoon();});});
+  H('#sc-holes [data-pgps-idx]').forEach(function(b){b.addEventListener('click',function(){pateGpsMeasure(this.dataset.pgpsSlot,parseInt(this.dataset.pgpsIdx));});});
+  H('#sc-holes [data-pmanual-idx]').forEach(function(b){b.addEventListener('click',function(){pateAddManualDrive(this.dataset.pmanualSlot,parseInt(this.dataset.pmanualIdx));});});
+  H('#sc-holes [data-pdelshot-idx]').forEach(function(b){b.addEventListener('click',function(){var s=this.dataset.pdelshotSlot,idx=parseInt(this.dataset.pdelshotIdx),si=parseInt(this.dataset.pdelshotSi);var e=pateArrExt(s).ext;if(e[idx].shots)e[idx].shots.splice(si,1);renderHolesPate();pateSaveSoon();});});
+}
+function pateAddManualDrive(slot,idx){
+  var distEl=document.getElementById('gps-mdist-'+slot+'-'+idx);if(!distEl)return;
+  var dist=parseInt(distEl.value);
+  if(!dist||dist<=0||dist>500){toast('⚠️ Weite 1–500 m','rgba(198,40,40,.96)');return;}
+  var e=pateArrExt(slot).ext;if(!e[idx].shots)e[idx].shots=[];
+  e[idx].shots.push({club:CLUBS[0],dist:dist,manual:true});
+  distEl.value='';toast('✍️ '+dist+' m eingetragen','#1f9e3a');renderHolesPate();pateSaveSoon();
+}
+async function pateGpsMeasure(slot,idx){
+  var e=pateArrExt(slot).ext;
+  var clubSel=document.getElementById('gps-club-'+idx);var club=clubSel?clubSel.value:CLUBS[0];
+  var btn=document.getElementById('gps-btn-'+idx);
+  var st=(GPS_MEASURE&&GPS_MEASURE.idx===idx&&GPS_MEASURE.slot===slot)?GPS_MEASURE.stage:null;
+  if(st==='ready'){
+    if(btn){btn.textContent='⏳ Startpunkt…';btn.disabled=true;}
+    try{var start=await getGps();GPS_MEASURE={idx:idx,slot:slot,stage:'start',start:start,club:club};toast('📍 Start gesetzt — geh zum Ball und tippe „Ende"',accColor(start.acc));renderHolesPate();}
+    catch(err){toast('⚠️ GPS Fehler: '+(err.message||'kein Signal'),'rgba(198,40,40,.96)');GPS_MEASURE=null;renderHolesPate();}
+  }else if(st==='start'){
+    if(btn){btn.textContent='⏳ messe…';btn.disabled=true;}
+    try{var end=await getGps();var dist=haversine(GPS_MEASURE.start,end);
+      var combAcc=Math.round(Math.sqrt(Math.pow(GPS_MEASURE.start.acc||0,2)+Math.pow(end.acc||0,2)));
+      if(!e[idx].shots)e[idx].shots=[];e[idx].shots.push({club:GPS_MEASURE.club,dist:dist,acc:combAcc});
+      GPS_MEASURE=null;toast('📏 '+dist+' m (±'+combAcc+' m)',accColor(combAcc));renderHolesPate();pateSaveSoon();
+    }catch(err){toast('⚠️ GPS Fehler: '+(err.message||'kein Signal'),'rgba(198,40,40,.96)');GPS_MEASURE=null;renderHolesPate();}
+  }else{
+    if(btn){btn.textContent='⏳ Warten auf GPS…';btn.disabled=true;}
+    try{var fix=await getGps();GPS_MEASURE={idx:idx,slot:slot,stage:'ready',club:club};toast('✅ GPS bereit (±'+Math.round(fix.acc)+' m) — tippe „Start"',accColor(fix.acc));renderHolesPate();}
+    catch(err){toast('⚠️ GPS Fehler: '+(err.message||'kein Signal'),'rgba(198,40,40,.96)');GPS_MEASURE=null;renderHolesPate();}
+  }
 }
 function renderZCompare(){
   var mp=markedPlayer();if(!mp)return;
@@ -1997,22 +2262,39 @@ function renderPList(){
   document.getElementById('p-list').innerHTML=SP.map(function(p,idx){
     ensureTrack(p);
     var extra=showT?'<div style="display:flex;gap:4px"><div class="tdot" style="background:'+(p.team===0?TC[0]:'#ccc')+'" data-id="'+esc(p.id)+'" data-t="0">1</div><div class="tdot" style="background:'+(p.team===1?TC[1]:'#ccc')+'" data-id="'+esc(p.id)+'" data-t="1">2</div></div>':showO?'<div style="width:28px;height:28px;border-radius:6px;background:var(--bg2);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--accent)">'+(idx+1)+'</div>':'';
-    var anActive=trackAny(p);
+    var anActive=trackAny(p)||p.gps;
     var anBtn=PRO_ON?'<button class="tdot" style="background:'+(anActive?'var(--accent)':'#ccc')+';color:#fff;font-size:11px;flex-shrink:0" title="Erfassen-Menü" data-anid="'+esc(p.id)+'">📊</button>':'';
-    var gpsBtn=PRO_ON?'<button class="tdot" style="background:'+(p.gps?'var(--green)':'#ccc')+';color:#fff;font-size:11px;flex-shrink:0" title="GPS Schlagweite" data-gpsid="'+esc(p.id)+'">📍</button>':'';
-    var row='<div class="pli"><div class="pname serif">'+esc(p.name)+'</div><input class="inp" type="number" step="0.1" min="-10" max="54" value="'+(p.handicap!=null?p.handicap:'')+'" placeholder="HCP" style="text-align:center;padding-left:4px;padding-right:4px" data-hid="'+esc(p.id)+'">'+anBtn+gpsBtn+extra+'<button class="rmbtn" data-rmid="'+esc(p.id)+'">×</button></div>';
+    var isGuard=!!p.guardOf,isW=isWard(p);
+    var zChk=document.getElementById('opt-zaehler');var zaehlerAn=zChk&&zChk.checked;
+    var patBtn=(PRO_ON&&!zaehlerAn)?'<button class="tdot" style="background:'+(isGuard?'#8e44ad':(isW?'#b39ddb':'#ccc'))+';color:#fff;font-size:11px;flex-shrink:0" title="Patenschaft (handyloser Spieler)" data-patid="'+esc(p.id)+'">🤝</button>':'';
+    var nameTag=isW?' <span style="font-size:9px;color:#8e44ad;font-weight:700">📵 handylos</span>':(isGuard?' <span style="font-size:9px;color:#8e44ad;font-weight:700">🤝 Pate</span>':'');
+    var row='<div class="pli"><div class="pname serif">'+esc(p.name)+nameTag+'</div><input class="inp" type="number" step="0.1" min="-10" max="54" value="'+(p.handicap!=null?p.handicap:'')+'" placeholder="HCP" style="text-align:center;padding-left:4px;padding-right:4px" data-hid="'+esc(p.id)+'">'+anBtn+patBtn+extra+'<button class="rmbtn" data-rmid="'+esc(p.id)+'">×</button></div>';
     // Aufklappbares Erfassen-Menü
     if(TRACK_OPEN===p.id){
       var labels={putts:'🏌️ Putts',fir:'🎯 Fairway',gir:'🟢 Grün i.R. (GIR)',ann:'📍 Annäherung',absch:'↔️ Abschlag'};
       var chips=TRACK_FIELDS.map(function(f){return '<div class="tchip'+(p.track[f]?' on':'')+'" data-track="'+f+'" data-tid="'+esc(p.id)+'">'+(p.track[f]?'✓ ':'')+labels[f]+'</div>';}).join('');
-      row+='<div class="track-menu"><div class="track-menu-title">Was soll erfasst werden?</div><div class="track-chips">'+chips+'</div></div>';
+      var gpsChip='<div class="tchip'+(p.gps?' on-gps':'')+'" data-gpstoggle="'+esc(p.id)+'" style="'+(p.gps?'background:var(--green);border-color:var(--green);color:#fff':'')+'">'+(p.gps?'✓ ':'')+'📍 GPS Schlagweite</div>';
+      row+='<div class="track-menu"><div class="track-menu-title">Was soll erfasst werden?</div><div class="track-chips">'+chips+'</div><div class="track-menu-title" style="margin-top:10px">Zusätzlich:</div><div class="track-chips">'+gpsChip+'</div></div>';
+    }
+    // Aufklappbares Patenschafts-Menü
+    if(PAT_OPEN===p.id){
+      var cur=p.guardOf?findByPidIn(SP,p.guardOf):null;
+      var opts=SP.filter(function(x){return x.id!==p.id&&!x.guardOf&&(!x.guardedBy||x.guardedBy===p.pid);}).map(function(x){
+        var sel=(cur&&cur.id===x.id);
+        return '<div class="tchip'+(sel?' on':'')+'" data-patward="'+esc(x.id)+'" data-patguard="'+esc(p.id)+'">'+(sel?'✓ ':'')+esc(x.name)+'</div>';
+      }).join('');
+      var clearBtn=p.guardOf?'<div class="tchip" data-patclear="'+esc(p.id)+'" style="border-color:var(--red);color:var(--red)">✕ Patenschaft aufheben</div>':'';
+      row+='<div class="track-menu"><div class="track-menu-title">🤝 '+esc(p.name)+' betreut (handyloser Spieler):</div><div class="track-chips">'+(opts||'<span style="font-size:11px;color:var(--txt3)">Keine freien Spieler verfügbar</span>')+clearBtn+'</div></div>';
     }
     return row;
   }).join('');
   document.querySelectorAll('[data-hid]').forEach(function(el){el.addEventListener('input',function(){var p=SP.find(function(p){return p.id===this.dataset.hid;}.bind(this));if(p)p.handicap=this.value===''?0:Number(this.value);}.bind(el));});
   document.querySelectorAll('[data-anid]').forEach(function(el){el.addEventListener('click',function(){var id=this.dataset.anid;TRACK_OPEN=(TRACK_OPEN===id)?null:id;renderPList();}.bind(el));});
   document.querySelectorAll('[data-track]').forEach(function(el){el.addEventListener('click',function(){var p=SP.find(function(x){return x.id===this.dataset.tid;}.bind(this));if(p){ensureTrack(p);p.track[this.dataset.track]=!p.track[this.dataset.track];renderPList();}}.bind(el));});
-  document.querySelectorAll('[data-gpsid]').forEach(function(el){el.addEventListener('click',function(){var p=SP.find(function(p){return p.id===this.dataset.gpsid;}.bind(this));if(p){p.gps=!p.gps;renderPList();}}.bind(el));});
+  document.querySelectorAll('[data-patid]').forEach(function(el){el.addEventListener('click',function(){var id=this.dataset.patid;PAT_OPEN=(PAT_OPEN===id)?null:id;TRACK_OPEN=null;renderPList();}.bind(el));});
+  document.querySelectorAll('[data-patward]').forEach(function(el){el.addEventListener('click',function(){var guardId=this.dataset.patguard,wardId=this.dataset.patward;var cur=SP.find(function(x){return x.id===guardId;});if(cur&&cur.guardOf){var curW=findByPidIn(SP,cur.guardOf);if(curW&&curW.id===wardId){unassignWard(SP,guardId);renderPList();return;}}assignWard(SP,guardId,wardId);renderPList();}.bind(el));});
+  document.querySelectorAll('[data-patclear]').forEach(function(el){el.addEventListener('click',function(){unassignWard(SP,this.dataset.patclear);renderPList();}.bind(el));});
+  document.querySelectorAll('[data-gpstoggle]').forEach(function(el){el.addEventListener('click',function(){var p=SP.find(function(p){return p.id===this.dataset.gpstoggle;}.bind(this));if(p){p.gps=!p.gps;renderPList();}}.bind(el));});
   document.querySelectorAll('[data-rmid]').forEach(function(el){el.addEventListener('click',async function(){var id=this.dataset.rmid,pl=SP.find(function(p){return p.id===id;});var ok=await askConfirm((pl&&pl.name||'Spieler')+' wirklich löschen?','Löschen','var(--red)');if(!ok)return;SP=SP.filter(function(p){return p.id!==id;});renderPList();if(CODE)try{await fbSet(fp('players/'+id),null);}catch(e){}});});
   if(showT){document.querySelectorAll('.tdot').forEach(function(el){if(el.dataset.id)el.addEventListener('click',function(){var p=SP.find(function(p){return p.id===this.dataset.id;}.bind(this));if(p){p.team=parseInt(this.dataset.t);renderPList();}}.bind(el));});}
   if(STM==='americans'&&SP.length>=4)renderAmPrev();
@@ -2215,7 +2497,7 @@ function getGps(){
   });
 }
 function accColor(acc){if(acc==null)return'rgba(21,101,192,.96)';if(acc<=8)return'rgba(46,125,50,.96)';if(acc<=15)return'rgba(230,81,0,.96)';return'rgba(198,40,40,.96)';}
-function rerenderHoles(){var o=G.round.options||{};if(o.zaehler&&MARK_ID)renderHolesZaehler();else renderHoles();}
+function rerenderHoles(){var o=G.round.options||{};if(o.zaehler&&MARK_ID)renderHolesZaehler();else if(!o.zaehler&&WARD_ID)renderHolesPate();else renderHoles();}
 async function gpsMeasure(idx){
   var clubSel=document.getElementById('gps-club-'+idx);var club=clubSel?clubSel.value:CLUBS[0];
   var btn=document.getElementById('gps-btn-'+idx);
