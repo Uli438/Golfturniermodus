@@ -168,6 +168,28 @@ input,select,button{font-family:'DM Sans',sans-serif}
 .stval.empty{color:#aaa;font-size:clamp(17px,4vw,20px);font-weight:400}
 .stval.nr{color:#111;font-weight:700;font-size:clamp(30px,8vw,36px)}
 .hres{text-align:center}
+/* 👓 Brillen-Modus: alles proportional größer, Layout identisch (nur Einzel-Score-Eingabe) */
+/* Skalierung über CSS-Variable steuerbar (Dev-Seite): --big-scale */
+#sc-holes.big{--big-scale:1.5}
+#sc-holes.big .hrow{grid-template-columns:1fr;justify-items:center;gap:calc(6px * var(--big-scale));padding:calc(10px * var(--big-scale)) 14px}
+#sc-holes.big .hinfo{display:none}
+#sc-holes.big .hres{display:inline-block;margin:0 10px}
+#sc-holes.big .sc-col-head{grid-template-columns:calc(44px * var(--big-scale)) 1fr clamp(60px,18vw,68px) clamp(52px,16vw,60px)}
+#sc-holes.big .hrow-title{padding:calc(9px * var(--big-scale)) 14px 5px}
+#sc-holes.big .hrow-title .lochbadge{min-width:calc(34px * var(--big-scale));height:calc(34px * var(--big-scale));font-size:calc(18px * var(--big-scale));border-radius:10px}
+#sc-holes.big .hrow-title .lochttl{font-size:calc(16px * var(--big-scale))}
+#sc-holes.big .hrow-title .lochpar{font-size:calc(12px * var(--big-scale))}
+#sc-holes.big .stepper{height:calc(64px * var(--big-scale));width:min(86vw,calc(230px * var(--big-scale)));box-sizing:border-box}
+#sc-holes.big .stval{font-size:calc(33px * var(--big-scale));flex:1;min-width:0;overflow:hidden}
+#sc-holes.big .stbtn{font-size:calc(37px * var(--big-scale));width:calc(64px * var(--big-scale));height:calc(64px * var(--big-scale));flex-shrink:0}
+#sc-holes.big .hnum{font-size:calc(15px * var(--big-scale))}
+#sc-holes.big .hpar{font-size:calc(11px * var(--big-scale))}
+#sc-holes.big .hres{font-size:calc(13px * var(--big-scale));font-weight:800}
+#sc-holes.big .putt-lbl{font-size:calc(11px * var(--big-scale))}
+#sc-holes.big .putt-btn{width:calc(30px * var(--big-scale));height:calc(30px * var(--big-scale));font-size:calc(16px * var(--big-scale))}
+#sc-holes.big .putt-val{font-size:calc(28px * var(--big-scale));min-width:calc(28px * var(--big-scale))}
+#sc-holes.big .extra-btn{font-size:calc(11px * var(--big-scale));padding:calc(8px * var(--big-scale)) calc(12px * var(--big-scale))}
+#sc-holes.big .achip{font-size:calc(11px * var(--big-scale));padding:calc(7px * var(--big-scale)) calc(12px * var(--big-scale))}
 .rv{font-size:clamp(13px,3.5vw,15px);font-weight:700}
 .rl{font-size:clamp(8px,2vw,8px);opacity:.7}
 .dash{color:#bbb}
@@ -476,7 +498,7 @@ input,select,button{font-family:'DM Sans',sans-serif}
     <div style="flex:1;min-width:0"><div class="hdr-title serif" id="sc-pname"></div><div class="hdr-sub" id="sc-psub"></div></div>
     <div class="pills"><div class="pill"><div class="pill-val serif" id="pill-brutto" style="color:#2d4529">–</div><div class="pill-lbl">Brutto</div></div><div class="pill"><div class="pill-val serif" id="pill-netto" style="color:#2d4529">–</div><div class="pill-lbl" id="pill-netto-lbl">Netto</div></div></div>
   </div>
-  <div class="sc-tabs"><button class="sc-tab active" id="tab-front">FRONT 9 (1–9)</button><button class="sc-tab" id="tab-back">BACK 9 (10–18)</button></div>
+  <div class="sc-tabs"><button class="sc-tab active" id="tab-front">FRONT 9 (1–9)</button><button class="sc-tab" id="tab-back">BACK 9 (10–18)</button><button id="glasses-btn" title="Große Ansicht (für ohne Lesebrille)" style="flex-shrink:0;padding:0 16px;border:none;border-left:2px solid var(--border);background:var(--bg2);font-size:20px;cursor:pointer">👓</button></div>
   <div class="sc-col-head"><span>LOCH</span><span>SCHLÄGE</span><span>BRUTTO</span><span id="col4lbl">NETTO</span></div>
   <div id="gps-prime-bar" style="display:none;padding:12px 14px;background:#fff8e6;border-bottom:1px solid #f0e0b0"><button id="gps-prime-btn" style="width:100%;padding:13px;border-radius:11px;border:none;background:#1f8fd6;color:#fff;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(31,143,214,.3)">📍 GPS für Schlagweiten aktivieren</button><div style="font-size:11px;color:#8a7a4a;text-align:center;margin-top:7px;line-height:1.4">Einmal antippen, um Standort zu erlauben — danach misst die App Schlagweiten & Longest Drive.</div></div>
   <div id="pate-bar" style="display:none;padding:10px 14px;background:#f5eefb;border-bottom:1px solid #e0d0ee"></div>
@@ -674,6 +696,17 @@ input,select,button{font-family:'DM Sans',sans-serif}
         <input class="inp" id="dev-sw-except" placeholder="Turnier-Code ausschließen" maxlength="3" autocomplete="off" style="display:none;text-align:center;font-size:20px;font-weight:900;letter-spacing:4px">
         <div id="dev-sw-status" style="font-size:11px;color:var(--txt3);text-align:center;min-height:16px"></div>
       </div>
+    </div>
+
+    <div class="dev-sec">BRILLEN-MODUS 👓</div>
+    <div class="lcard">
+      <div class="lcard-title">👓 GRÖSSE DER GROSSEN ANSICHT</div>
+      <div style="font-size:11px;color:var(--txt2);margin-bottom:12px;line-height:1.5">Wie stark soll der Brillen-Modus in der Score-Eingabe vergrößern?</div>
+      <div style="display:flex;gap:8px">
+        <button class="glasses-scale-btn" data-scale="1.5" style="flex:1;padding:14px;border-radius:10px;border:2px solid var(--border-light);background:var(--card);font-size:14px;font-weight:700;cursor:pointer">+50 %</button>
+        <button class="glasses-scale-btn" data-scale="1.7" style="flex:1;padding:14px;border-radius:10px;border:2px solid var(--border-light);background:var(--card);font-size:14px;font-weight:700;cursor:pointer">+70 %</button>
+      </div>
+      <div id="glasses-scale-status" style="font-size:11px;color:var(--txt3);text-align:center;margin-top:8px"></div>
     </div>
 
     <div class="dev-sec">TURNIER-LOGO</div>
@@ -956,6 +989,7 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('setup-back').addEventListener('click',function(){showView(CODE?'lb':'lobby');});
   document.getElementById('analyse-back').addEventListener('click',function(){showView('card');});
   document.getElementById('tab-front').addEventListener('click',function(){setTab('front');});
+  var gb=document.getElementById('glasses-btn');if(gb)gb.addEventListener('click',toggleGlasses);
   document.getElementById('tab-back').addEventListener('click',function(){setTab('back');});
   document.getElementById('savebtn').addEventListener('click',saveScore);
   document.getElementById('btn-share-result').addEventListener('click',shareResult);
@@ -1004,6 +1038,7 @@ document.addEventListener('DOMContentLoaded',function(){
   var clCheck=document.getElementById('dev-cleanup-check');if(clCheck)clCheck.addEventListener('click',cleanupPreview);
   var regBtn=document.getElementById('dev-registry-load');if(regBtn)regBtn.addEventListener('click',loadRegistry);
   initLogoUpload();
+  initGlassesScale();
   document.getElementById('dev-sw-code').addEventListener('change',function(){var v=this.value.trim();if(/^\d{3}$/.test(v))saveScorecardWarn(v,null);});
   document.getElementById('dev-sw-except').addEventListener('change',function(){var v=this.value.trim();if(/^\d{3}$/.test(v))saveScorecardWarn('all',v);});
   DEVICE_ID=getDeviceId();
@@ -1315,6 +1350,23 @@ var G_LOGO=null;
 function applyTournamentLogo(){
   var img=document.getElementById('lb-logo');if(!img)return;
   if(G_LOGO){img.src=G_LOGO;img.style.display='block';}else{img.style.display='none';img.removeAttribute('src');}
+}
+function initGlassesScale(){
+  var cur=localStorage.getItem('gtm_glasses_scale')||'1.5';
+  function refresh(){
+    document.querySelectorAll('.glasses-scale-btn').forEach(function(b){
+      var active=b.dataset.scale===cur;
+      b.style.background=active?'var(--accent)':'var(--card)';
+      b.style.color=active?'#fff':'var(--txt)';
+      b.style.borderColor=active?'var(--accent)':'var(--border-light)';
+    });
+    var st=document.getElementById('glasses-scale-status');
+    if(st)st.textContent='Aktuell: '+(cur==='1.7'?'+70 %':'+50 %');
+  }
+  document.querySelectorAll('.glasses-scale-btn').forEach(function(b){
+    b.addEventListener('click',function(){cur=this.dataset.scale;localStorage.setItem('gtm_glasses_scale',cur);refresh();applyGlasses();});
+  });
+  refresh();
 }
 function initLogoUpload(){
   var pick=document.getElementById('logo-pick'),file=document.getElementById('logo-file');
@@ -1651,6 +1703,21 @@ async function pateClear(){
   }
 }
 function setTab(t){CTAB=t;if(CID)localStorage.setItem(LS_TAB+CID,t);document.getElementById('tab-front').classList.toggle('active',t==='front');document.getElementById('tab-back').classList.toggle('active',t==='back');rerenderHoles();}
+function toggleGlasses(){var on=localStorage.getItem('gtm_glasses')==='1';localStorage.setItem('gtm_glasses',on?'0':'1');applyGlasses();}
+function applyGlasses(){
+  var on=localStorage.getItem('gtm_glasses')==='1';
+  var sc=document.getElementById('sc-holes');
+  var opts=G.round.options||{};
+  var single=!(opts.zaehler&&MARK_ID)&&!WARD_ID;
+  if(sc){
+    sc.classList.toggle('big',on&&single);
+    // Skalierung aus Einstellung (Standard 1.5 = +50%)
+    var scale=localStorage.getItem('gtm_glasses_scale')||'1.5';
+    sc.style.setProperty('--big-scale',scale);
+  }
+  var gb=document.getElementById('glasses-btn');
+  if(gb){gb.style.background=(on&&single)?'var(--accent)':'var(--bg2)';gb.style.opacity=single?'1':'0.35';}
+}
 function renderCard(){
   var p=G.players.find(function(p){return p.id===CID;});if(!p)return;
   document.getElementById('sc-pname').textContent=p.name;
@@ -1768,6 +1835,7 @@ function renderHoles(){
   document.querySelectorAll('[data-delshot-idx]').forEach(function(btn){btn.addEventListener('click',function(){delShot(parseInt(this.dataset.delshotIdx),parseInt(this.dataset.delshotSi));});});
   if(GPS_MEASURE){var cs=document.getElementById('gps-club-'+GPS_MEASURE.idx);if(cs)cs.value=GPS_MEASURE.club;}
   refreshHalf(holes);
+  applyGlasses();
 }
 function markedPlayer(){return MARK_ID?G.players.find(function(p){return p.id===MARK_ID;}):null;}
 function renderHolesZaehler(){
