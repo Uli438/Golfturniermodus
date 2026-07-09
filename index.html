@@ -462,6 +462,7 @@ input,select,button{font-family:'DM Sans',sans-serif}
 
 <!-- LEADERBOARD -->
 <div id="view-lb" class="view">
+  <div id="lb-top-spacer" style="height:0;transition:height .3s;flex-shrink:0"></div>
   <div id="lb-hero">
     <div class="eyebrow"><div class="sync-dot" id="sync-dot"></div>LIVE SCORING · TURNIERMODUS</div>
     <img id="lb-logo" style="display:none;max-width:120px;max-height:90px;margin:0 auto 8px;border-radius:10px" alt="Turnier-Logo">
@@ -527,6 +528,7 @@ input,select,button{font-family:'DM Sans',sans-serif}
 <!-- SETUP -->
 <div id="view-setup" class="view">
   <div class="hdr"><button class="back-btn" id="setup-back">←</button><div class="hdr-title serif" id="setup-title">Einstellungen</div></div>
+  <div id="setup-access" style="display:none"></div>
   <div id="setup-trn-hint" style="display:none;padding:10px 16px;border-bottom:2px solid #ffa000;font-size:12px;font-weight:700;line-height:1.5"></div>
   <div id="setup-close-round" style="display:none;padding:14px 16px;background:#fff8e1;border-bottom:2px solid #ffa000">
     <button id="btn-close-round-setup" style="width:100%;padding:14px;background:linear-gradient(135deg,#e65100,#f57c00);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer">✅ Runde abschließen</button>
@@ -661,6 +663,14 @@ input,select,button{font-family:'DM Sans',sans-serif}
       <div style="font-size:9px;color:var(--accent);letter-spacing:2px;font-weight:700;margin-bottom:8px">CODE ÄNDERN</div>
       <div style="display:flex;gap:8px"><input class="inp" id="dev-code-new" placeholder="Neuer Code" autocomplete="off" autocorrect="off" autocapitalize="off" style="font-size:18px;font-weight:900;text-align:center"><button id="dev-code-save" style="background:linear-gradient(135deg,var(--green),#43a047);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;padding:0 16px;cursor:pointer;flex-shrink:0">Speichern</button></div>
       <div id="dev-code-status" style="font-size:11px;color:var(--txt3);text-align:center;min-height:16px;margin-top:8px"></div>
+    </div>
+
+    <div class="dev-sec">SETUP-SPERRE 🔒</div>
+    <div class="lcard">
+      <div class="lcard-title">🔒 SETUP-CODES DER TURNIERE</div>
+      <div style="font-size:11px;color:var(--txt2);margin-bottom:12px;line-height:1.5">Wer ein Turnier erstellt, kommt immer ohne Code in die Einstellungen. Bei aktiver Sperre brauchen alle anderen Teilnehmer den Setup-Code.</div>
+      <button id="dev-setup-load" style="width:100%;padding:12px;background:linear-gradient(135deg,var(--accent),#1976d2);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">Liste laden</button>
+      <div id="dev-setup-list" style="margin-top:10px"></div>
     </div>
 
     <div class="dev-sec">TURNIER-VERWALTUNG</div>
@@ -885,7 +895,7 @@ function askConfirm(msg,okLabel,okColor){
 var BSTYLE={hio:{bg:'#1a1a2e',fg:'#ffd700'},eagle:{bg:'#c8960a',fg:'#1a1000'},birdie:{bg:'#1b5e20',fg:'#fff'},par:{bg:'#546e7a',fg:'#fff'},bogey:{bg:'#bf360c',fg:'#fff'},double:{bg:'#7f0000',fg:'#fff'},bv:{bg:'#b71c1c',fg:'#fff'},lady:{bg:'#4a148c',fg:'#fff'},putt3:{bg:'#263238',fg:'#fff'}};
 function showBanner(icon,msg,type){var b=document.getElementById('news-banner'),s=BSTYLE[type]||{bg:'#1565c0',fg:'#fff'};b.style.background=s.bg;b.style.color=s.fg;document.getElementById('nb-icon').textContent=icon;document.getElementById('nb-txt').textContent=msg;document.getElementById('nb-close').style.color=s.fg;b.classList.remove('show');clearTimeout(b._bt);b._bt=setTimeout(function(){b.classList.add('show');updateCardSpacer();var bar=document.getElementById('score-log-bar');if(bar&&bar.classList.contains('visible'))bar.style.top='58px';},30);}
 function hideBanner(){document.getElementById('news-banner').classList.remove('show');var bar=document.getElementById('score-log-bar');if(bar&&bar.classList.contains('visible'))bar.style.top='0px';setTimeout(updateCardSpacer,50);}
-function updateCardSpacer(){var total=0;var banner=document.getElementById('news-banner');if(banner&&banner.classList.contains('show'))total+=banner.offsetHeight||58;var log=document.getElementById('score-log-bar');if(log&&log.classList.contains('visible'))total+=log.offsetHeight||36;var h=total>0?(total+2)+'px':'0px';var sp=document.getElementById('card-top-spacer'),hd2=document.getElementById('card-hdr');if(sp)sp.style.height=h;if(hd2)hd2.style.top=h;var asp=document.getElementById('analyse-top-spacer'),ahd=document.getElementById('analyse-hdr');if(asp)asp.style.height=h;if(ahd)ahd.style.top=h;}
+function updateCardSpacer(){var total=0;var banner=document.getElementById('news-banner');if(banner&&banner.classList.contains('show'))total+=banner.offsetHeight||58;var log=document.getElementById('score-log-bar');if(log&&log.classList.contains('visible'))total+=log.offsetHeight||36;var h=total>0?(total+2)+'px':'0px';var sp=document.getElementById('card-top-spacer'),hd2=document.getElementById('card-hdr');if(sp)sp.style.height=h;if(hd2)hd2.style.top=h;var asp=document.getElementById('analyse-top-spacer'),ahd=document.getElementById('analyse-hdr');if(asp)asp.style.height=h;if(ahd)ahd.style.top=h;var lsp=document.getElementById('lb-top-spacer');if(lsp)lsp.style.height=h;}
 
 // ════ SCORE LOG ════
 function scoreLogEnabled(){var opts=G.round.options||{};return !!(opts.notif&&opts.notifSettings&&opts.notifSettings.scorelog!==false);}
@@ -972,7 +982,7 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('qr-close-btn').addEventListener('click',function(){document.getElementById('qr-modal').classList.remove('show');});
   document.getElementById('btn-result').addEventListener('click',function(){showView('result');});
   document.getElementById('btn-total').addEventListener('click',function(){showView('total');});
-  document.getElementById('btn-setup').addEventListener('click',function(){showView('setup');});
+  document.getElementById('btn-setup').addEventListener('click',async function(){if(await canOpenSetup()){showView('setup');renderSetupAccess();}});
   document.getElementById('btn-close-round-setup').addEventListener('click',async function(){await closeRound();initSetup();});
   document.getElementById('btn-home').addEventListener('click',goLobby);
   document.getElementById('btn-close-round').addEventListener('click',function(){if(!IS_ADMIN_VIEW){toast('⚠️ Nur über die Admin-Seite möglich');return;}closeRound();});
@@ -1039,6 +1049,7 @@ document.addEventListener('DOMContentLoaded',function(){
   var regBtn=document.getElementById('dev-registry-load');if(regBtn)regBtn.addEventListener('click',loadRegistry);
   initLogoUpload();
   initGlassesScale();
+  initSetupLockDev();
   document.getElementById('dev-sw-code').addEventListener('change',function(){var v=this.value.trim();if(/^\d{3}$/.test(v))saveScorecardWarn(v,null);});
   document.getElementById('dev-sw-except').addEventListener('change',function(){var v=this.value.trim();if(/^\d{3}$/.test(v))saveScorecardWarn('all',v);});
   DEVICE_ID=getDeviceId();
@@ -1351,6 +1362,42 @@ function applyTournamentLogo(){
   var img=document.getElementById('lb-logo');if(!img)return;
   if(G_LOGO){img.src=G_LOGO;img.style.display='block';}else{img.style.display='none';img.removeAttribute('src');}
 }
+function initSetupLockDev(){
+  var b=document.getElementById('dev-setup-load');
+  if(b)b.addEventListener('click',renderSetupLockList);
+}
+async function renderSetupLockList(){
+  var box=document.getElementById('dev-setup-list');if(!box)return;
+  box.innerHTML='<div style="font-size:11px;color:var(--txt3);text-align:center;padding:8px">⏳ Lade…</div>';
+  try{
+    await initFB();
+    var snap=await DB.ref('turniere').get();
+    if(!snap||!snap.exists()){box.innerHTML='<div style="font-size:11px;color:var(--txt3);text-align:center;padding:8px">Keine Turniere gefunden</div>';return;}
+    var val=snap.val()||{};
+    var codes=Object.keys(val).filter(function(c){return /^[0-9]{3}$/.test(c)&&c!=='999';}).sort();
+    if(!codes.length){box.innerHTML='<div style="font-size:11px;color:var(--txt3);text-align:center;padding:8px">Keine Turniere gefunden</div>';return;}
+    box.innerHTML='<div style="display:flex;gap:10px;font-size:9px;color:var(--txt3);letter-spacing:1px;font-weight:700;padding:0 10px 6px"><span style="min-width:44px">TURNIER</span><span style="flex:1;text-align:center">SETUP-CODE</span><span>SPERRE</span></div>'
+      +codes.map(function(c){
+        var t=val[c]||{};
+        var pin=t.setup_pin?String(t.setup_pin):null;
+        var lock=String(t.setup_lock||'')==='on';
+        return '<div style="display:flex;align-items:center;gap:10px;padding:10px;border:2px solid var(--border-light);border-radius:10px;margin-bottom:8px">'
+          +'<div style="font-size:16px;font-weight:900;min-width:44px">'+esc(c)+'</div>'
+          +'<div style="flex:1;text-align:center;font-size:20px;font-weight:900;letter-spacing:4px;font-family:\'Cormorant Garamond\',serif">'+(pin?esc(pin):'—')+'</div>'
+          +(pin?('<button class="dev-setuplock-toggle" data-code="'+esc(c)+'" data-lock="'+(lock?'1':'0')+'" style="flex-shrink:0;padding:8px 12px;border-radius:14px;border:2px solid '+(lock?'var(--red)':'var(--border)')+';background:'+(lock?'var(--red)':'var(--card)')+';color:'+(lock?'#fff':'var(--txt2)')+';font-size:11px;font-weight:700;cursor:pointer">'+(lock?'🔒 AN':'🔓 AUS')+'</button>')
+                :'<span style="flex-shrink:0;font-size:10px;color:var(--txt3)">kein Code</span>')
+          +'</div>';
+      }).join('');
+    document.querySelectorAll('.dev-setuplock-toggle').forEach(function(btn){
+      btn.addEventListener('click',async function(){
+        var c=this.dataset.code,on=this.dataset.lock==='1';
+        try{await initFB();await DB.ref('turniere/'+c+'/setup_lock').set(on?'off':'on');
+          toast(on?'🔓 '+c+': Sperre aus':'🔒 '+c+': Sperre an',on?'var(--green)':'#8e44ad');renderSetupLockList();}
+        catch(e){toast('⚠️ Fehler beim Speichern','var(--red)');}
+      });
+    });
+  }catch(e){box.innerHTML='<div style="font-size:11px;color:var(--red);text-align:center;padding:8px">⚠️ Fehler beim Laden</div>';}
+}
 function initGlassesScale(){
   var cur=localStorage.getItem('gtm_glasses_scale')||'1.5';
   function refresh(){
@@ -1565,6 +1612,80 @@ function renderTeamView(){
 }
 
 // ════ SCORECARD ════
+// Gerät→Spieler-Zuordnung gilt PRO TURNIER (Spieler-IDs sind turnier-intern).
+function devPlayerPath(devId){return CODE?('device_player/'+CODE+'/'+devId):null;}
+// ════ SETUP-ZUGANG (Sperre der Einstellungen) ════
+var SETUP_UNLOCKED={};
+function gen3(){return String(Math.floor(100+Math.random()*900));}
+function creatorKey(code){return 'gtm_creator_'+code;}
+function isCreatorLocal(code){try{return localStorage.getItem(creatorKey(code))==='1';}catch(e){return false;}}
+async function readSetupAccess(code){
+  await initFB();
+  var pinSnap=await DB.ref('turniere/'+code+'/setup_pin').get();
+  var lockSnap=await DB.ref('turniere/'+code+'/setup_lock').get();
+  var crSnap=await DB.ref('turniere/'+code+'/meta/creator').get();
+  return {pin:(pinSnap&&pinSnap.exists())?String(pinSnap.val()):null,
+          lock:(lockSnap&&lockSnap.exists())?(String(lockSnap.val())==='on'):false,
+          creator:(crSnap&&crSnap.exists())?String(crSnap.val()):null};
+}
+async function renderSetupAccess(){
+  var box=document.getElementById('setup-access');if(!box)return;
+  if(!CODE){box.style.display='none';return;}
+  box.style.display='block';
+  box.innerHTML='<div style="padding:12px 16px;background:#f5eefb;border-bottom:2px solid #e0d0ee;font-size:11px;color:var(--txt3)">⏳ Setup-Zugang wird geladen…</div>';
+  var acc;
+  try{acc=await readSetupAccess(CODE);}
+  catch(e){box.innerHTML='<div style="padding:12px 16px;font-size:11px;color:var(--txt3)">Setup-Zugang offline nicht abrufbar</div>';return;}
+  if(!acc.pin){
+    box.innerHTML='<div style="padding:12px 16px;background:#fff8e1;border-bottom:2px solid #ffa000;font-size:12px;line-height:1.5">🔒 <b>Setup-Zugang</b><br>Der Setup-Code wird vergeben, sobald du das Turnier speicherst.</div>';
+    return;
+  }
+  box.innerHTML='<div style="padding:12px 16px;background:#f5eefb;border-bottom:2px solid #e0d0ee">'
+    +'<div style="font-size:9px;letter-spacing:2px;font-weight:700;color:#8e44ad;margin-bottom:6px">🔒 SETUP-ZUGANG</div>'
+    +'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
+    +'<div style="font-size:26px;font-weight:900;letter-spacing:6px;font-family:\'Cormorant Garamond\',serif">'+esc(acc.pin)+'</div>'
+    +'<button id="setup-lock-toggle" style="margin-left:auto;padding:9px 14px;border-radius:16px;border:2px solid '+(acc.lock?'var(--red)':'var(--border)')+';background:'+(acc.lock?'var(--red)':'var(--card)')+';color:'+(acc.lock?'#fff':'var(--txt2)')+';font-size:12px;font-weight:700;cursor:pointer">'+(acc.lock?'🔒 Sperre AN':'🔓 Sperre AUS')+'</button>'
+    +'</div>'
+    +'<div style="font-size:10px;color:var(--txt3);margin-top:6px;line-height:1.5">Bei aktiver Sperre brauchen alle außer dir diesen Code, um die Einstellungen zu öffnen.</div></div>';
+  var b=document.getElementById('setup-lock-toggle');
+  if(b)b.addEventListener('click',async function(){
+    try{await initFB();await DB.ref('turniere/'+CODE+'/setup_lock').set(acc.lock?'off':'on');
+      toast(acc.lock?'🔓 Setup-Sperre aus':'🔒 Setup-Sperre an',acc.lock?'var(--green)':'#8e44ad');renderSetupAccess();}
+    catch(e){toast('⚠️ Fehler beim Speichern','var(--red)');}
+  });
+}
+async function ensureSetupAccess(code){
+  // Beim Start eines Turniers: Ersteller merken + Setup-Code einmalig vergeben.
+  if(!code||!DB)return;
+  var devId=DEVICE_ID||getDeviceId();
+  try{
+    var crS=await DB.ref('turniere/'+code+'/meta/creator').get();
+    var hasCreator=!!(crS&&crS.exists());
+    if(!hasCreator)await DB.ref('turniere/'+code+'/meta/creator').set(devId);
+    if(!hasCreator||String(crS.val())===devId){try{localStorage.setItem(creatorKey(code),'1');}catch(e){}}
+    var pinS=await DB.ref('turniere/'+code+'/setup_pin').get();
+    if(!(pinS&&pinS.exists())){
+      await DB.ref('turniere/'+code+'/setup_pin').set(gen3());
+      await DB.ref('turniere/'+code+'/setup_lock').set('on');
+    }
+  }catch(e){}
+}
+async function canOpenSetup(){
+  if(IS_ADMIN_VIEW)return true;          // Turnierleitung kommt immer rein
+  if(!CODE)return true;                  // neues Turnier: noch kein Code
+  if(SETUP_UNLOCKED[CODE])return true;   // in dieser Sitzung schon freigeschaltet
+  if(isCreatorLocal(CODE))return true;   // Ersteller (dieses Gerät)
+  var acc;
+  try{acc=await readSetupAccess(CODE);}catch(e){return true;} // offline: nicht aussperren
+  var devId=DEVICE_ID||getDeviceId();
+  if(acc.creator&&acc.creator===devId){try{localStorage.setItem(creatorKey(CODE),'1');}catch(e){}return true;}
+  if(!acc.lock||!acc.pin)return true;    // Sperre aus oder kein Code → wie bisher offen
+  var entered=await askPin('SETUP-CODE');
+  if(entered==null)return false;
+  if(String(entered).trim()===acc.pin){SETUP_UNLOCKED[CODE]=true;return true;}
+  toast('⚠️ Falscher Setup-Code','var(--red)');
+  return false;
+}
 async function openCard(id){
   var p=G.players.find(function(p){return p.id===id;});if(!p)return;
   // ── Stufe 4: Schutz der Mündel-Karte ──
@@ -1573,9 +1694,10 @@ async function openCard(id){
     var guardian=findByPid(p.guardedBy);  // der Pate dieses Mündels
     var devId2=DEVICE_ID||getDeviceId();
     var allowed=false;
-    if(guardian&&DB){
+    var gPath=devPlayerPath(devId2);
+    if(guardian&&DB&&gPath){
       try{
-        var gsnap=await DB.ref('device_player/'+devId2).get();
+        var gsnap=await DB.ref(gPath).get();
         var myPid=gsnap.exists()?gsnap.val():null;  // welchem Spieler gehört dieses Gerät
         // Erlaubt, wenn dieses Gerät zum Paten gehört
         if(myPid&&myPid===guardian.id)allowed=true;
@@ -1592,18 +1714,24 @@ async function openCard(id){
   var warnMode=SCORECARD_WARN;
   var exceptMatch=SCORECARD_WARN_EXCEPT&&CODE&&SCORECARD_WARN_EXCEPT===CODE;
   var warnActive=(warnMode==='all'&&!exceptMatch)||(warnMode&&warnMode===CODE);
-  if(warnActive&&DB){
-    var devId=DEVICE_ID||getDeviceId();
+  var wPath=devPlayerPath(DEVICE_ID||getDeviceId());
+  if(warnActive&&DB&&wPath){
     try{
-      var snap=await DB.ref('device_player/'+devId).get();
-      var ownPid=snap.exists()?snap.val():null;
-      if(ownPid&&ownPid!==id){
-        var ownName=(G.players.find(function(x){return x.id===ownPid;})||{}).name||'ein anderer Spieler';
+      var snap=await DB.ref(wPath).get();
+      var ownId=snap.exists()?snap.val():null;
+      // Zuordnung auf einen Spieler, den es in diesem Turnier nicht (mehr) gibt → verwerfen
+      if(ownId&&!G.players.some(function(x){return x.id===ownId;}))ownId=null;
+      if(ownId&&ownId!==id){
+        var ownName=(G.players.find(function(x){return x.id===ownId;})||{}).name||'ein anderer Spieler';
         var ok=await askConfirm('⚠️ Das ist nicht deine Scorecard!\n\nDieses Gerät gehört zu: '+ownName+'\nDu öffnest gerade: '+p.name+'\n\nTrotzdem öffnen?','Trotzdem öffnen','#e65100');
         if(!ok)return;
-      }else if(!ownPid){
-        // Erste Zuordnung: dieses Gerät gehört ab jetzt zu diesem Spieler
-        DB.ref('device_player/'+devId).set(id).catch(function(){});
+        // Korrekturweg: falls die alte Zuordnung falsch war, hier richtigstellen
+        var fix=await askConfirm('Bist du '+p.name+'?\n\nDann gehört dieses Gerät ab jetzt zu '+p.name+' statt zu '+ownName+'.','Ja, ich bin '+p.name,'#1f9e3a');
+        if(fix)DB.ref(wPath).set(id).catch(function(){});
+      }else if(!ownId){
+        // Erste Zuordnung nur nach ausdrücklicher Bestätigung (sonst bindet ein Fehltipp das Gerät)
+        var mine=await askConfirm('Bist du '+p.name+'?\n\nDann wird dieses Gerät '+p.name+' zugeordnet.\n\nWenn du nur kurz reinschaust, tippe auf Abbrechen — die Karte öffnet sich trotzdem.','Ja, ich bin '+p.name,'#1f9e3a');
+        if(mine)DB.ref(wPath).set(id).catch(function(){});
       }
     }catch(e){}
   }
@@ -1946,7 +2074,7 @@ function renderHolesPate(){
   document.getElementById('sc-holes').innerHTML=html;
   document.querySelectorAll('#sc-holes [data-ps]').forEach(function(btn){btn.addEventListener('click',function(){pateStep(this.dataset.ps,parseInt(this.dataset.idx),parseInt(this.dataset.d));});});
   bindPateExtraHandlers();
-  if(GPS_MEASURE){var cs=document.getElementById('gps-club-'+GPS_MEASURE.idx);if(cs)cs.value=GPS_MEASURE.club;}
+  if(GPS_MEASURE&&GPS_MEASURE.slot){var cs=document.getElementById('gps-club-'+GPS_MEASURE.slot+'-'+GPS_MEASURE.idx);if(cs)cs.value=GPS_MEASURE.club;}
   refreshHalf(holes);
 }
 function pateColExtra(slot,i,player,ex,pv,ldHole){
@@ -1979,7 +2107,7 @@ function pateColExtra(slot,i,player,ex,pv,ldHole){
     var gLabel=gstage==='ready'?'📍 Start':gstage==='start'?'📍 Ende':'📏 GPS';
     out+='<div class="zld"><div class="ld-hint">🏆 Longest Drive</div>'
       +'<div class="extra-row" style="padding-top:4px"><button class="extra-btn'+(gz==='H'?' ld-on-h':'')+'" data-pldg="H" data-slot="'+slot+'" data-idx="'+i+'">🚹</button><button class="extra-btn'+(gz==='D'?' ld-on-d':'')+'" data-pldg="D" data-slot="'+slot+'" data-idx="'+i+'">🚺</button><button class="extra-btn'+(ex.ldFairway?' ld-fw-on':'')+'" data-pldfw="1" data-slot="'+slot+'" data-idx="'+i+'">'+(ex.ldFairway?'✅ FW':'🎯 FW')+'</button></div>'
-      +'<div class="gps-row" style="margin-top:4px"><select class="gps-club" id="gps-club-'+i+'"'+(gstage?' disabled':'')+'>'+clubOpts+'</select><button class="gps-btn'+(gstage?' measuring':'')+'" id="gps-btn-'+i+'" data-pgps-slot="'+slot+'" data-pgps-idx="'+i+'">'+gLabel+'</button></div>'
+      +'<div class="gps-row" style="margin-top:4px"><select class="gps-club" id="gps-club-'+slot+'-'+i+'"'+(gstage?' disabled':'')+'>'+clubOpts+'</select><button class="gps-btn'+(gstage?' measuring':'')+'" id="gps-btn-'+slot+'-'+i+'" data-pgps-slot="'+slot+'" data-pgps-idx="'+i+'">'+gLabel+'</button></div>'
       +'<div class="gps-manual"><span class="gps-or">oder</span><input type="number" inputmode="numeric" class="gps-mdist" id="gps-mdist-'+slot+'-'+i+'" placeholder="m"><button class="gps-mbtn" data-pmanual-slot="'+slot+'" data-pmanual-idx="'+i+'">✍️</button></div>'+shotsHtml+'</div>';
   }
   return out;
@@ -2049,8 +2177,8 @@ function pateAddManualDrive(slot,idx){
 }
 async function pateGpsMeasure(slot,idx){
   var e=pateArrExt(slot).ext;
-  var clubSel=document.getElementById('gps-club-'+idx);var club=clubSel?clubSel.value:CLUBS[0];
-  var btn=document.getElementById('gps-btn-'+idx);
+  var clubSel=document.getElementById('gps-club-'+slot+'-'+idx);var club=clubSel?clubSel.value:CLUBS[0];
+  var btn=document.getElementById('gps-btn-'+slot+'-'+idx);
   var st=(GPS_MEASURE&&GPS_MEASURE.idx===idx&&GPS_MEASURE.slot===slot)?GPS_MEASURE.stage:null;
   if(st==='ready'){
     if(btn){btn.textContent='⏳ Startpunkt…';btn.disabled=true;}
@@ -2394,7 +2522,7 @@ async function saveSetup(){
   }
   if(trnR>1){if(!G.tournament||G.tournament.totalRounds!==trnR){if(G.tournament&&frozenCount>0){G.tournament.totalRounds=trnR;}else{G.tournament={totalRounds:trnR,currentRound:1,name:cname,rounds:[]};}}}else G.tournament=null;
   if(!CODE)CODE=genCode();NOTIF_ON=gv('opt-notif');saveRec(CODE,cname);document.getElementById('code-badge').textContent='🔑 '+CODE;
-  try{await initFB();await fbSet(fp('players'),null);await fbSet(fp('round'),G.round);await Promise.all(G.players.map(function(p){return fbSet(fp('players/'+p.id),p);}));await fbSet(fp('tournament'),G.tournament||null);await fbSet(fp('notif'),NOTIF_ON);try{await DB.ref('turniere/'+CODE+'/meta/lastSeen').set(new Date().toISOString());}catch(e){}registerAllPlayers(G.players,CODE);toast('✓ Turnier '+CODE+' gestartet');startListeners();trackPresence(CODE);}catch(e){toast('⚠️ Firebase nicht erreichbar');}
+  try{await initFB();await fbSet(fp('players'),null);await fbSet(fp('round'),G.round);await Promise.all(G.players.map(function(p){return fbSet(fp('players/'+p.id),p);}));await fbSet(fp('tournament'),G.tournament||null);await fbSet(fp('notif'),NOTIF_ON);try{await DB.ref('turniere/'+CODE+'/meta/lastSeen').set(new Date().toISOString());}catch(e){}await ensureSetupAccess(CODE);registerAllPlayers(G.players,CODE);toast('✓ Turnier '+CODE+' gestartet');startListeners();trackPresence(CODE);}catch(e){toast('⚠️ Firebase nicht erreichbar');}
   LIVE_ROUND=G.round;LIVE_PLAYERS=G.players.slice();VIEW_RND=null;renderLB();refreshTrnUI();showView('lb');
 }
 
