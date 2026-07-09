@@ -2638,6 +2638,7 @@ async function closeRound(){
 // ════ GESAMTAUSWERTUNG ════
 function calcTotal(){
   var t=G.tournament;if(!t||!t.rounds||!t.rounds.length)return[];
+  var roundsTotal=t.rounds.length;
   return G.players.map(function(p){
     var bSum=0,nSum=0,sSum=0,played=0,details=[];
     (t.rounds||[]).forEach(function(rnd){
@@ -2645,7 +2646,18 @@ function calcTotal(){
       var par=rnd.par||DPAR,si=rnd.si||DSI,pl=sc.filter(function(s){return s!=null;}).length;
       if(!pl){details.push({r:rnd.roundNum,b:null,n:null,s:null});return;}played++;
       var rndMode=rnd.mode||'stroke',rndMax=rnd.maxScore||null;
-      var eff=sc.map(function(raw,i){if(raw==null||raw===0)return null;if(rndMode==='zaehlen_ndb'){var pv=par[i]||4,siV=si[i]||i+1,h=Math.round(Math.abs(hcp))*(hcp<0?-1:1);var ex=h>=0?Math.floor(h/18)+(h%18>=siV?1:0):-(Math.floor(Math.abs(h)/18)+(Math.abs(h)%18>=siV?1:0));return Math.min(raw,pv+ex+2);}if(rndMode==='zaehlen_fix')return Math.min(raw,rndMax||8);return raw;});
+      var eff=sc.map(function(raw,i){
+        if(raw==null)return null;
+        if(rndMode==='zaehlen_ndb'){
+          var pv=par[i]||4,siV=si[i]||i+1,h=Math.round(Math.abs(hcp))*(hcp<0?-1:1);
+          var ex=h>=0?Math.floor(h/18)+(h%18>=siV?1:0):-(Math.floor(Math.abs(h)/18)+(Math.abs(h)%18>=siV?1:0));
+          var mx=pv+ex+2;
+          return raw===0?mx:Math.min(raw,mx);   // NR zählt als Netto-Doppelbogey (wie in der Tageswertung)
+        }
+        if(raw===0)return null;                 // NR in allen anderen Modi: Loch zählt nicht
+        if(rndMode==='zaehlen_fix')return Math.min(raw,rndMax||8);
+        return raw;
+      });
       var br=eff.reduce(function(a,s){return s!=null?a+s:a;},0),parP=eff.reduce(function(a,s,i){return s!=null?a+(par[i]||4):a;},0);
       var bvp=br-parP,nvp=0,stp=0;
       eff.forEach(function(s,i){if(s==null)return;var siV=si[i]||i+1,h=Math.round(Math.abs(hcp))*(hcp<0?-1:1);var ex=h>=0?Math.floor(h/18)+(h%18>=siV?1:0):-(Math.floor(Math.abs(h)/18)+(Math.abs(h)%18>=siV?1:0));var net=s-ex,d=net-par[i];nvp+=d;stp+=(d>=2?0:d===1?1:d===0?2:d===-1?3:d===-2?4:5);});
@@ -2660,9 +2672,11 @@ function renderTotal(){
   if(!t||!t.rounds||!t.rounds.length){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--txt3)"><div style="font-size:40px">🏆</div><div style="margin-top:10px">Noch keine abgeschlossenen Runden</div></div>';return;}
   var all=calcTotal();var html='<div class="total-card"><div class="serif" style="font-size:18px;font-weight:700;margin-bottom:6px">🏆 '+esc(t.name||'Turnier')+'</div><div style="font-size:11px;color:var(--txt2);margin-bottom:10px">'+t.rounds.length+' von '+t.totalRounds+' Runden gespielt</div>';
   t.rounds.forEach(function(r){html+='<div class="rnd-bar">R'+r.roundNum+': '+esc(r.courseName)+' · '+r.date+'  <span style="color:var(--accent)">'+esc(modeName(r))+'</span></div>';});html+='</div>';
-  html+=rankBlock('🏌️ Brutto-Rangliste',all.slice().sort(function(a,b){return a.bSum-b.bSum;}),function(p){return p.played>0?fmt(p.bSum):'–';},function(p){return p.details.map(function(d){return d.b!=null?'R'+d.r+':'+fmt(d.b):'R'+d.r+':–';}).join('<br>');},function(p){return p.played>0?dc(p.bSum):'#aaa';});
-  html+=rankBlock('🎯 Netto-Rangliste',all.slice().sort(function(a,b){return a.nSum-b.nSum;}),function(p){return p.played>0?fmt(p.nSum):'–';},function(p){return p.details.map(function(d){return d.n!=null?'R'+d.r+':'+fmt(d.n):'R'+d.r+':–';}).join('<br>');},function(p){return p.played>0?dc(p.nSum):'#aaa';});
-  html+=rankBlock('⭐ Stableford-Rangliste',all.slice().sort(function(a,b){return b.sSum-a.sSum;}),function(p){return p.played>0?String(p.sSum)+'P':'–';},function(p){return p.details.map(function(d){return d.s!=null?'R'+d.r+':'+d.s+'P':'R'+d.r+':–';}).join('<br>');},function(p){return p.played>0?'#6a1b9a':'#aaa';});
+  // Spieler ohne gespielte Runde immer ans Ende (Summe 0 würde sie sonst nach vorn sortieren)
+  var cmp=function(key,desc){return function(a,b){if(!a.played&&!b.played)return 0;if(!a.played)return 1;if(!b.played)return-1;return desc?b[key]-a[key]:a[key]-b[key];};};
+  html+=rankBlock('🏌️ Brutto-Rangliste',all.slice().sort(cmp('bSum',false)),function(p){return p.played>0?fmt(p.bSum):'–';},function(p){return p.details.map(function(d){return d.b!=null?'R'+d.r+':'+fmt(d.b):'R'+d.r+':–';}).join('<br>');},function(p){return p.played>0?dc(p.bSum):'#aaa';});
+  html+=rankBlock('🎯 Netto-Rangliste',all.slice().sort(cmp('nSum',false)),function(p){return p.played>0?fmt(p.nSum):'–';},function(p){return p.details.map(function(d){return d.n!=null?'R'+d.r+':'+fmt(d.n):'R'+d.r+':–';}).join('<br>');},function(p){return p.played>0?dc(p.nSum):'#aaa';});
+  html+=rankBlock('⭐ Stableford-Rangliste',all.slice().sort(cmp('sSum',true)),function(p){return p.played>0?String(p.sSum)+'P':'–';},function(p){return p.details.map(function(d){return d.s!=null?'R'+d.r+':'+d.s+'P':'R'+d.r+':–';}).join('<br>');},function(p){return p.played>0?'#6a1b9a':'#aaa';});
   el.innerHTML=html;
 }
 function buildTrnText(){var t=G.tournament;if(!t)return'';var all=calcTotal();var txt='🏆 '+(t.name||'Turnier')+(CODE?' ['+CODE+']':'')+'\n'+(t.rounds||[]).length+' von '+t.totalRounds+' Runden\n\n';(t.rounds||[]).forEach(function(r){txt+='R'+r.roundNum+': '+r.courseName+' ('+r.date+') · '+modeName(r)+'\n';});txt+='\n🏌️ BRUTTO:\n';all.slice().sort(function(a,b){return a.bSum-b.bSum;}).forEach(function(p,i){var m=i===0&&p.played>0?'🥇':i===1&&p.played>0?'🥈':i===2&&p.played>0?'🥉':(i+1)+'.';txt+=m+' '+p.name+'  '+(p.played>0?fmt(p.bSum):'–')+'  ('+p.details.map(function(d){return d.b!=null?'R'+d.r+':'+fmt(d.b):'R'+d.r+':–';}).join(' ')+')\n';});txt+='\n🎯 NETTO:\n';all.slice().sort(function(a,b){return a.nSum-b.nSum;}).forEach(function(p,i){var m=i===0&&p.played>0?'🥇':i===1&&p.played>0?'🥈':i===2&&p.played>0?'🥉':(i+1)+'.';txt+=m+' '+p.name+'  '+(p.played>0?fmt(p.nSum):'–')+'  ('+p.details.map(function(d){return d.n!=null?'R'+d.r+':'+fmt(d.n):'R'+d.r+':–';}).join(' ')+')\n';});txt+='\n⭐ STABLEFORD:\n';all.slice().sort(function(a,b){return b.sSum-a.sSum;}).forEach(function(p,i){var m=i===0&&p.played>0?'🥇':i===1&&p.played>0?'🥈':i===2&&p.played>0?'🥉':(i+1)+'.';txt+=m+' '+p.name+'  '+(p.played>0?p.sSum+'P':'–')+'  ('+p.details.map(function(d){return d.s!=null?'R'+d.r+':'+d.s+'P':'R'+d.r+':–';}).join(' ')+')\n';});return txt+'\n🐦 Birdino';}
