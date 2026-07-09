@@ -899,8 +899,17 @@ function updateCardSpacer(){var total=0;var banner=document.getElementById('news
 
 // ════ SCORE LOG ════
 function scoreLogEnabled(){var opts=G.round.options||{};return !!(opts.notif&&opts.notifSettings&&opts.notifSettings.scorelog!==false);}
+function hideScoreLogBar(){
+  // Leiste vollständig wegräumen: unsichtbar, zugeklappt, geleert, Abstandshalter zurück auf 0
+  LOG_OPEN=false;
+  var bar=document.getElementById('score-log-bar');
+  if(bar){bar.classList.remove('visible');bar.style.top='0px';}
+  var e=document.getElementById('sl-entries');if(e){e.innerHTML='';e.style.display='none';}
+  var t=document.getElementById('sl-toggle');if(t)t.textContent='▾ aufklappen';
+  updateCardSpacer();
+}
 function renderScoreLog(){
-  if(!scoreLogEnabled()){document.getElementById('score-log-bar').classList.remove('visible');return;}
+  if(!scoreLogEnabled()){hideScoreLogBar();return;}
   var bar=document.getElementById('score-log-bar');bar.classList.add('visible');bar.style.top='0px';setTimeout(updateCardSpacer,30);
   var par=G.round.par||DPAR,activeLoch=null;
   if(CID){var myS=(G.players.find(function(p){return p.id===CID;})||{}).scores||[];for(var h=17;h>=0;h--){if(myS[h]!=null){activeLoch=h;break;}}}
@@ -911,7 +920,7 @@ function renderScoreLog(){
   document.getElementById('sl-entries').innerHTML=rows.map(function(r){var pv=par[r.loch]||4,sc=r.score,diff=sc!=null&&sc>0?sc-pv:null,diffTxt=sc===0?'NR':(diff!=null?(diff>0?'+'+diff:diff===0?'E':String(diff)):'–'),diffColor=sc===0?'#aaa':diff==null?'#aaa':diff<=-2?'#f4c430':diff===-1?'#4ade80':diff===0?'#94a3b8':diff===1?'#fb923c':'#f87171';return'<div class="sl-entry"><div class="sl-dot" style="background:'+diffColor+'"></div><div class="sl-name">'+esc(r.p.name)+'</div><div class="sl-hole">L'+(r.loch+1)+'</div><div class="sl-score">'+(sc!=null&&sc>0?sc:'NR')+'</div><div class="sl-diff" style="color:'+diffColor+'">'+diffTxt+'</div></div>';}).join('');
 }
 function toggleScoreLog(){LOG_OPEN=!LOG_OPEN;document.getElementById('sl-entries').style.display=LOG_OPEN?'block':'none';document.getElementById('sl-toggle').textContent=LOG_OPEN?'▴ zuklappen':'▾ aufklappen';setTimeout(updateCardSpacer,50);}
-function resetScoreLog(){LOG_OPEN=false;var bar=document.getElementById('score-log-bar');bar.classList.remove('visible');var e=document.getElementById('sl-entries');if(e){e.innerHTML='';e.style.display='none';}var t=document.getElementById('sl-toggle');if(t)t.textContent='▾ aufklappen';}
+function resetScoreLog(){hideScoreLogBar();}
 
 // ════ GOLF MATH ════
 function xStr(idx,hcp){var si=(G.round.strokeIndex||DSI)[idx]||idx+1;var h=Math.round(Math.abs(hcp))*(hcp<0?-1:1);if(h>=0)return Math.floor(h/18)+(h%18>=si?1:0);var a=Math.abs(h);return-(Math.floor(a/18)+(a%18>=si?1:0));}
@@ -2505,7 +2514,7 @@ async function saveSetup(){
   var gv=function(id){var el=document.getElementById(id);return el?el.checked:false;};
   var notifSettings={hio:gv('notif-hio'),eagle:gv('notif-eagle'),birdie:gv('notif-birdie'),par:gv('notif-par'),bogey:gv('notif-bogey'),double:gv('notif-double'),bv:gv('notif-bv'),lady:gv('notif-lady'),putt3:gv('notif-putt3'),scorelog:gv('notif-scorelog')};
   G.round={courseName:cname,par:SPAR,strokeIndex:SSI,tee:tee,date:document.getElementById('r-date').value||tod(),mode:rMode,maxScore:maxScore,teamMode:STM,longestDrive:(parseInt(document.getElementById('longest-drive-hole').value)||0),options:{ballverlust:gv('opt-ballverlust'),ladies:gv('opt-ladies'),notif:gv('opt-notif'),notifSettings:notifSettings,zaehler:gv('opt-zaehler')}};
-  G.players=SP;var trnR=parseInt(document.getElementById('trn-rounds').value)||0;
+  G.players=SP;renderScoreLog();var trnR=parseInt(document.getElementById('trn-rounds').value)||0;
   // SCHUTZ vor Datenverlust: eingefrorene Runden dürfen nicht durch Umschalten gelöscht werden
   var frozenCount=(G.tournament&&G.tournament.rounds)?G.tournament.rounds.length:0;
   if(frozenCount>0){
