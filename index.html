@@ -511,7 +511,8 @@ input,select,button{font-family:'DM Sans',sans-serif}
 
 <!-- ERGEBNIS -->
 <div id="view-result" class="view">
-  <div class="hdr"><button class="back-btn" id="result-back">←</button><div class="hdr-title serif">Ergebnis & Teilen</div></div>
+  <div id="result-top-spacer" style="height:0;transition:height .3s;flex-shrink:0"></div>
+  <div class="hdr" id="result-hdr"><button class="back-btn" id="result-back">←</button><div class="hdr-title serif">Ergebnis & Teilen</div></div>
   <div class="result-body">
     <div class="result-card"><div class="serif" style="font-size:20px;font-weight:700;margin-bottom:2px" id="res-course"></div><div style="font-size:11px;color:var(--txt2);margin-bottom:14px" id="res-meta"></div><div class="res-scroll"><table class="res-table"><thead><tr id="res-head-row"></tr></thead><tbody id="res-rows"></tbody></table></div></div>
     <div id="longest-drive-card"></div>
@@ -521,13 +522,15 @@ input,select,button{font-family:'DM Sans',sans-serif}
 
 <!-- GESAMT -->
 <div id="view-total" class="view">
-  <div class="hdr"><button class="back-btn" id="total-back">←</button><div class="hdr-title serif">🏆 Gesamtauswertung</div></div>
+  <div id="total-top-spacer" style="height:0;transition:height .3s;flex-shrink:0"></div>
+  <div class="hdr" id="total-hdr"><button class="back-btn" id="total-back">←</button><div class="hdr-title serif">🏆 Gesamtauswertung</div></div>
   <div class="total-body"><div id="total-content"></div><div class="share-btns" style="margin-top:8px"><button class="share-btn p" id="btn-share-trn">📤 Teilen</button><button class="share-btn s" id="btn-copy-trn">📋 Kopieren</button></div></div>
 </div>
 
 <!-- SETUP -->
 <div id="view-setup" class="view">
-  <div class="hdr"><button class="back-btn" id="setup-back">←</button><div class="hdr-title serif" id="setup-title">Einstellungen</div></div>
+  <div id="setup-top-spacer" style="height:0;transition:height .3s;flex-shrink:0"></div>
+  <div class="hdr" id="setup-hdr"><button class="back-btn" id="setup-back">←</button><div class="hdr-title serif" id="setup-title">Einstellungen</div></div>
   <div id="setup-access" style="display:none"></div>
   <div id="setup-trn-hint" style="display:none;padding:10px 16px;border-bottom:2px solid #ffa000;font-size:12px;font-weight:700;line-height:1.5"></div>
   <div id="setup-close-round" style="display:none;padding:14px 16px;background:#fff8e1;border-bottom:2px solid #ffa000">
@@ -893,9 +896,26 @@ function askConfirm(msg,okLabel,okColor){
 
 // ════ BANNER ════
 var BSTYLE={hio:{bg:'#1a1a2e',fg:'#ffd700'},eagle:{bg:'#c8960a',fg:'#1a1000'},birdie:{bg:'#1b5e20',fg:'#fff'},par:{bg:'#546e7a',fg:'#fff'},bogey:{bg:'#bf360c',fg:'#fff'},double:{bg:'#7f0000',fg:'#fff'},bv:{bg:'#b71c1c',fg:'#fff'},lady:{bg:'#4a148c',fg:'#fff'},putt3:{bg:'#263238',fg:'#fff'}};
-function showBanner(icon,msg,type){var b=document.getElementById('news-banner'),s=BSTYLE[type]||{bg:'#1565c0',fg:'#fff'};b.style.background=s.bg;b.style.color=s.fg;document.getElementById('nb-icon').textContent=icon;document.getElementById('nb-txt').textContent=msg;document.getElementById('nb-close').style.color=s.fg;b.classList.remove('show');clearTimeout(b._bt);b._bt=setTimeout(function(){b.classList.add('show');updateCardSpacer();var bar=document.getElementById('score-log-bar');if(bar&&bar.classList.contains('visible'))bar.style.top='58px';},30);}
+function showBanner(icon,msg,type){var b=document.getElementById('news-banner'),s=BSTYLE[type]||{bg:'#1565c0',fg:'#fff'};b.style.background=s.bg;b.style.color=s.fg;document.getElementById('nb-icon').textContent=icon;document.getElementById('nb-txt').textContent=msg;document.getElementById('nb-close').style.color=s.fg;b.classList.remove('show');clearTimeout(b._bt);b._bt=setTimeout(function(){b.classList.add('show');updateCardSpacer();var bar=document.getElementById('score-log-bar');if(bar&&bar.classList.contains('visible'))bar.style.top=(b.offsetHeight||58)+'px';},30);}
 function hideBanner(){document.getElementById('news-banner').classList.remove('show');var bar=document.getElementById('score-log-bar');if(bar&&bar.classList.contains('visible'))bar.style.top='0px';setTimeout(updateCardSpacer,50);}
-function updateCardSpacer(){var total=0;var banner=document.getElementById('news-banner');if(banner&&banner.classList.contains('show'))total+=banner.offsetHeight||58;var log=document.getElementById('score-log-bar');if(log&&log.classList.contains('visible'))total+=log.offsetHeight||36;var h=total>0?(total+2)+'px':'0px';var sp=document.getElementById('card-top-spacer'),hd2=document.getElementById('card-hdr');if(sp)sp.style.height=h;if(hd2)hd2.style.top=h;var asp=document.getElementById('analyse-top-spacer'),ahd=document.getElementById('analyse-hdr');if(asp)asp.style.height=h;if(ahd)ahd.style.top=h;var lsp=document.getElementById('lb-top-spacer');if(lsp)lsp.style.height=h;}
+function updateCardSpacer(){
+  var total=0;
+  var banner=document.getElementById('news-banner');
+  if(banner&&banner.classList.contains('show'))total+=banner.offsetHeight||58;
+  var log=document.getElementById('score-log-bar');
+  if(log&&log.classList.contains('visible'))total+=log.offsetHeight||36;
+  var h=total>0?total+'px':'0px';
+  // Alle Ansichten, die von den festen Leisten überdeckt werden können
+  [['card-top-spacer','card-hdr'],
+   ['analyse-top-spacer','analyse-hdr'],
+   ['lb-top-spacer',null],
+   ['result-top-spacer','result-hdr'],
+   ['total-top-spacer','total-hdr'],
+   ['setup-top-spacer','setup-hdr']].forEach(function(pair){
+    var sp=document.getElementById(pair[0]);if(sp)sp.style.height=h;
+    if(pair[1]){var hd=document.getElementById(pair[1]);if(hd)hd.style.top=h;}
+  });
+}
 
 // ════ SCORE LOG ════
 function scoreLogEnabled(){var opts=G.round.options||{};return !!(opts.notif&&opts.notifSettings&&opts.notifSettings.scorelog!==false);}
@@ -1568,7 +1588,7 @@ function saveLoc(id,sc){try{localStorage.setItem(LS_LOC+id,JSON.stringify(sc));}
 function loadLoc(id){try{var r=localStorage.getItem(LS_LOC+id);return r?JSON.parse(r):null;}catch(e){return null;}}
 function clearLoc(id){try{localStorage.removeItem(LS_LOC+id);}catch(e){}}
 function trigAS(){saveLoc(CID,CS);clearTimeout(aTimer);aTimer=setTimeout(pushFB,2000);}
-async function pushFB(){if(!CID||!CODE)return;aTimer=null;if(!navigator.onLine){syncDot('off');pSync=true;return;}syncDot('save');try{var extra={scores:CS.slice(),extras:CEXT.slice()};var opts=G.round.options||{};if(opts.zaehler&&MARK_ID){extra.markedScores=CMARK.slice();extra.marks=MARK_ID;}var updated=Object.assign({},G.players.find(function(p){return p.id===CID;}),extra);G.players=G.players.map(function(p){return p.id===CID?updated:p;});saveSnap(updated);await fbSet(fp('players/'+CID),updated);if(updated.pid)registerPlayer(updated.pid,updated.name,updated.handicap,CODE);clearLoc(CID);pSync=false;syncDot('on');if(scoreLogEnabled())renderScoreLog();}catch(e){syncDot('off');pSync=true;}}
+async function pushFB(){if(!CID||!CODE)return;aTimer=null;if(VIEW_RND!==null)return;if(!navigator.onLine){syncDot('off');pSync=true;return;}syncDot('save');try{var extra={scores:CS.slice(),extras:CEXT.slice()};var opts=G.round.options||{};if(opts.zaehler&&MARK_ID){extra.markedScores=CMARK.slice();extra.marks=MARK_ID;}var updated=Object.assign({},G.players.find(function(p){return p.id===CID;}),extra);G.players=G.players.map(function(p){return p.id===CID?updated:p;});saveSnap(updated);await fbSet(fp('players/'+CID),updated);if(updated.pid)registerPlayer(updated.pid,updated.name,updated.handicap,CODE);clearLoc(CID);pSync=false;syncDot('on');if(scoreLogEnabled())renderScoreLog();}catch(e){syncDot('off');pSync=true;}}
 window.addEventListener('online',async function(){syncDot('on');if(pSync)await pushFB();});
 window.addEventListener('offline',function(){syncDot('off');});
 
@@ -1697,6 +1717,11 @@ async function canOpenSetup(){
 }
 async function openCard(id){
   var p=G.players.find(function(p){return p.id===id;});if(!p)return;
+  // ── Schutz: In einer abgeschlossenen Runde darf nichts eingetragen werden ──
+  if(VIEW_RND!==null){
+    await askConfirm('📋 Du siehst gerade Runde '+VIEW_RND+' (bereits abgeschlossen).\n\nHier können keine Scores eingetragen werden.\n\nTippe oben auf die laufende Runde, um weiterzuspielen.','Verstanden','#e65100');
+    return;
+  }
   // ── Stufe 4: Schutz der Mündel-Karte ──
   // Ein Mündel darf nur der Admin oder der zugehörige Pate öffnen.
   if(isWard(p)&&!IS_ADMIN_VIEW){
@@ -2141,7 +2166,7 @@ function pateStep(slot,idx,delta){
 var pateTimer=null;
 function pateSaveSoon(){if(pateTimer)clearTimeout(pateTimer);pateTimer=setTimeout(pateSave,600);}
 async function pateSave(){
-  pateTimer=null;if(!CID||!CODE)return;
+  pateTimer=null;if(!CID||!CODE)return;if(VIEW_RND!==null)return;
   syncDot('save');
   try{
     // Eigene Karte
@@ -2567,7 +2592,8 @@ function refreshTrnUI(){
   var bar=document.getElementById('round-tabs-bar'),tBar=document.getElementById('trn-bar'),btnT=document.getElementById('btn-total');if(!bar)return;
   var t=G.tournament,isTrn=!!(t&&t.totalRounds>1);bar.style.display=isTrn?'flex':'none';if(btnT)btnT.style.display=isTrn?'flex':'none';if(!isTrn){tBar.style.display='none';return;}
   var cur=t.currentRound||1,doneNums=(t.rounds||[]).map(function(r){return r.roundNum;});
-  bar.innerHTML=Array.from({length:t.totalRounds},function(_,i){return i+1;}).map(function(r){var done=doneNums.indexOf(r)>=0,active=r===cur;return'<button class="round-tab'+(active?' active':done?' done':'')+'" data-r="'+r+'">R'+r+(done?' ✓':'')+'</button>';}).join('');
+  var shown=(VIEW_RND!==null)?VIEW_RND:cur;
+  bar.innerHTML=Array.from({length:t.totalRounds},function(_,i){return i+1;}).map(function(r){var done=doneNums.indexOf(r)>=0,active=r===shown,future=!done&&r>cur;return'<button class="round-tab'+(active?' active':done?' done':'')+'"'+(future?' disabled style="opacity:.38;cursor:not-allowed"':'')+' data-r="'+r+'">R'+r+(done?' ✓':'')+'</button>';}).join('');
   bar.querySelectorAll('.round-tab').forEach(function(el){el.addEventListener('click',function(){goToRound(parseInt(this.dataset.r));});});
   var viewingFrozen=VIEW_RND!==null&&doneNums.indexOf(VIEW_RND)>=0;
   // "Runde abschließen" nur in der Admin-Ansicht, nur für die laufende (nicht eingefrorene) Runde, und solange noch nicht alle Runden durch sind
@@ -2584,8 +2610,12 @@ function refreshTrnUI(){
   document.getElementById('trn-info-txt').textContent=infoTxt;
 }
 function goToRound(r){
-  var t=G.tournament;if(!t)return;G.tournament.currentRound=r;
+  var t=G.tournament;if(!t)return;
   var doneNums=(t.rounds||[]).map(function(x){return x.roundNum;}),isLive=doneNums.indexOf(r)<0;
+  var cur=t.currentRound||1;
+  // Noch nicht gespielte Runden sind nicht anwählbar
+  if(isLive&&r!==cur){toast('Runde '+r+' ist noch nicht gespielt');return;}
+  // WICHTIG: currentRound wird hier NICHT verändert – sie sagt, welche Runde wirklich läuft.
   if(isLive){VIEW_RND=null;if(LIVE_ROUND)G.round=LIVE_ROUND;if(LIVE_PLAYERS)G.players=LIVE_PLAYERS;}
   else{VIEW_RND=r;var saved=(t.rounds||[]).find(function(x){return x.roundNum===r;});if(saved){G.round={courseName:saved.courseName,par:saved.par||DPAR,strokeIndex:saved.si||DSI,date:saved.date||tod(),mode:saved.mode||'stroke',maxScore:saved.maxScore||null,tee:saved.tee||'',teamMode:saved.teamMode||'none',longestDrive:saved.longestDrive||0,options:saved.options||{}};var sc=saved.scores||{},hcp=saved.handicaps||{},ext=saved.extras||{};G.players=G.players.map(function(p){return Object.assign({},p,{scores:sc[p.id]||Array(18).fill(null),handicap:hcp[p.id]!=null?hcp[p.id]:p.handicap,extras:ext[p.id]||Array(18).fill(null)});});}}
   renderLB();refreshTrnUI();
