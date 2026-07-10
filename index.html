@@ -870,6 +870,20 @@ function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 // Speicherzugriff darf nie die App abstürzen lassen (privater Modus, voller Speicher)
 function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
 function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+// ── Firebase speichert keine null-Werte: Listen kommen verkürzt oder als Objekt zurück. ──
+function toArr18(v){
+  var a=Array(18).fill(null);
+  if(!v)return a;
+  if(Array.isArray(v)){for(var i=0;i<18;i++)a[i]=(v[i]===undefined?null:v[i]);return a;}
+  if(typeof v==='object'){Object.keys(v).forEach(function(k){var i=Number(k);if(i>=0&&i<18)a[i]=v[k];});return a;}
+  return a;
+}
+function toList(v){
+  if(!v)return[];
+  if(Array.isArray(v))return v.filter(Boolean);
+  if(typeof v==='object')return Object.keys(v).sort(function(a,b){return Number(a)-Number(b);}).map(function(k){return v[k];}).filter(Boolean);
+  return[];
+}
 function fmt(d){return d>0?'+'+d:d===0?'E':''+d;}
 function hd(h){var n=Number(h)||0;if(!n)return'0';return n>0?'+'+(Number.isInteger(n)?n:n.toFixed(1)):''+(Number.isInteger(n)?n:n.toFixed(1));}
 function pc(sc){return(sc||[]).filter(function(s){return s!=null;}).length;}
@@ -1164,7 +1178,8 @@ function registerPlayer(pid,name,hcp,code){
   }catch(e){}
 }
 function registerAllPlayers(players,code){if(!players)return;players.forEach(function(p){if(p&&p.pid)registerPlayer(p.pid,p.name,p.handicap,code);});}
-function parsePlayers(val){if(!val)return[];var arr=Array.isArray(val)?val.filter(Boolean):Object.values(val).filter(Boolean);return arr.map(ensurePid).map(ensureTrack);}
+function ensureArrays(p){if(!p)return p;p.scores=toArr18(p.scores);p.extras=toArr18(p.extras);return p;}
+function parsePlayers(val){if(!val)return[];var arr=Array.isArray(val)?val.filter(Boolean):Object.values(val).filter(Boolean);return arr.map(ensurePid).map(ensureTrack).map(ensureArrays);}
 function startListeners(){
   stopListeners();var firstPlayers=true;
   var r4=DB.ref(fp('notif')).on('value',function(snap){NOTIF_ON=!!snap.val();});
@@ -1582,11 +1597,11 @@ async function unfreezeRound(){
   try{
     await initFB();var snap=await DB.ref('turniere/'+code+'/tournament').get();
     if(!snap.exists()){statusEl.textContent='⚠️ Turnier "'+code+'" nicht gefunden';statusEl.style.color='var(--red)';return;}
-    var trn=snap.val(),rounds=trn.rounds||[],idx=rounds.findIndex(function(r){return r.roundNum===rNum;});
+    var trn=snap.val(),rounds=toList(trn.rounds),idx=rounds.findIndex(function(r){return r.roundNum===rNum;});
     if(idx<0){statusEl.textContent='⚠️ Runde '+rNum+' war nicht eingefroren';statusEl.style.color='var(--red)';return;}
     var entry=rounds[idx],frozenScores=entry.scores||{},frozenHcp=entry.handicaps||{};
     var pSnap=await DB.ref('turniere/'+code+'/players').get();
-    if(pSnap.exists()){var updates={};Object.keys(pSnap.val()).forEach(function(pid){if(frozenScores[pid])updates['turniere/'+code+'/players/'+pid+'/scores']=frozenScores[pid];if(frozenHcp[pid]!=null)updates['turniere/'+code+'/players/'+pid+'/handicap']=frozenHcp[pid];});if(Object.keys(updates).length)await DB.ref().update(updates);}
+    if(pSnap.exists()){var updates={};Object.keys(pSnap.val()).forEach(function(pid){if(frozenScores[pid])updates['turniere/'+code+'/players/'+pid+'/scores']=toArr18(frozenScores[pid]);if(frozenHcp[pid]!=null)updates['turniere/'+code+'/players/'+pid+'/handicap']=frozenHcp[pid];});if(Object.keys(updates).length)await DB.ref().update(updates);}
     await DB.ref('turniere/'+code+'/round').set({courseName:entry.courseName||'–',tee:entry.tee||'',par:entry.par||DPAR,strokeIndex:entry.si||DSI,date:entry.date||tod(),mode:entry.mode||'stroke',maxScore:entry.maxScore||null,teamMode:entry.teamMode||'none',options:entry.options||{}});
     var newRounds=rounds.filter(function(r){return r.roundNum!==rNum;});
     await DB.ref('turniere/'+code+'/tournament/rounds').set(newRounds.length>0?newRounds:null);
@@ -2404,7 +2419,7 @@ function initSetup(){
   SP=G.players.map(function(p){return ensurePid(Object.assign({},p));});SPAR=(G.round.par||DPAR).slice();SSI=(G.round.strokeIndex||DSI).slice();SAC=null;SAT=null;STM=G.round.teamMode||'none';
   var hint=document.getElementById('setup-trn-hint'),titleEl=document.getElementById('setup-title');
   if(G.tournament&&G.tournament.totalRounds>1){
-    var cur=G.tournament.currentRound||1,total=G.tournament.totalRounds,doneNums=(G.tournament.rounds||[]).map(function(r){return r.roundNum;}),isDone=doneNums.indexOf(cur)>=0;
+    var cur=G.tournament.currentRound||1,total=G.tournament.totalRounds,doneNums=toList(G.tournament.rounds).map(function(r){return r.roundNum;}),isDone=doneNums.indexOf(cur)>=0;
     if(titleEl)titleEl.textContent='Einstellungen · R'+cur;
     if(hint){hint.style.display='block';if(isDone){hint.innerHTML='📋 Runde '+cur+' abgeschlossen. Einstellungen gelten für <b>Runde '+(cur<total?cur+1:cur)+'</b>.';hint.style.background='#e8f5e9';hint.style.borderColor='#4caf50';hint.style.color='#2e7d32';}else{hint.innerHTML='🏆 Turnier · <b>Runde '+cur+' von '+total+'</b>'+(cur>1?' · Neuen Platz und Datum für diese Runde eingeben':'')+'<br><span style="font-weight:400;font-size:11px">Platz, Datum und Wertung können pro Runde geändert werden. Spieler und Vorgaben bleiben erhalten.</span>';hint.style.background='#fff8e1';hint.style.borderColor='#ffa000';hint.style.color='#e65100';}}
   }else{if(titleEl)titleEl.textContent='Einstellungen';if(hint)hint.style.display='none';}
@@ -2413,7 +2428,7 @@ function initSetup(){
   if(crBox){
     var showCR=false;
     if(G.tournament&&G.tournament.totalRounds>1){
-      var cCur=G.tournament.currentRound||1,cDone=(G.tournament.rounds||[]).map(function(r){return r.roundNum;});
+      var cCur=G.tournament.currentRound||1,cDone=toList(G.tournament.rounds).map(function(r){return r.roundNum;});
       var curIsDone=cDone.indexOf(cCur)>=0,allRoundsDone=cDone.length>=G.tournament.totalRounds;
       showCR=!curIsDone&&!allRoundsDone;
       var crBtn=document.getElementById('btn-close-round-setup');if(crBtn)crBtn.textContent='✅ Runde '+cCur+' abschließen';
@@ -2556,7 +2571,7 @@ async function saveSetup(){
   G.round={courseName:cname,par:SPAR,strokeIndex:SSI,tee:tee,date:document.getElementById('r-date').value||tod(),mode:rMode,maxScore:maxScore,teamMode:STM,longestDrive:(parseInt(document.getElementById('longest-drive-hole').value)||0),options:{ballverlust:gv('opt-ballverlust'),ladies:gv('opt-ladies'),notif:gv('opt-notif'),notifSettings:notifSettings,zaehler:gv('opt-zaehler')}};
   G.players=SP;renderScoreLog();var trnR=parseInt(document.getElementById('trn-rounds').value)||0;
   // SCHUTZ vor Datenverlust: eingefrorene Runden dürfen nicht durch Umschalten gelöscht werden
-  var frozenCount=(G.tournament&&G.tournament.rounds)?G.tournament.rounds.length:0;
+  var frozenCount=toList(G.tournament&&G.tournament.rounds).length;
   if(frozenCount>0){
     if(trnR<=1){
       await askConfirm('⚠️ Es sind bereits '+frozenCount+' Runde(n) eingefroren.\n\nAuf „Keine Turnierwertung" umzuschalten würde diese Ergebnisse löschen. Das ist gesperrt, um Datenverlust zu vermeiden.\n\nWenn du wirklich umschalten willst, entfriere zuerst die Runden über die Entwickler-Seite („Einfrieren rückgängig").','Verstanden','#e65100');
@@ -2606,7 +2621,7 @@ function applyTee(c,t){var holes=(t?t.holes:null)||c.holes||[];var par=holes.map
 function refreshTrnUI(){
   var bar=document.getElementById('round-tabs-bar'),tBar=document.getElementById('trn-bar'),btnT=document.getElementById('btn-total');if(!bar)return;
   var t=G.tournament,isTrn=!!(t&&t.totalRounds>1);bar.style.display=isTrn?'flex':'none';if(btnT)btnT.style.display=isTrn?'flex':'none';if(!isTrn){tBar.style.display='none';return;}
-  var cur=t.currentRound||1,doneNums=(t.rounds||[]).map(function(r){return r.roundNum;});
+  var cur=t.currentRound||1,doneNums=toList(t.rounds).map(function(r){return r.roundNum;});
   var shown=(VIEW_RND!==null)?VIEW_RND:cur;
   bar.innerHTML=Array.from({length:t.totalRounds},function(_,i){return i+1;}).map(function(r){var done=doneNums.indexOf(r)>=0,active=r===shown,future=!done&&r>cur;return'<button class="round-tab'+(active?' active':done?' done':'')+'"'+(future?' disabled style="opacity:.38;cursor:not-allowed"':'')+' data-r="'+r+'">R'+r+(done?' ✓':'')+'</button>';}).join('');
   bar.querySelectorAll('.round-tab').forEach(function(el){el.addEventListener('click',function(){goToRound(parseInt(this.dataset.r));});});
@@ -2626,24 +2641,28 @@ function refreshTrnUI(){
 }
 function goToRound(r){
   var t=G.tournament;if(!t)return;
-  var doneNums=(t.rounds||[]).map(function(x){return x.roundNum;}),isLive=doneNums.indexOf(r)<0;
+  var doneNums=toList(t.rounds).map(function(x){return x.roundNum;}),isLive=doneNums.indexOf(r)<0;
   var cur=t.currentRound||1;
   // Noch nicht gespielte Runden sind nicht anwählbar
   if(isLive&&r!==cur){toast('Runde '+r+' ist noch nicht gespielt');return;}
   // WICHTIG: currentRound wird hier NICHT verändert – sie sagt, welche Runde wirklich läuft.
   if(isLive){VIEW_RND=null;if(LIVE_ROUND)G.round=LIVE_ROUND;if(LIVE_PLAYERS)G.players=LIVE_PLAYERS;}
-  else{VIEW_RND=r;var saved=(t.rounds||[]).find(function(x){return x.roundNum===r;});if(saved){G.round={courseName:saved.courseName,par:saved.par||DPAR,strokeIndex:saved.si||DSI,date:saved.date||tod(),mode:saved.mode||'stroke',maxScore:saved.maxScore||null,tee:saved.tee||'',teamMode:saved.teamMode||'none',longestDrive:saved.longestDrive||0,options:saved.options||{}};var sc=saved.scores||{},hcp=saved.handicaps||{},ext=saved.extras||{};G.players=G.players.map(function(p){return Object.assign({},p,{scores:sc[p.id]||Array(18).fill(null),handicap:hcp[p.id]!=null?hcp[p.id]:p.handicap,extras:ext[p.id]||Array(18).fill(null)});});}}
+  else{VIEW_RND=r;var saved=toList(t.rounds).find(function(x){return x.roundNum===r;});if(saved){G.round={courseName:saved.courseName,par:saved.par||DPAR,strokeIndex:saved.si||DSI,date:saved.date||tod(),mode:saved.mode||'stroke',maxScore:saved.maxScore||null,tee:saved.tee||'',teamMode:saved.teamMode||'none',longestDrive:saved.longestDrive||0,options:saved.options||{}};var sc=saved.scores||{},hcp=saved.handicaps||{},ext=saved.extras||{};G.players=G.players.map(function(p){return Object.assign({},p,{scores:sc[p.id]||Array(18).fill(null),handicap:hcp[p.id]!=null?hcp[p.id]:p.handicap,extras:ext[p.id]||Array(18).fill(null)});});}}
   renderLB();refreshTrnUI();
 }
 async function closeRound(){
   var t=G.tournament;if(!t)return;var cur=t.currentRound||1;
   var ok=await askConfirm('Runde '+cur+' von '+t.totalRounds+' abschließen und Scores einfrieren?','Einfrieren','#e65100');if(!ok)return;
   var scores={},handicaps={},extras={};var livePlayers=LIVE_PLAYERS||G.players,liveRound=LIVE_ROUND||G.round;
-  livePlayers.forEach(function(p){scores[p.id]=(p.scores||Array(18).fill(null)).slice();handicaps[p.id]=Number(p.handicap)||0;extras[p.id]=(p.extras||Array(18).fill(null)).slice();});
+  livePlayers.forEach(function(p){scores[p.id]=toArr18(p.scores);handicaps[p.id]=Number(p.handicap)||0;extras[p.id]=toArr18(p.extras);});
   var entry={roundNum:cur,date:liveRound.date||tod(),courseName:liveRound.courseName||'–',tee:liveRound.tee||'',par:(liveRound.par||DPAR).slice(),si:(liveRound.strokeIndex||DSI).slice(),mode:liveRound.mode||'stroke',maxScore:liveRound.maxScore||null,teamMode:liveRound.teamMode||'none',longestDrive:liveRound.longestDrive||0,options:liveRound.options||{},scores:scores,handicaps:handicaps,extras:extras};
   var tSnap=await DB.ref(fp('tournament')).get();var freshTrn=tSnap.exists()?tSnap.val():t;
-  var rounds=(freshTrn.rounds||[]).slice(),idx=rounds.findIndex(function(x){return x.roundNum===cur;});if(idx>=0)rounds[idx]=entry;else rounds.push(entry);
-  var next=cur<t.totalRounds?cur+1:cur;G.tournament=Object.assign({},freshTrn,{rounds:rounds,currentRound:next});
+  var rounds=toList(freshTrn.rounds),idx=rounds.findIndex(function(x){return x.roundNum===cur;});if(idx>=0)rounds[idx]=entry;else rounds.push(entry);
+  // Nächste Runde = kleinste, die noch NICHT eingefroren ist (wichtig nach dem Auftauen einer Runde)
+  var doneAfter=rounds.map(function(x){return x.roundNum;});
+  var next=cur;
+  for(var rn=1;rn<=t.totalRounds;rn++){if(doneAfter.indexOf(rn)<0){next=rn;break;}}
+  G.tournament=Object.assign({},freshTrn,{rounds:rounds,currentRound:next});
   if(next!==cur){var resetPlayers=livePlayers.map(function(p){return Object.assign({},p,{scores:Array(18).fill(null),extras:Array(18).fill(null).map(function(){return{bv:0,la:false,putts:0,absch:null,abschLaenge:null,annDist:null,annTref:false,fir:false,sand:false,shots:[],ldGender:null,ldFairway:false};})});});await Promise.all(resetPlayers.map(function(p){return fbSet(fp('players/'+p.id),p);}));}
   await fbSet(fp('tournament'),G.tournament);VIEW_RND=null;
   if(LIVE_PLAYERS&&next!==cur)LIVE_PLAYERS=livePlayers.map(function(p){return Object.assign({},p,{scores:Array(18).fill(null),extras:Array(18).fill(null).map(function(){return{bv:0,la:false,putts:0,absch:null,abschLaenge:null,annDist:null,annTref:false,fir:false,sand:false,shots:[],ldGender:null,ldFairway:false};})});});
@@ -2652,13 +2671,13 @@ async function closeRound(){
 
 // ════ GESAMTAUSWERTUNG ════
 function calcTotal(){
-  var t=G.tournament;if(!t||!t.rounds||!t.rounds.length)return[];
-  var roundsTotal=t.rounds.length;
+  var t=G.tournament;var rl=toList(t&&t.rounds);if(!t||!rl.length)return[];
+  var roundsTotal=rl.length;
   return G.players.map(function(p){
     var bSum=0,nSum=0,sSum=0,played=0,details=[];
-    (t.rounds||[]).forEach(function(rnd){
-      var sc=(rnd.scores&&rnd.scores[p.id])||Array(18).fill(null);var hcp=Number((rnd.handicaps&&rnd.handicaps[p.id]!=null)?rnd.handicaps[p.id]:p.handicap)||0;
-      var par=rnd.par||DPAR,si=rnd.si||DSI,pl=sc.filter(function(s){return s!=null;}).length;
+    rl.forEach(function(rnd){
+      var sc=toArr18(rnd.scores&&rnd.scores[p.id]);var hcp=Number((rnd.handicaps&&rnd.handicaps[p.id]!=null)?rnd.handicaps[p.id]:p.handicap)||0;
+      var par=Array.isArray(rnd.par)?rnd.par:DPAR,si=Array.isArray(rnd.si)?rnd.si:DSI,pl=sc.filter(function(s){return s!=null;}).length;
       if(!pl){details.push({r:rnd.roundNum,b:null,n:null,s:null});return;}played++;
       var rndMode=rnd.mode||'stroke',rndMax=rnd.maxScore||null;
       var eff=sc.map(function(raw,i){
@@ -2699,7 +2718,7 @@ function totHoleGrid(sc,par){
   return out;
 }
 function showTotalDetail(pid){
-  var t=G.tournament;if(!t||!t.rounds)return;
+  var t=G.tournament;var rl=toList(t&&t.rounds);if(!t||!rl.length)return;
   var p=calcTotal().find(function(x){return x.id===pid;});if(!p)return;
   document.getElementById('totdet-name').textContent=p.name;
   document.getElementById('totdet-sub').textContent='HCP '+hd(p.handicap)+' · '+p.played+' von '+p.roundsTotal+' Runden gespielt'+(p.complete?'':' · nicht wertbar');
@@ -2708,9 +2727,9 @@ function showTotalDetail(pid){
     +totSumBox('NETTO',p.played?fmt(p.nSum):'–')
     +totSumBox('STABLEFORD',p.played?(p.sSum+'P'):'–')
     +'</div>';
-  t.rounds.forEach(function(rnd){
+  rl.forEach(function(rnd){
     var d=p.details.find(function(x){return x.r===rnd.roundNum;})||{};
-    var sc=(rnd.scores&&rnd.scores[p.id])||[];
+    var sc=toArr18(rnd.scores&&rnd.scores[p.id]);
     var gespielt=sc.filter(function(s){return s!=null;}).length;
     html+='<div style="border:2px solid var(--border-light);border-radius:12px;padding:10px;margin-bottom:10px">'
       +'<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">'
@@ -2743,9 +2762,10 @@ function rankBlock(title,sorted,valFn,detFn,colorFn){
 }
 function renderTotal(){
   var t=G.tournament,el=document.getElementById('total-content');if(!el)return;
-  if(!t||!t.rounds||!t.rounds.length){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--txt3)"><div style="font-size:40px">🏆</div><div style="margin-top:10px">Noch keine abgeschlossenen Runden</div></div>';return;}
+  var rl=toList(t&&t.rounds);
+  if(!t||!rl.length){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--txt3)"><div style="font-size:40px">🏆</div><div style="margin-top:10px">Noch keine abgeschlossenen Runden</div></div>';return;}
   var all=calcTotal();var html='<div class="total-card"><div class="serif" style="font-size:18px;font-weight:700;margin-bottom:6px">🏆 '+esc(t.name||'Turnier')+'</div><div style="font-size:11px;color:var(--txt2);margin-bottom:10px">'+t.rounds.length+' von '+t.totalRounds+' Runden gespielt</div>';
-  t.rounds.forEach(function(r){html+='<div class="rnd-bar">R'+r.roundNum+': '+esc(r.courseName)+' · '+r.date+'  <span style="color:var(--accent)">'+esc(modeName(r))+'</span></div>';});html+='</div>';
+  rl.forEach(function(r){html+='<div class="rnd-bar">R'+r.roundNum+': '+esc(r.courseName)+' · '+r.date+'  <span style="color:var(--accent)">'+esc(modeName(r))+'</span></div>';});html+='</div>';
   // Rangfolge: erst wer ALLE bisherigen Runden gespielt hat, dann Teilnehmer mit Lücken, dann wer nie gespielt hat
   var cmp=function(key,desc){return function(a,b){
     if(a.complete!==b.complete)return a.complete?-1:1;
@@ -2762,7 +2782,7 @@ function renderTotal(){
   var cb=document.getElementById('totdet-close');if(cb&&!cb._b){cb._b=1;cb.addEventListener('click',hideTotalDetail);}
   var md=document.getElementById('totdet-modal');if(md&&!md._b){md._b=1;md.addEventListener('click',function(e){if(e.target===md)hideTotalDetail();});}
 }
-function buildTrnText(){var t=G.tournament;if(!t)return'';var all=calcTotal();var txt='🏆 '+(t.name||'Turnier')+(CODE?' ['+CODE+']':'')+'\n'+(t.rounds||[]).length+' von '+t.totalRounds+' Runden\n\n';(t.rounds||[]).forEach(function(r){txt+='R'+r.roundNum+': '+r.courseName+' ('+r.date+') · '+modeName(r)+'\n';});txt+='\n🏌️ BRUTTO:\n';all.slice().sort(function(a,b){return a.bSum-b.bSum;}).forEach(function(p,i){var m=i===0&&p.played>0?'🥇':i===1&&p.played>0?'🥈':i===2&&p.played>0?'🥉':(i+1)+'.';txt+=m+' '+p.name+'  '+(p.played>0?fmt(p.bSum):'–')+'  ('+p.details.map(function(d){return d.b!=null?'R'+d.r+':'+fmt(d.b):'R'+d.r+':–';}).join(' ')+')\n';});txt+='\n🎯 NETTO:\n';all.slice().sort(function(a,b){return a.nSum-b.nSum;}).forEach(function(p,i){var m=i===0&&p.played>0?'🥇':i===1&&p.played>0?'🥈':i===2&&p.played>0?'🥉':(i+1)+'.';txt+=m+' '+p.name+'  '+(p.played>0?fmt(p.nSum):'–')+'  ('+p.details.map(function(d){return d.n!=null?'R'+d.r+':'+fmt(d.n):'R'+d.r+':–';}).join(' ')+')\n';});txt+='\n⭐ STABLEFORD:\n';all.slice().sort(function(a,b){return b.sSum-a.sSum;}).forEach(function(p,i){var m=i===0&&p.played>0?'🥇':i===1&&p.played>0?'🥈':i===2&&p.played>0?'🥉':(i+1)+'.';txt+=m+' '+p.name+'  '+(p.played>0?p.sSum+'P':'–')+'  ('+p.details.map(function(d){return d.s!=null?'R'+d.r+':'+d.s+'P':'R'+d.r+':–';}).join(' ')+')\n';});return txt+'\n🐦 Birdino';}
+function buildTrnText(){var t=G.tournament;if(!t)return'';var all=calcTotal();var txt='🏆 '+(t.name||'Turnier')+(CODE?' ['+CODE+']':'')+'\n'+toList(t.rounds).length+' von '+t.totalRounds+' Runden\n\n';toList(t.rounds).forEach(function(r){txt+='R'+r.roundNum+': '+r.courseName+' ('+r.date+') · '+modeName(r)+'\n';});txt+='\n🏌️ BRUTTO:\n';all.slice().sort(function(a,b){return a.bSum-b.bSum;}).forEach(function(p,i){var m=i===0&&p.played>0?'🥇':i===1&&p.played>0?'🥈':i===2&&p.played>0?'🥉':(i+1)+'.';txt+=m+' '+p.name+'  '+(p.played>0?fmt(p.bSum):'–')+'  ('+p.details.map(function(d){return d.b!=null?'R'+d.r+':'+fmt(d.b):'R'+d.r+':–';}).join(' ')+')\n';});txt+='\n🎯 NETTO:\n';all.slice().sort(function(a,b){return a.nSum-b.nSum;}).forEach(function(p,i){var m=i===0&&p.played>0?'🥇':i===1&&p.played>0?'🥈':i===2&&p.played>0?'🥉':(i+1)+'.';txt+=m+' '+p.name+'  '+(p.played>0?fmt(p.nSum):'–')+'  ('+p.details.map(function(d){return d.n!=null?'R'+d.r+':'+fmt(d.n):'R'+d.r+':–';}).join(' ')+')\n';});txt+='\n⭐ STABLEFORD:\n';all.slice().sort(function(a,b){return b.sSum-a.sSum;}).forEach(function(p,i){var m=i===0&&p.played>0?'🥇':i===1&&p.played>0?'🥈':i===2&&p.played>0?'🥉':(i+1)+'.';txt+=m+' '+p.name+'  '+(p.played>0?p.sSum+'P':'–')+'  ('+p.details.map(function(d){return d.s!=null?'R'+d.r+':'+d.s+'P':'R'+d.r+':–';}).join(' ')+')\n';});return txt+'\n🐦 Birdino';}
 async function shareTrn(){var t=buildTrnText();if(navigator.share){try{await navigator.share({title:'Turnier Gesamt',text:t});}catch(e){}}else copyText(t);}
 
 // ════ GPS SCHLAGWEITE ════
