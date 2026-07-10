@@ -2674,11 +2674,15 @@ function calcTotal(){
   var t=G.tournament;var rl=toList(t&&t.rounds);if(!t||!rl.length)return[];
   var roundsTotal=rl.length;
   return G.players.map(function(p){
-    var bSum=0,nSum=0,sSum=0,played=0,details=[];
+    var bSum=0,nSum=0,sSum=0,played=0,details=[],bvSum=0,laSum=0;
     rl.forEach(function(rnd){
       var sc=toArr18(rnd.scores&&rnd.scores[p.id]);var hcp=Number((rnd.handicaps&&rnd.handicaps[p.id]!=null)?rnd.handicaps[p.id]:p.handicap)||0;
       var par=Array.isArray(rnd.par)?rnd.par:DPAR,si=Array.isArray(rnd.si)?rnd.si:DSI,pl=sc.filter(function(s){return s!=null;}).length;
-      if(!pl){details.push({r:rnd.roundNum,b:null,n:null,s:null});return;}played++;
+      if(!pl){details.push({r:rnd.roundNum,b:null,n:null,s:null,bv:null,la:null});return;}played++;
+      var exR=toArr18(rnd.extras&&rnd.extras[p.id]);
+      var bvR=exR.reduce(function(a,e){return a+(Number(e&&e.bv)||0);},0);
+      var laR=exR.reduce(function(a,e){return a+((e&&e.la)?1:0);},0);
+      bvSum+=bvR;laSum+=laR;
       var rndMode=rnd.mode||'stroke',rndMax=rnd.maxScore||null;
       var eff=sc.map(function(raw,i){
         if(raw==null)return null;
@@ -2695,9 +2699,9 @@ function calcTotal(){
       var br=eff.reduce(function(a,s){return s!=null?a+s:a;},0),parP=eff.reduce(function(a,s,i){return s!=null?a+(par[i]||4):a;},0);
       var bvp=br-parP,nvp=0,stp=0;
       eff.forEach(function(s,i){if(s==null)return;var siV=si[i]||i+1,h=Math.round(Math.abs(hcp))*(hcp<0?-1:1);var ex=h>=0?Math.floor(h/18)+(h%18>=siV?1:0):-(Math.floor(Math.abs(h)/18)+(Math.abs(h)%18>=siV?1:0));var net=s-ex,d=net-par[i];nvp+=d;stp+=(d>=2?0:d===1?1:d===0?2:d===-1?3:d===-2?4:5);});
-      bSum+=bvp;nSum+=nvp;sSum+=stp;details.push({r:rnd.roundNum,b:bvp,n:nvp,s:stp});
+      bSum+=bvp;nSum+=nvp;sSum+=stp;details.push({r:rnd.roundNum,b:bvp,n:nvp,s:stp,bv:bvR,la:laR});
     });
-    return Object.assign({},p,{bSum:bSum,nSum:nSum,sSum:sSum,played:played,details:details,roundsTotal:roundsTotal,complete:(roundsTotal>0&&played===roundsTotal)});
+    return Object.assign({},p,{bSum:bSum,nSum:nSum,sSum:sSum,played:played,details:details,roundsTotal:roundsTotal,complete:(roundsTotal>0&&played===roundsTotal),bvSum:bvSum,laSum:laSum});
   });
 }
 function totSumBox(label,val){return '<div style="flex:1;text-align:center;border:2px solid var(--border-light);border-radius:10px;padding:8px 4px"><div style="font-size:9px;color:var(--txt3);letter-spacing:1px">'+label+'</div><div style="font-size:19px;font-weight:900;font-family:\'Cormorant Garamond\',serif">'+val+'</div></div>';}
@@ -2721,7 +2725,12 @@ function showTotalDetail(pid){
   var t=G.tournament;var rl=toList(t&&t.rounds);if(!t||!rl.length)return;
   var p=calcTotal().find(function(x){return x.id===pid;});if(!p)return;
   document.getElementById('totdet-name').textContent=p.name;
-  document.getElementById('totdet-sub').textContent='HCP '+hd(p.handicap)+' · '+p.played+' von '+p.roundsTotal+' Runden gespielt'+(p.complete?'':' · nicht wertbar');
+  var anyBV=rl.some(function(r){return r.options&&r.options.ballverlust;});
+  var anyLA=rl.some(function(r){return r.options&&r.options.ladies;});
+  var extraTxt=[];
+  if(anyBV)extraTxt.push('🔴 '+p.bvSum+(p.bvSum===1?' Ballverlust':' Ballverluste'));
+  if(anyLA)extraTxt.push('🚺 '+p.laSum+(p.laSum===1?' Lady':' Ladies'));
+  document.getElementById('totdet-sub').textContent='HCP '+hd(p.handicap)+' · '+p.played+' von '+p.roundsTotal+' Runden gespielt'+(p.complete?'':' · nicht wertbar')+(extraTxt.length?(' · '+extraTxt.join(' · ')):'');
   var html='<div style="display:flex;gap:8px;margin-bottom:12px">'
     +totSumBox('BRUTTO',p.played?fmt(p.bSum):'–')
     +totSumBox('NETTO',p.played?fmt(p.nSum):'–')
@@ -2737,8 +2746,12 @@ function showTotalDetail(pid){
       +'<div style="font-size:10px;color:var(--txt3)">'+esc(rnd.date||'')+'</div></div>';
     if(!gespielt){html+='<div style="font-size:11px;color:var(--txt3);margin-top:6px">Nicht gespielt</div></div>';return;}
     html+='<div style="display:flex;gap:12px;margin-top:6px;font-size:12px;font-weight:700">'
-      +'<span>Brutto '+fmt(d.b)+'</span><span>Netto '+fmt(d.n)+'</span><span style="color:#6a1b9a">'+d.s+' P</span></div>'
-      +totHoleGrid(sc,rnd.par)+'</div>';
+      +'<span>Brutto '+fmt(d.b)+'</span><span>Netto '+fmt(d.n)+'</span><span style="color:#6a1b9a">'+d.s+' P</span></div>';
+    var ro=rnd.options||{};var xs=[];
+    if(ro.ballverlust)xs.push('<span style="color:var(--red)">🔴 '+(d.bv||0)+'</span>');
+    if(ro.ladies)xs.push('<span style="color:#6a1b9a">🚺 '+(d.la||0)+'</span>');
+    if(xs.length)html+='<div style="display:flex;gap:12px;margin-top:4px;font-size:11px;font-weight:700">'+xs.join('')+'</div>';
+    html+=totHoleGrid(sc,rnd.par)+'</div>';
   });
   document.getElementById('totdet-body').innerHTML=html;
   document.getElementById('totdet-modal').style.display='flex';
@@ -2777,6 +2790,24 @@ function renderTotal(){
   html+=rankBlock('🏌️ Brutto-Rangliste',all.slice().sort(cmp('bSum',false)),function(p){return p.played>0?fmt(p.bSum):'–';},function(p){return p.details.map(function(d){return d.b!=null?'R'+d.r+':'+fmt(d.b):'R'+d.r+':–';}).join('<br>');},function(p){return p.played>0?dc(p.bSum):'#aaa';});
   html+=rankBlock('🎯 Netto-Rangliste',all.slice().sort(cmp('nSum',false)),function(p){return p.played>0?fmt(p.nSum):'–';},function(p){return p.details.map(function(d){return d.n!=null?'R'+d.r+':'+fmt(d.n):'R'+d.r+':–';}).join('<br>');},function(p){return p.played>0?dc(p.nSum):'#aaa';});
   html+=rankBlock('⭐ Stableford-Rangliste',all.slice().sort(cmp('sSum',true)),function(p){return p.played>0?String(p.sSum)+'P':'–';},function(p){return p.details.map(function(d){return d.s!=null?'R'+d.r+':'+d.s+'P':'R'+d.r+':–';}).join('<br>');},function(p){return p.played>0?'#6a1b9a':'#aaa';});
+  // Zusatz-Karte: Ballverluste und Ladies über alle Runden (nur wenn im Turnier aktiviert)
+  var anyBV=rl.some(function(r){return r.options&&r.options.ballverlust;});
+  var anyLA=rl.some(function(r){return r.options&&r.options.ladies;});
+  if(anyBV||anyLA){
+    var sortedX=all.slice().sort(function(a,b){return (b.bvSum||0)-(a.bvSum||0)||(b.laSum||0)-(a.laSum||0);});
+    html+='<div class="total-card"><div class="serif" style="font-size:16px;font-weight:700;margin-bottom:10px">🍺 Ballverluste & Ladies</div>';
+    html+='<div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;font-size:9px;color:var(--txt3);letter-spacing:1px;font-weight:700;padding:0 4px 6px"><span>SPIELER</span>'
+      +(anyBV?'<span style="min-width:46px;text-align:center">🔴 BÄLLE</span>':'<span></span>')
+      +(anyLA?'<span style="min-width:46px;text-align:center">🚺 LADY</span>':'<span></span>')+'</div>';
+    sortedX.forEach(function(p){
+      html+='<div data-totid="'+esc(p.id)+'" style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:8px 4px;border-top:1px solid var(--border-light);cursor:pointer">'
+        +'<div class="serif" style="font-size:14px;font-weight:700">'+esc(p.name)+'</div>'
+        +(anyBV?'<div style="min-width:46px;text-align:center;font-size:17px;font-weight:900;color:'+((p.bvSum||0)>0?'var(--red)':'var(--txt3)')+'">'+(p.bvSum||0)+'</div>':'<div></div>')
+        +(anyLA?'<div style="min-width:46px;text-align:center;font-size:17px;font-weight:900;color:'+((p.laSum||0)>0?'#6a1b9a':'var(--txt3)')+'">'+(p.laSum||0)+'</div>':'<div></div>')
+        +'</div>';
+    });
+    html+='</div>';
+  }
   el.innerHTML=html;
   el.querySelectorAll('[data-totid]').forEach(function(row){row.addEventListener('click',function(){showTotalDetail(this.dataset.totid);});});
   var cb=document.getElementById('totdet-close');if(cb&&!cb._b){cb._b=1;cb.addEventListener('click',hideTotalDetail);}
