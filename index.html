@@ -1822,7 +1822,7 @@ function doOpenCard(id){
     CMARK=(p.markedScores&&Array.isArray(p.markedScores))?p.markedScores.slice():Array(18).fill(null);while(CMARK.length<18)CMARK.push(null);
   }else{MARK_ID=null;CMARK=Array(18).fill(null);}
   // Patenschaft: Mündel-Daten laden (nur normaler Modus)
-  if(!opts.zaehler&&p.guardOf){
+  if(false&&!opts.zaehler&&p.guardOf){ // FIX: Patenschaft deaktiviert - Zwei-Spalten-Ansicht nie oeffnen
     var ward=findByPid(p.guardOf);
     if(ward){
       WARD_ID=ward.id;
@@ -1846,6 +1846,7 @@ function doOpenCard(id){
 }
 function renderPateBar(){
   var bar=document.getElementById('pate-bar');if(!bar)return;
+  bar.style.display='none';return; // FIX: Patenschaft fuer dieses Turnier deaktiviert (Fund 6/7)
   var opts=G.round.options||{};
   // Nur im normalen Modus (nicht Zähler), nur Pro
   if(opts.zaehler||!PRO_ON){bar.style.display='none';return;}
@@ -2562,6 +2563,7 @@ function renderPList(){
 function addPlayer(){var name=document.getElementById('new-name').value.trim();if(!name)return;var hcp=document.getElementById('new-hcp').value;SP.push({id:Date.now().toString(),pid:genPid(),name:name,handicap:hcp!==''?Number(hcp):0,scores:Array(18).fill(null),team:SP.length%2,flight:1,gps:false,track:{putts:false,fir:false,gir:false,ann:false,absch:false}});document.getElementById('new-name').value='';document.getElementById('new-hcp').value='';renderPList();renderFlights();}
 async function resetScores(){var ok=await askConfirm('Alle Scores zurücksetzen?','Zurücksetzen','var(--red)');if(!ok)return;SP=SP.map(function(p){return Object.assign({},p,{scores:Array(18).fill(null)});});renderPList();if(CODE)try{await Promise.all(SP.map(function(p){return fbSet(fp('players/'+p.id),p);}));toast('✅ Scores zurückgesetzt');}catch(e){toast('📶 Lokal zurückgesetzt');}}
 async function saveSetup(){
+  if(VIEW_RND!==null){await askConfirm('Du siehst gerade eine abgeschlossene Runde (R'+VIEW_RND+'). Einstellungen koennen hier nicht gespeichert werden. Tippe oben auf die laufende Runde und versuche es erneut.','Verstanden','#e65100');return;}
   for(var i=0;i<18;i++){var pe=document.getElementById('par-'+i),se=document.getElementById('si-'+i);if(pe)SPAR[i]=Number(pe.value)||4;if(se)SSI[i]=se.value!==''?Number(se.value)||i+1:i+1;}
   var cname=CTM==='api'&&SAC?(SAC.club_name||SAC.name||'–'):(document.getElementById('man-name').value||'–');
   var tee=CTM==='api'&&SAT?SAT.teeName:'';var rMode=document.getElementById('r-mode').value;var maxScore=null;
@@ -2569,6 +2571,18 @@ async function saveSetup(){
   var gv=function(id){var el=document.getElementById(id);return el?el.checked:false;};
   var notifSettings={hio:gv('notif-hio'),eagle:gv('notif-eagle'),birdie:gv('notif-birdie'),par:gv('notif-par'),bogey:gv('notif-bogey'),double:gv('notif-double'),bv:gv('notif-bv'),lady:gv('notif-lady'),putt3:gv('notif-putt3'),scorelog:gv('notif-scorelog')};
   G.round={courseName:cname,par:SPAR,strokeIndex:SSI,tee:tee,date:document.getElementById('r-date').value||tod(),mode:rMode,maxScore:maxScore,teamMode:STM,longestDrive:(parseInt(document.getElementById('longest-drive-hole').value)||0),options:{ballverlust:gv('opt-ballverlust'),ladies:gv('opt-ladies'),notif:gv('opt-notif'),notifSettings:notifSettings,zaehler:gv('opt-zaehler')}};
+  // FIX Fund 1: Live-Stand synchron uebernehmen. SP kann veraltet sein (Setup war offen, waehrend live gespielt wurde).
+  var liveNow=LIVE_PLAYERS||[];
+  SP=SP.map(function(sp){
+    var live=liveNow.find(function(x){return x.id===sp.id;});
+    if(!live)return sp;
+    return Object.assign({},sp,{
+      scores:live.scores!=null?live.scores:sp.scores,
+      extras:live.extras!=null?live.extras:sp.extras,
+      markedScores:live.markedScores!=null?live.markedScores:sp.markedScores,
+      marks:live.marks!=null?live.marks:sp.marks
+    });
+  });
   G.players=SP;renderScoreLog();var trnR=parseInt(document.getElementById('trn-rounds').value)||0;
   // SCHUTZ vor Datenverlust: eingefrorene Runden dürfen nicht durch Umschalten gelöscht werden
   var frozenCount=toList(G.tournament&&G.tournament.rounds).length;
@@ -2586,7 +2600,15 @@ async function saveSetup(){
   }
   if(trnR>1){if(!G.tournament||G.tournament.totalRounds!==trnR){if(G.tournament&&frozenCount>0){G.tournament.totalRounds=trnR;}else{G.tournament={totalRounds:trnR,currentRound:1,name:cname,rounds:[]};}}}else G.tournament=null;
   if(!CODE)CODE=genCode();NOTIF_ON=gv('opt-notif');saveRec(CODE,cname);document.getElementById('code-badge').textContent='🔑 '+CODE;
-  try{await initFB();await fbSet(fp('players'),null);await fbSet(fp('round'),G.round);await Promise.all(G.players.map(function(p){return fbSet(fp('players/'+p.id),p);}));await fbSet(fp('tournament'),G.tournament||null);await fbSet(fp('notif'),NOTIF_ON);try{await DB.ref('turniere/'+CODE+'/meta/lastSeen').set(new Date().toISOString());}catch(e){}await ensureSetupAccess(CODE);registerAllPlayers(G.players,CODE);toast('✓ Turnier '+CODE+' gestartet');startListeners();trackPresence(CODE);}catch(e){toast('⚠️ Firebase nicht erreichbar');}
+  try{await initFB();
+    // FIX Fund 1: Ein atomares Update. Kein players->null mehr; nur im Setup entfernte Spieler werden geloescht.
+    var updates={};
+    updates['round']=G.round;
+    updates['tournament']=G.tournament||null;
+    updates['notif']=NOTIF_ON;
+    var keepIds={};G.players.forEach(function(p){keepIds[p.id]=true;updates['players/'+p.id]=p;});
+    (LIVE_PLAYERS||[]).forEach(function(lp){if(!keepIds[lp.id])updates['players/'+lp.id]=null;});
+    await DB.ref(fp('')).update(updates);try{await DB.ref('turniere/'+CODE+'/meta/lastSeen').set(new Date().toISOString());}catch(e){}await ensureSetupAccess(CODE);registerAllPlayers(G.players,CODE);toast('✓ Turnier '+CODE+' gestartet');startListeners();trackPresence(CODE);}catch(e){toast('⚠️ Speichern fehlgeschlagen: '+((e&&e.message)||e));console.error('saveSetup:',e);}
   LIVE_ROUND=G.round;LIVE_PLAYERS=G.players.slice();VIEW_RND=null;renderLB();refreshTrnUI();showView('lb');
 }
 
@@ -2705,7 +2727,7 @@ function calcTotal(){
   });
 }
 function totSumBox(label,val){return '<div style="flex:1;text-align:center;border:2px solid var(--border-light);border-radius:10px;padding:8px 4px"><div style="font-size:9px;color:var(--txt3);letter-spacing:1px">'+label+'</div><div style="font-size:19px;font-weight:900;font-family:\'Cormorant Garamond\',serif">'+val+'</div></div>';}
-function totHoleGrid(sc,par){
+function totHoleGrid(sc,par,mode,si,hcp){
   var out='';
   [[0,9],[9,18]].forEach(function(rg){
     out+='<div style="display:grid;grid-template-columns:repeat(9,1fr);gap:2px;margin-top:6px">';
@@ -2713,7 +2735,16 @@ function totHoleGrid(sc,par){
     out+='</div><div style="display:grid;grid-template-columns:repeat(9,1fr);gap:2px;margin-top:1px">';
     for(var j=rg[0];j<rg[1];j++){
       var v=sc[j],pv=(par||DPAR)[j]||4;
-      var txt=(v==null)?'–':(v===0?'NR':v);
+      // FIX: Im NDB-Modus zaehlt NR als Netto-Doppelbogey - Anzeige zeigt den Wertungs-Wert (Formel identisch zu calcTotal)
+      var txt;
+      if(v==null){txt='–';}
+      else if(v===0&&mode==='zaehlen_ndb'){
+        var siV=(si&&si[j])||j+1,h=Math.round(Math.abs(hcp||0))*((hcp||0)<0?-1:1);
+        var exN=h>=0?Math.floor(h/18)+(h%18>=siV?1:0):-(Math.floor(Math.abs(h)/18)+(Math.abs(h)%18>=siV?1:0));
+        txt=String(pv+exN+2);
+      }
+      else if(v===0){txt='NR';}
+      else{txt=v;}
       var col=(v==null||v===0)?'var(--txt3)':dc(v-pv);
       out+='<div style="text-align:center;font-size:14px;font-weight:800;color:'+col+'">'+txt+'</div>';
     }
@@ -2751,7 +2782,8 @@ function showTotalDetail(pid){
     if(ro.ballverlust)xs.push('<span style="color:var(--red)">🔴 '+(d.bv||0)+'</span>');
     if(ro.ladies)xs.push('<span style="color:#6a1b9a">🚺 '+(d.la||0)+'</span>');
     if(xs.length)html+='<div style="display:flex;gap:12px;margin-top:4px;font-size:11px;font-weight:700">'+xs.join('')+'</div>';
-    html+=totHoleGrid(sc,rnd.par)+'</div>';
+    var hcpR=Number((rnd.handicaps&&rnd.handicaps[p.id]!=null)?rnd.handicaps[p.id]:p.handicap)||0;
+    html+=totHoleGrid(sc,rnd.par,rnd.mode||'stroke',Array.isArray(rnd.si)?rnd.si:DSI,hcpR)+'</div>';
   });
   document.getElementById('totdet-body').innerHTML=html;
   document.getElementById('totdet-modal').style.display='flex';
