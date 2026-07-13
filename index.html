@@ -1646,6 +1646,15 @@ function renderLB(){
     else if(LBM==='brutto'&&p.bvp!=null){dv=fmt(p.bvp);dco=dc(p.bvp);}
     var tm=r.teamMode||'none',tco=tm!=='none'&&p.team!=null?TC[p.team]:'transparent';
     var sub=[];if(p.pl>0)sub.push(p.pl+'/18');if(p.track&&p.track.putts&&p.totalPutts>0)sub.push('🏌️'+p.totalPutts+'P');if(opts2.ballverlust&&p.totalBV>0)sub.push('🔴'+p.totalBV+'BV');if(opts2.ladies&&p.totalLA>0)sub.push('🚺'+p.totalLA+'🍺');
+    // FIX: Zaehler-Abgleich in der Tabelle sichtbar machen - gleiche Logik wie renderZCompare
+    if(opts2.zaehler){
+      var zp=G.players.find(function(z){return z.id!==p.id&&z.marks===p.id;});
+      if(zp&&zp.markedScores!=null){
+        var zm=toArr18(zp.markedScores),selfSc=toArr18((G.players.find(function(x){return x.id===p.id;})||{}).scores);
+        var zd=[];for(var zi=0;zi<18;zi++){if(zm[zi]!=null&&selfSc[zi]!=null&&zm[zi]!==selfSc[zi])zd.push(zi+1);}
+        if(zd.length>0)sub.push('<span style="color:#e65100;font-weight:700" title="Loch '+zd.join(', ')+'">\u2696\ufe0f'+zd.length+' Abw.</span>');
+      }
+    }
     return'<div class="prow'+(i===0&&p.pl>0?' leader':'')+'" style="border-left-color:'+tco+'" data-pid="'+esc(p.id)+'"><div class="pr-rank serif">'+(medal||i+1)+'</div><div><div class="pr-name serif">'+esc(p.name)+'</div><div class="pr-sub">'+(sub.length?sub.join('  '):'Noch nicht gestartet')+'</div></div><div class="pr-ctr">'+hd(p.handicap)+'</div><div class="pr-ctr">'+(p.pl>0?'L'+p.pl:'–')+'</div><div class="pr-score serif" style="color:'+dco+'">'+dv+'</div></div>';
   }).join('');
   list.querySelectorAll('.prow').forEach(function(el){el.addEventListener('click',function(){openCard(this.dataset.pid);});});
