@@ -1744,11 +1744,17 @@ async function canOpenSetup(){
   toast('⚠️ Falscher Setup-Code','var(--red)');
   return false;
 }
+function trnFinished(){var t=G.tournament;if(!t||!t.totalRounds)return false;var rl=toList(t.rounds);var done={};rl.forEach(function(x){done[x.roundNum]=true;});for(var rn=1;rn<=t.totalRounds;rn++){if(!done[rn])return false;}return true;}
 async function openCard(id){
   var p=G.players.find(function(p){return p.id===id;});if(!p)return;
   // ── Schutz: In einer abgeschlossenen Runde darf nichts eingetragen werden ──
   if(VIEW_RND!==null){
     await askConfirm('📋 Du siehst gerade Runde '+VIEW_RND+' (bereits abgeschlossen).\n\nHier können keine Scores eingetragen werden.\n\nTippe oben auf die laufende Runde, um weiterzuspielen.','Verstanden','#e65100');
+    return;
+  }
+  // FIX: Nach der letzten Runde gibt es keine spielbare Runde mehr - Scores sind final
+  if(trnFinished()){
+    await askConfirm('🏁 Das Turnier ist abgeschlossen - alle '+G.tournament.totalRounds+' Runden sind eingefroren.\n\nScores können nicht mehr geändert werden.','Verstanden','#e65100');
     return;
   }
   // ── Stufe 4: Schutz der Mündel-Karte ──
