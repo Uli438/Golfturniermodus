@@ -83,7 +83,7 @@ input,select,button{font-family:'DM Sans',sans-serif}
 .admin-sub{font-size:10px;color:var(--txt3)}
 .admin-open{background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;padding:8px 12px;cursor:pointer;flex-shrink:0}
 .admin-del{background:#ffebee;border:2px solid var(--red);border-radius:8px;color:var(--red);font-size:16px;padding:6px 10px;cursor:pointer;line-height:1;flex-shrink:0}
-#lb-hero{background:linear-gradient(160deg,var(--bg2) 60%,var(--bg3));padding:20px 18px 14px;border-bottom:2px solid var(--border)}
+#lb-hero{background:linear-gradient(160deg,var(--bg2) 60%,var(--bg3));padding:20px 18px 14px;border-bottom:2px solid var(--border);position:relative}
 .eyebrow{font-size:9px;color:var(--accent);letter-spacing:3px;margin-bottom:4px;display:flex;align-items:center;gap:5px;font-weight:600}
 .sync-dot{width:7px;height:7px;border-radius:50%;background:#00c853;animation:pulse 2s infinite;flex-shrink:0}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
@@ -476,7 +476,7 @@ input,select,button{font-family:'DM Sans',sans-serif}
   <div id="lb-top-spacer" style="height:0;transition:height .3s;flex-shrink:0"></div>
   <div id="lb-hero">
     <div class="eyebrow"><div class="sync-dot" id="sync-dot"></div>LIVE SCORING · TURNIERMODUS</div>
-    <img id="lb-logo" style="display:none;max-width:120px;max-height:90px;margin:0 auto 8px;border-radius:10px" alt="Turnier-Logo">
+    <img id="lb-logo" style="display:none;position:absolute;top:12px;right:14px;max-width:84px;max-height:64px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.10)" alt="Turnier-Logo">
     <div class="lb-title serif" id="lb-course-name">Birdino</div>
     <div class="lb-sub" id="lb-course-meta"></div>
     <div class="code-badge" id="code-badge">🔑 ···</div>
