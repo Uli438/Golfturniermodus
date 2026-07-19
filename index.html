@@ -535,7 +535,7 @@ input,select,button{font-family:'DM Sans',sans-serif}
 <div id="view-total" class="view">
   <div id="total-top-spacer" style="height:0;transition:height .3s;flex-shrink:0"></div>
   <div class="hdr" id="total-hdr"><button class="back-btn" id="total-back">←</button><div class="hdr-title serif">🏆 Gesamtauswertung</div></div>
-  <div class="total-body"><div id="total-content"></div><div class="share-btns" style="margin-top:8px"><button class="share-btn p" id="btn-share-trn">📤 Teilen</button><button class="share-btn s" id="btn-copy-trn">📋 Kopieren</button></div></div>
+  <div class="total-body"><div id="total-content"></div><div id="total-lochanalyse" style="display:none"></div><div class="share-btns" style="margin-top:8px"><button class="share-btn p" id="btn-share-trn">📤 Teilen</button><button class="share-btn s" id="btn-copy-trn">📋 Kopieren</button></div><div class="share-btns" style="margin-top:8px"><button class="share-btn s" id="btn-excel-trn">📊 Excel-Export</button><button class="share-btn s" id="btn-lochanalyse">⛳ Loch-Analyse</button></div></div>
 </div>
 
 <!-- SETUP -->
@@ -1061,6 +1061,8 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('savebtn').addEventListener('click',saveScore);
   document.getElementById('btn-share-result').addEventListener('click',shareResult);
   document.getElementById('btn-copy-result').addEventListener('click',function(){copyText(buildShareText());});
+  document.getElementById('btn-excel-trn').addEventListener('click',function(){var t=buildExcelExport();if(!t){toast('⚠️ Keine Rundendaten');return;}copyText(t);toast('📊 Kopiert – in Excel einfügen');});
+  document.getElementById('btn-lochanalyse').addEventListener('click',function(){var el=document.getElementById('total-lochanalyse');if(el.style.display==='none'){el.innerHTML=buildLochAnalyse();el.style.display='block';this.textContent='⛳ Analyse ausblenden';}else{el.style.display='none';el.innerHTML='';this.textContent='⛳ Loch-Analyse';}});
   document.getElementById('btn-share-trn').addEventListener('click',shareTrn);
   document.getElementById('btn-copy-trn').addEventListener('click',function(){copyText(buildTrnText());});
   document.getElementById('stab-manual').addEventListener('click',function(){switchCourseTab('manual');});
@@ -2743,6 +2745,101 @@ function calcTotal(){
     });
     return Object.assign({},p,{bSum:bSum,nSum:nSum,sSum:sSum,played:played,details:details,roundsTotal:roundsTotal,complete:(roundsTotal>0&&played===roundsTotal),bvSum:bvSum,laSum:laSum});
   });
+}
+// ==== EXCEL-EXPORT & LOCH-ANALYSE (rein lesend) ====
+function xNum(v){return String(v).replace('.',',');}
+function xRounds(){
+  var t=G.tournament;if(!t)return[];
+  var rl=toList(t.rounds).slice().sort(function(a,b){return(a.roundNum||0)-(b.roundNum||0);});
+  var list=rl.map(function(rnd){
+    var scores={},hcps={};
+    (LIVE_PLAYERS||G.players).forEach(function(p){
+      scores[p.id]=toArr18(rnd.scores&&rnd.scores[p.id]);
+      hcps[p.id]=Number((rnd.handicaps&&rnd.handicaps[p.id]!=null)?rnd.handicaps[p.id]:p.handicap)||0;
+    });
+    return{num:rnd.roundNum,name:rnd.courseName||'\u2013',date:rnd.date||'',mode:rnd.mode||'stroke',maxScore:rnd.maxScore||null,par:Array.isArray(rnd.par)?rnd.par:DPAR,si:Array.isArray(rnd.si)?rnd.si:DSI,scores:scores,hcps:hcps,live:false};
+  });
+  var lp=LIVE_PLAYERS||G.players,lr=LIVE_ROUND||G.round,cur=t.currentRound||1;
+  var frozenNums={};list.forEach(function(r){frozenNums[r.num]=true;});
+  var hasLive=lp.some(function(p){return toArr18(p.scores).some(function(s){return s!=null;});});
+  if(hasLive&&!frozenNums[cur]){
+    var scores2={},hcps2={};
+    lp.forEach(function(p){scores2[p.id]=toArr18(p.scores);hcps2[p.id]=Number(p.handicap)||0;});
+    list.push({num:cur,name:(lr.courseName||'\u2013')+' (laufend)',date:lr.date||'',mode:lr.mode||'stroke',maxScore:lr.maxScore||null,par:Array.isArray(lr.par)?lr.par:DPAR,si:Array.isArray(lr.strokeIndex)?lr.strokeIndex:DSI,scores:scores2,hcps:hcps2,live:true});
+  }
+  return list;
+}
+function xCalcRow(sc,hcp,par,si,mode,maxScore){ // Formeln identisch zu calcTotal
+  var eff=sc.map(function(raw,i){
+    if(raw==null)return null;
+    if(mode==='zaehlen_ndb'){var pv=par[i]||4,siV=si[i]||i+1,h=Math.round(Math.abs(hcp))*(hcp<0?-1:1);var ex=h>=0?Math.floor(h/18)+(h%18>=siV?1:0):-(Math.floor(Math.abs(h)/18)+(Math.abs(h)%18>=siV?1:0));var mx=pv+ex+2;return raw===0?mx:Math.min(raw,mx);}
+    if(raw===0)return null;
+    if(mode==='zaehlen_fix')return Math.min(raw,maxScore||8);
+    return raw;
+  });
+  var br=eff.reduce(function(a,s){return s!=null?a+s:a;},0),parP=eff.reduce(function(a,s,i){return s!=null?a+(par[i]||4):a;},0);
+  var bvp=br-parP,nvp=0,stp=0;
+  eff.forEach(function(s,i){if(s==null)return;var siV=si[i]||i+1,h=Math.round(Math.abs(hcp))*(hcp<0?-1:1);var ex=h>=0?Math.floor(h/18)+(h%18>=siV?1:0):-(Math.floor(Math.abs(h)/18)+(Math.abs(h)%18>=siV?1:0));var net=s-ex,d=net-par[i];nvp+=d;stp+=(d>=2?0:d===1?1:d===0?2:d===-1?3:d===-2?4:5);});
+  return{b:bvp,n:nvp,s:stp,played:sc.filter(function(s){return s!=null;}).length};
+}
+function buildExcelExport(){
+  var rounds=xRounds();if(!rounds.length)return null;
+  var lp=LIVE_PLAYERS||G.players,L=[],T='\t';
+  L.push('Turnier'+T+(CODE||''));
+  rounds.forEach(function(r){
+    L.push('');
+    L.push('Runde '+r.num+T+r.name+T+r.date+T+'Modus'+T+r.mode);
+    var head=['Spieler','Vorgabe'];for(var i=1;i<=18;i++)head.push('L'+i);head.push('Brutto\u00b1','Netto\u00b1','Stbf');
+    L.push(head.join(T));
+    var parRow=['Par',''];r.par.forEach(function(p){parRow.push(p);});parRow.push(r.par.reduce(function(a,b){return a+(b||0);},0));L.push(parRow.join(T));
+    var siRow=['SI',''];r.si.forEach(function(s){siRow.push(s);});L.push(siRow.join(T));
+    lp.forEach(function(p){
+      var sc=r.scores[p.id]||Array(18).fill(null);
+      if(!sc.some(function(s){return s!=null;}))return;
+      var res=xCalcRow(sc,r.hcps[p.id],r.par,r.si,r.mode,r.maxScore);
+      var row=[p.name,xNum(r.hcps[p.id])];
+      sc.forEach(function(s){row.push(s==null?'':(s===0?'NR':s));});
+      row.push(res.b,res.n,res.s);
+      L.push(row.join(T));
+    });
+  });
+  return L.join('\r\n');
+}
+function buildLochAnalyse(){
+  var rounds=xRounds();if(!rounds.length)return'<div style="padding:14px;color:var(--txt3);font-size:13px">Noch keine Rundendaten.</div>';
+  var lp=LIVE_PLAYERS||G.players,html='';
+  var CB={e:'#f6c344',b:'#5cb85c',p:'#9aa7b2',bo:'#f0883e',d:'#e05252'};
+  rounds.forEach(function(r){
+    var stats=[];
+    for(var i=0;i<18;i++){
+      var pv=r.par[i]||4,sum=0,cnt=0,nr=0,e=0,b=0,pa=0,bo=0,dd=0;
+      lp.forEach(function(p){
+        var s=(r.scores[p.id]||[])[i];
+        if(s==null)return;
+        if(s===0){nr++;return;}
+        sum+=s;cnt++;
+        var d=s-pv;if(d<=-2)e++;else if(d===-1)b++;else if(d===0)pa++;else if(d===1)bo++;else dd++;
+      });
+      stats.push({h:i+1,par:pv,si:r.si[i]||i+1,cnt:cnt,nr:nr,avg:cnt?sum/cnt:null,diff:cnt?sum/cnt-pv:null,e:e,b:b,pa:pa,bo:bo,dd:dd});
+    }
+    var played=stats.filter(function(s){return s.diff!=null;});
+    var hardest=played.length?played.reduce(function(a,s){return s.diff>a.diff?s:a;}):null;
+    var easiest=played.length?played.reduce(function(a,s){return s.diff<a.diff?s:a;}):null;
+    html+='<div style="background:#fff;border:2px solid var(--border-light);border-radius:12px;padding:12px;margin-bottom:12px">';
+    html+='<div class="serif" style="font-size:15px;font-weight:700;margin-bottom:2px">R'+r.num+' \u00b7 '+esc(r.name)+'</div>';
+    if(hardest)html+='<div style="font-size:11px;color:var(--txt2);margin-bottom:8px">\ud83d\udd34 Schwerstes: L'+hardest.h+' (\u00d8 '+xNum(hardest.avg.toFixed(1))+' bei Par '+hardest.par+') \u00b7 \ud83d\udfe2 Leichtestes: L'+easiest.h+' (\u00d8 '+xNum(easiest.avg.toFixed(1))+' bei Par '+easiest.par+')</div>';
+    html+='<table style="width:100%;border-collapse:collapse;font-size:11.5px"><tr style="color:var(--txt3);font-size:9px;letter-spacing:.5px"><td>LOCH</td><td>PAR</td><td>SI</td><td>\u00d8</td><td>\u00b1</td><td style="width:38%">VERTEILUNG</td><td>NR</td></tr>';
+    stats.forEach(function(s){
+      var mark=hardest&&s.h===hardest.h?' \ud83d\udd34':(easiest&&s.h===easiest.h?' \ud83d\udfe2':'');
+      var bar='';var tot=s.e+s.b+s.pa+s.bo+s.dd;
+      if(tot>0){bar='<div style="display:flex;height:10px;border-radius:5px;overflow:hidden">';
+        [['e',CB.e],['b',CB.b],['pa',CB.p],['bo',CB.bo],['dd',CB.d]].forEach(function(k){if(s[k[0]]>0)bar+='<div style="flex:'+s[k[0]]+';background:'+k[1]+'"></div>';});
+        bar+='</div>';}
+      html+='<tr style="border-top:1px solid var(--border-light)"><td style="padding:3px 0;font-weight:700">'+s.h+mark+'</td><td>'+s.par+'</td><td style="color:var(--txt3)">'+s.si+'</td><td>'+(s.avg!=null?xNum(s.avg.toFixed(1)):'\u2013')+'</td><td style="font-weight:700;color:'+(s.diff>0.99?'var(--red)':s.diff!=null&&s.diff<0?'var(--green)':'var(--txt2)')+'">'+(s.diff!=null?(s.diff>=0?'+':'')+xNum(s.diff.toFixed(1)):'\u2013')+'</td><td>'+bar+'</td><td style="color:var(--txt3)">'+(s.nr||'')+'</td></tr>';
+    });
+    html+='</table><div style="font-size:9px;color:var(--txt3);margin-top:6px">\u00d8 ohne NR \u00b7 Balken: <span style="color:'+CB.e+'">\u25a0</span> Eagle- <span style="color:'+CB.b+'">\u25a0</span> Birdie <span style="color:'+CB.p+'">\u25a0</span> Par <span style="color:'+CB.bo+'">\u25a0</span> Bogey <span style="color:'+CB.d+'">\u25a0</span> Doppel+</div></div>';
+  });
+  return html;
 }
 function totSumBox(label,val){return '<div style="flex:1;text-align:center;border:2px solid var(--border-light);border-radius:10px;padding:8px 4px"><div style="font-size:9px;color:var(--txt3);letter-spacing:1px">'+label+'</div><div style="font-size:19px;font-weight:900;font-family:\'Cormorant Garamond\',serif">'+val+'</div></div>';}
 function totHoleGrid(sc,par,mode,si,hcp){
