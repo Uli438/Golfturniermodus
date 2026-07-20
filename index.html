@@ -535,7 +535,7 @@ input,select,button{font-family:'DM Sans',sans-serif}
 <div id="view-total" class="view">
   <div id="total-top-spacer" style="height:0;transition:height .3s;flex-shrink:0"></div>
   <div class="hdr" id="total-hdr"><button class="back-btn" id="total-back">←</button><div class="hdr-title serif">🏆 Gesamtauswertung</div></div>
-  <div class="total-body"><div id="total-content"></div><div id="total-lochanalyse" style="display:none"></div><div class="share-btns" style="margin-top:8px"><button class="share-btn p" id="btn-share-trn">📤 Teilen</button><button class="share-btn s" id="btn-copy-trn">📋 Kopieren</button></div><div class="share-btns" style="margin-top:8px"><button class="share-btn s" id="btn-excel-trn">📊 Excel-Export</button><button class="share-btn s" id="btn-lochanalyse">⛳ Loch-Analyse</button></div></div>
+  <div class="total-body"><div id="total-content"></div><div id="total-lochanalyse" style="display:none"></div><div class="share-btns" style="margin-top:8px"><button class="share-btn p" id="btn-share-trn">📤 Teilen</button><button class="share-btn s" id="btn-copy-trn">📋 Kopieren</button></div><div class="share-btns" style="margin-top:8px"><button class="share-btn s" id="btn-excel-trn">📊 Excel-Export</button><button class="share-btn s" id="btn-total-image">📸 Bild teilen</button></div><div class="share-btns" style="margin-top:8px"><button class="share-btn s" id="btn-lochanalyse">⛳ Loch-Analyse</button><button class="share-btn s" id="btn-scorematrix">🗂 Score-Matrix</button></div><div id="total-scorematrix" style="display:none"></div></div>
 </div>
 
 <!-- SETUP -->
@@ -1062,6 +1062,8 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('btn-share-result').addEventListener('click',shareResult);
   document.getElementById('btn-copy-result').addEventListener('click',function(){copyText(buildShareText());});
   document.getElementById('btn-excel-trn').addEventListener('click',function(){var t=buildExcelExport();if(!t){toast('⚠️ Keine Rundendaten');return;}copyText(t);toast('📊 Kopiert – in Excel einfügen');});
+  document.getElementById('btn-total-image').addEventListener('click',function(){shareTotalImage();});
+  document.getElementById('btn-scorematrix').addEventListener('click',function(){var el=document.getElementById('total-scorematrix');if(el.style.display==='none'){el.innerHTML=buildScoreMatrix();el.style.display='block';this.textContent='🗂 Matrix ausblenden';}else{el.style.display='none';el.innerHTML='';this.textContent='🗂 Score-Matrix';}});
   document.getElementById('btn-lochanalyse').addEventListener('click',function(){var el=document.getElementById('total-lochanalyse');if(el.style.display==='none'){el.innerHTML=buildLochAnalyse();el.style.display='block';this.textContent='⛳ Analyse ausblenden';}else{el.style.display='none';el.innerHTML='';this.textContent='⛳ Loch-Analyse';}});
   document.getElementById('btn-share-trn').addEventListener('click',shareTrn);
   document.getElementById('btn-copy-trn').addEventListener('click',function(){copyText(buildTrnText());});
@@ -2840,6 +2842,163 @@ function buildLochAnalyse(){
     html+='</table><div style="font-size:9px;color:var(--txt3);margin-top:6px">\u00d8 ohne NR \u00b7 Balken: <span style="color:'+CB.e+'">\u25a0</span> Eagle- <span style="color:'+CB.b+'">\u25a0</span> Birdie <span style="color:'+CB.p+'">\u25a0</span> Par <span style="color:'+CB.bo+'">\u25a0</span> Bogey <span style="color:'+CB.d+'">\u25a0</span> Doppel+</div></div>';
   });
   return html;
+}
+function buildScoreMatrix(){
+  var rounds=xRounds();if(!rounds.length)return'<div style="padding:14px;color:var(--txt3);font-size:13px">Noch keine Rundendaten.</div>';
+  var lp=(LIVE_PLAYERS||G.players);
+  var html='';
+  rounds.forEach(function(r){
+    var players=lp.filter(function(p){var sc=r.scores[p.id]||[];return sc.some(function(s){return s!=null;});});
+    if(!players.length)return;
+    html+='<div style="background:#fff;border:2px solid var(--border-light);border-radius:12px;padding:12px 0 10px;margin-bottom:12px">';
+    html+='<div class="serif" style="font-size:15px;font-weight:700;margin:0 12px 8px">R'+r.num+' \u00b7 '+esc(r.name)+'</div>';
+    html+='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="border-collapse:separate;border-spacing:0;font-size:12px;min-width:100%">';
+    // Kopfzeile
+    html+='<tr><th style="position:sticky;left:0;background:#fff;z-index:2;text-align:left;padding:4px 6px;font-size:9px;color:var(--txt3);letter-spacing:.5px">LOCH</th><th style="position:sticky;left:44px;background:#fff;z-index:2;padding:4px 6px;font-size:9px;color:var(--txt3)">PAR</th>';
+    players.forEach(function(p){html+='<th style="padding:4px 5px;font-size:9.5px;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--txt2)">'+esc(p.name)+'</th>';});
+    html+='</tr>';
+    // Lochzeilen
+    for(var i=0;i<18;i++){
+      var pv=r.par[i]||4;
+      html+='<tr><td style="position:sticky;left:0;background:#fff;z-index:1;font-weight:700;padding:3px 6px;border-top:1px solid var(--border-light)">'+(i+1)+'</td><td style="position:sticky;left:44px;background:#fff;z-index:1;color:var(--txt3);padding:3px 6px;border-top:1px solid var(--border-light)">'+pv+'</td>';
+      players.forEach(function(p){
+        var s=(r.scores[p.id]||[])[i],cell;
+        if(s==null)cell='<span style="color:var(--txt3)">\u2013</span>';
+        else if(s===0)cell='<span style="display:inline-block;min-width:22px;padding:2px 3px;border-radius:5px;background:#e7ecef;color:var(--txt3);font-size:10px;font-weight:700">NR</span>';
+        else{
+          var d=s-pv,st='';
+          if(d<=-2)st='background:#f6c344;color:#5a4500;border-radius:50%';
+          else if(d===-1)st='background:#5cb85c;color:#fff;border-radius:50%';
+          else if(d===1)st='background:#f0883e;color:#fff;border-radius:5px';
+          else if(d>=2)st='background:#e05252;color:#fff;border-radius:5px';
+          cell=st?'<span style="display:inline-block;min-width:22px;line-height:22px;font-weight:700;'+st+'">'+s+'</span>':'<span style="font-weight:600">'+s+'</span>';
+        }
+        html+='<td style="text-align:center;padding:3px 5px;border-top:1px solid var(--border-light)">'+cell+'</td>';
+      });
+      html+='</tr>';
+    }
+    // Brutto-Summenzeile
+    html+='<tr><td colspan="2" style="position:sticky;left:0;background:var(--bg2);z-index:1;font-size:9.5px;font-weight:700;letter-spacing:.5px;padding:5px 6px;border-top:2px solid var(--border)">BRUTTO</td>';
+    players.forEach(function(p){
+      var sc=r.scores[p.id]||[];
+      var res=xCalcRow(toArr18(sc),r.hcps[p.id],r.par,r.si,r.mode,r.maxScore);
+      html+='<td style="text-align:center;font-weight:700;padding:5px;background:var(--bg2);border-top:2px solid var(--border)">'+(res.b>0?'+':'')+(res.b===0?'Par':res.b)+'</td>';
+    });
+    html+='</tr></table></div>';
+    html+='<div style="font-size:9px;color:var(--txt3);margin:6px 12px 0">\ud83d\udfe1 Eagle- \ud83d\udfe2 Birdie \u00b7 wei\u00df Par \ud83d\udfe0 Bogey \ud83d\udd34 Doppel+ \u00b7 seitlich wischen f\u00fcr mehr Spieler</div></div>';
+  });
+  return html;
+}
+async function shareTotalImage(){
+  try{
+    var t=G.tournament;if(!t){toast('⚠️ Kein Turnier');return;}
+    var all=calcTotal();var rounds=xRounds();var lp=LIVE_PLAYERS||G.players;
+    if(!all.length||!rounds.length){toast('⚠️ Keine Rundendaten');return;}
+    var W=1080,pad=60,headerH=300;
+    var nR=rounds.length;
+    var rankRows=all.filter(function(p){return p.played>0;}).length;
+    var blockH=90+rankRows*54+50;
+    var mxPlayers=rounds.map(function(r){return lp.filter(function(p){return(r.scores[p.id]||[]).some(function(s){return s!=null;});});});
+    var matH=rounds.map(function(r,ri){return 210+18*44+70;});
+    var H=headerH+40+3*blockH+matH.reduce(function(a,b){return a+b;},0)+120;
+    var c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');
+    x.fillStyle='#f4f7f6';x.fillRect(0,0,W,H);
+    var grad=x.createLinearGradient(0,0,W,headerH);grad.addColorStop(0,'#1f8fd6');grad.addColorStop(1,'#3a9e1e');
+    x.fillStyle=grad;x.fillRect(0,0,W,headerH);
+    x.fillStyle='#fff';x.textBaseline='alphabetic';
+    x.font='700 38px Inter,Arial,sans-serif';x.fillText('🏆 Birdino · Gesamtwertung',pad,80);
+    x.font='800 58px Inter,Arial,sans-serif';x.fillText((t.name||'Turnier '+(CODE||'')),pad,155);
+    x.font='400 28px Inter,Arial,sans-serif';x.fillStyle='rgba(255,255,255,.92)';
+    rounds.slice(0,3).forEach(function(r,i){x.fillText('R'+r.num+': '+r.name+'  ·  '+r.date,pad,205+i*36);});
+    var y=headerH+70;
+    function fmtV(v){return v>0?'+'+v:(v===0?'Par':String(v));}
+    function rankBlockImg(title,rowsArr,valFn,detFn){
+      x.fillStyle='#0d2818';x.font='800 32px Inter,Arial,sans-serif';x.fillText(title,pad,y);y+=18;
+      x.fillStyle='#eaf0ee';roundRectC(x,pad,y,W-pad*2,46,12);x.fill();
+      x.fillStyle='#7a8893';x.font='700 22px Inter,Arial,sans-serif';
+      x.fillText('#',pad+22,y+32);x.fillText('SPIELER',pad+80,y+32);
+      var rx=W-pad-140;x.fillText('GESAMT',rx,y+32);
+      var rw=110,rx0=rx-nR*rw;
+      rounds.forEach(function(r,i){x.fillText('R'+r.num,rx0+i*rw,y+32);});
+      y+=54;
+      rowsArr.forEach(function(p,i){
+        if(p.played<=0)return;
+        if(i%2===1){x.fillStyle='#ffffff';roundRectC(x,pad,y-8,W-pad*2,50,10);x.fill();}
+        x.fillStyle=i===0?'#b8860b':'#3d4c58';x.font='800 26px Inter,Arial,sans-serif';
+        x.fillText(i===0?'🥇':String(i+1)+'.',pad+14,y+26);
+        x.fillStyle='#0d2818';x.font='700 27px Inter,Arial,sans-serif';
+        var nm=p.name.length>16?p.name.slice(0,15)+'…':p.name;x.fillText(nm,pad+80,y+26);
+        x.font='600 25px Inter,Arial,sans-serif';x.fillStyle='#5a6a78';
+        rounds.forEach(function(r,ri){var d=p.details.find(function(dd){return dd.r===r.num;});x.fillText(d&&detFn(d)!=null?String(detFn(d)):'–',rx0+ri*rw,y+26);});
+        x.font='800 28px Inter,Arial,sans-serif';x.fillStyle=i===0?'#b8860b':'#0d2818';
+        x.fillText(valFn(p),rx,y+26);
+        y+=54;
+      });
+      y+=50;
+    }
+    var cmp=function(key,desc){return function(a,b){if(a.complete!==b.complete)return a.complete?-1:1;if(!a.played&&!b.played)return 0;if(!a.played)return 1;if(!b.played)return-1;return desc?b[key]-a[key]:a[key]-b[key];};};
+    rankBlockImg('🏌️ Brutto',all.slice().sort(cmp('bSum',false)),function(p){return fmtV(p.bSum);},function(d){return d.b!=null?fmtV(d.b):null;});
+    rankBlockImg('🎯 Netto',all.slice().sort(cmp('nSum',false)),function(p){return fmtV(p.nSum);},function(d){return d.n!=null?fmtV(d.n):null;});
+    rankBlockImg('⭐ Stableford',all.slice().sort(cmp('sSum',true)),function(p){return p.sSum+'P';},function(d){return d.s!=null?d.s+'P':null;});
+    // Pro Runde: Matrix + Schwerstes/Leichtestes
+    rounds.forEach(function(r,ri){
+      var players=mxPlayers[ri];if(!players.length){return;}
+      x.fillStyle='#0d2818';x.font='800 32px Inter,Arial,sans-serif';x.fillText('🗂 R'+r.num+' · '+r.name,pad,y);y+=14;
+      // Analyse-Zeile
+      var stats=[];for(var i=0;i<18;i++){var pv=r.par[i]||4,sum=0,cnt=0;players.forEach(function(p){var s=(r.scores[p.id]||[])[i];if(s!=null&&s>0){sum+=s;cnt++;}});stats.push({h:i+1,par:pv,avg:cnt?sum/cnt:null,diff:cnt?sum/cnt-pv:null});}
+      var pl2=stats.filter(function(s){return s.diff!=null;});
+      if(pl2.length){var hard=pl2.reduce(function(a,s){return s.diff>a.diff?s:a;}),easy=pl2.reduce(function(a,s){return s.diff<a.diff?s:a;});
+        x.font='400 25px Inter,Arial,sans-serif';x.fillStyle='#5a6a78';
+        x.fillText('🔴 Schwerstes: L'+hard.h+' (Ø '+hard.avg.toFixed(1).replace('.',',')+' bei Par '+hard.par+')   ·   🟢 Leichtestes: L'+easy.h+' (Ø '+easy.avg.toFixed(1).replace('.',',')+')',pad,y+26);}
+      y+=60;
+      var lochW=110,colW=Math.min(56,Math.floor((W-pad*2-lochW)/players.length)),mx0=pad+lochW;
+      // gedrehte Namen
+      players.forEach(function(p,pi){
+        x.save();x.translate(mx0+pi*colW+colW/2,y+108);x.rotate(-Math.PI/3.2);
+        x.fillStyle='#3d4c58';x.font='600 21px Inter,Arial,sans-serif';
+        var nm=p.name.length>11?p.name.slice(0,10)+'…':p.name;x.fillText(nm,0,0);x.restore();
+      });
+      y+=126;
+      for(var i=0;i<18;i++){
+        var pv=r.par[i]||4;
+        if(i%2===0){x.fillStyle='#ffffff';x.fillRect(pad,y-6,W-pad*2,44);}
+        x.fillStyle='#0d2818';x.font='800 25px Inter,Arial,sans-serif';x.fillText(String(i+1),pad+12,y+24);
+        x.fillStyle='#95a3ab';x.font='500 22px Inter,Arial,sans-serif';x.fillText('Par '+pv,pad+42,y+24);
+        players.forEach(function(p,pi){
+          var s=(r.scores[p.id]||[])[i],cx=mx0+pi*colW+colW/2,cy=y+15;
+          if(s==null){x.fillStyle='#c3ccd2';x.font='500 22px Inter,Arial,sans-serif';x.textAlign='center';x.fillText('–',cx,y+24);x.textAlign='left';return;}
+          if(s===0){x.fillStyle='#e7ecef';roundRectC(x,cx-17,cy-15,34,30,7);x.fill();x.fillStyle='#95a3ab';x.font='700 17px Inter,Arial,sans-serif';x.textAlign='center';x.fillText('NR',cx,cy+7);x.textAlign='left';return;}
+          var d=s-pv,bg=null,fg='#0d2818',circle=false;
+          if(d<=-2){bg='#f6c344';fg='#5a4500';circle=true;}
+          else if(d===-1){bg='#5cb85c';fg='#fff';circle=true;}
+          else if(d===1){bg='#f0883e';fg='#fff';}
+          else if(d>=2){bg='#e05252';fg='#fff';}
+          if(bg){if(circle){x.fillStyle=bg;x.beginPath();x.arc(cx,cy,16,0,7);x.fill();}else{x.fillStyle=bg;roundRectC(x,cx-16,cy-16,32,32,7);x.fill();}}
+          x.fillStyle=fg;x.font='800 22px Inter,Arial,sans-serif';x.textAlign='center';x.fillText(String(s),cx,cy+8);x.textAlign='left';
+        });
+        y+=44;
+      }
+      // Brutto-Zeile
+      x.fillStyle='#eaf0ee';x.fillRect(pad,y-4,W-pad*2,44);
+      x.fillStyle='#7a8893';x.font='800 20px Inter,Arial,sans-serif';x.fillText('BRUTTO',pad+12,y+24);
+      players.forEach(function(p,pi){
+        var res=xCalcRow(toArr18(r.scores[p.id]||[]),r.hcps[p.id],r.par,r.si,r.mode,r.maxScore);
+        x.fillStyle='#0d2818';x.font='800 21px Inter,Arial,sans-serif';x.textAlign='center';
+        x.fillText(res.b>0?'+'+res.b:(res.b===0?'Par':String(res.b)),mx0+pi*colW+colW/2,y+24);x.textAlign='left';
+      });
+      y+=80;
+    });
+    x.fillStyle='#95a3ab';x.font='400 22px Inter,Arial,sans-serif';x.fillText('🐦 Birdino · birdino.app',pad,H-40);
+    c.toBlob(async function(blob){
+      if(!blob){toast('⚠️ Bild konnte nicht erstellt werden');return;}
+      var file=new File([blob],'birdino-gesamt.png',{type:'image/png'});
+      if(navigator.canShare&&navigator.canShare({files:[file]})){
+        try{await navigator.share({files:[file],title:'Gesamtwertung'});return;}catch(e){if(e&&e.name==='AbortError')return;}
+      }
+      var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='birdino-gesamt.png';document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(function(){URL.revokeObjectURL(url);},4000);
+      toast('📸 Bild gespeichert');
+    },'image/png');
+  }catch(e){toast('⚠️ '+((e&&e.message)||e));console.error('shareTotalImage:',e);}
 }
 function totSumBox(label,val){return '<div style="flex:1;text-align:center;border:2px solid var(--border-light);border-radius:10px;padding:8px 4px"><div style="font-size:9px;color:var(--txt3);letter-spacing:1px">'+label+'</div><div style="font-size:19px;font-weight:900;font-family:\'Cormorant Garamond\',serif">'+val+'</div></div>';}
 function totHoleGrid(sc,par,mode,si,hcp){
