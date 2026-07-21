@@ -1,7 +1,7 @@
 // Birdino Service Worker — identisch fuer Dev- und Pro-Version.
 // Cache-Name wird aus dem Installationspfad (scope) abgeleitet, damit sich
 // beide Apps auf derselben Domain nicht gegenseitig die Caches loeschen.
-var VERSION = '2026-07-19h';
+var VERSION = '2026-07-19j';
 var SCOPE_KEY = (self.registration && self.registration.scope || self.location.href)
   .replace(/^https?:\/\//, '').replace(/[^a-z0-9]+/gi, '-').replace(/-+$/,'');
 var CACHE = 'birdino-' + SCOPE_KEY + '-' + VERSION;
