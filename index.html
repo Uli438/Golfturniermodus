@@ -374,6 +374,31 @@ input,select,button{font-family:'DM Sans',sans-serif}
 .dev-sec{display:flex;align-items:center;gap:8px;margin:6px 2px -4px;font-size:10px;color:var(--accent);letter-spacing:2px;font-weight:700}
 .dev-sec::before{content:'';flex:0 0 18px;height:2px;background:var(--accent);border-radius:2px;opacity:.5}
 .dev-sec::after{content:'';flex:1;height:1px;background:var(--border-light)}
+
+/* ==== LIVE-TV-SCREEN ==== */
+#tv-screen{position:fixed;inset:0;z-index:9000;background:linear-gradient(160deg,#0a1416 0%,#0f2027 55%,#16323b 100%);color:#fff;display:none;flex-direction:column;overflow:hidden;font-family:inherit}
+#tv-screen.on{display:flex}
+#tv-back{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;gap:10px;padding:16px 20px;background:linear-gradient(180deg,rgba(0,0,0,.55),rgba(0,0,0,0));transform:translateY(-100%);transition:transform .35s ease;z-index:10}
+#tv-back.show{transform:translateY(0)}
+#tv-back button{background:rgba(255,255,255,.15);border:none;color:#fff;font-size:18px;font-weight:700;padding:10px 18px;border-radius:12px;cursor:pointer;display:flex;align-items:center;gap:8px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+#tv-stage{flex:1;display:flex;flex-direction:column;padding:clamp(20px,4vw,60px);opacity:1;transition:opacity .5s ease}
+#tv-stage.fade{opacity:0}
+.tv-eyebrow{display:flex;align-items:center;gap:12px;font-size:clamp(12px,1.6vw,20px);letter-spacing:3px;color:#5fd0e0;font-weight:700;text-transform:uppercase;margin-bottom:6px}
+.tv-live-dot{width:12px;height:12px;border-radius:50%;background:#3ee06a;box-shadow:0 0 12px #3ee06a;animation:tvpulse 1.6s infinite}
+@keyframes tvpulse{0%,100%{opacity:1}50%{opacity:.35}}
+.tv-title{font-size:clamp(28px,4.5vw,64px);font-weight:800;line-height:1.05;margin-bottom:4px}
+.tv-meta{font-size:clamp(13px,1.7vw,22px);color:#9fb8c2;margin-bottom:clamp(14px,2.5vw,34px)}
+.tv-lb{flex:1;display:flex;flex-direction:column;gap:clamp(6px,1vw,14px);justify-content:flex-start;overflow:hidden}
+.tv-row{display:grid;grid-template-columns:clamp(44px,5vw,80px) 1fr auto;align-items:center;gap:clamp(10px,2vw,28px);background:rgba(255,255,255,.055);border-radius:clamp(10px,1.4vw,18px);padding:clamp(10px,1.5vw,22px) clamp(14px,2.2vw,32px);transition:background .3s}
+.tv-row.lead{background:linear-gradient(90deg,rgba(95,208,224,.22),rgba(95,208,224,.05));box-shadow:inset 0 0 0 2px rgba(95,208,224,.4)}
+.tv-rank{font-size:clamp(26px,4vw,58px);font-weight:800;text-align:center;color:#5fd0e0}
+.tv-rank .medal{font-size:clamp(26px,4vw,54px)}
+.tv-name{font-size:clamp(22px,3.2vw,46px);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tv-namesub{font-size:clamp(12px,1.5vw,20px);color:#8fa8b2;font-weight:500;margin-top:2px}
+.tv-score{font-size:clamp(30px,4.4vw,64px);font-weight:800;text-align:right;font-variant-numeric:tabular-nums}
+.tv-dots{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:10}
+.tv-dots span{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.28)}
+.tv-dots span.on{background:#5fd0e0;width:22px;border-radius:5px;transition:all .3s}
 </style>
 </head>
 <body>
@@ -450,7 +475,7 @@ input,select,button{font-family:'DM Sans',sans-serif}
     <div class="lobby-logo" id="lobby-logo-pro" style="display:none"><svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="pl_g1gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6e27a"/><stop offset="0.45" stop-color="#d4af37"/><stop offset="0.7" stop-color="#b8860b"/><stop offset="1" stop-color="#f6e27a"/></linearGradient><filter id="pl_a_ds" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#0c2a18" flood-opacity="0.28"/></filter><filter id="pl_goldglow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="#d4af37" flood-opacity="0.45"/></filter></defs><ellipse cx="300" cy="232" rx="232" ry="186" fill="none" stroke="url(#pl_g1gold)" stroke-width="9" filter="url(#pl_goldglow)"/><ellipse cx="300" cy="232" rx="214" ry="168" fill="none" stroke="url(#pl_g1gold)" stroke-width="2.5" opacity="0.8"/><defs><linearGradient id="pl_a_sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe6ff"/><stop offset="0.6" stop-color="#e3f4ff"/><stop offset="1" stop-color="#f4fbff"/></linearGradient><linearGradient id="pl_a_green" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fcf4f"/><stop offset="1" stop-color="#2f8a1d"/></linearGradient><linearGradient id="pl_a_ribG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8ad13a"/><stop offset="0.5" stop-color="#57b026"/><stop offset="1" stop-color="#2c7d14"/></linearGradient><linearGradient id="pl_a_ribB" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3eb0ec"/><stop offset="0.5" stop-color="#1d84cf"/><stop offset="1" stop-color="#0a5ba2"/></linearGradient><linearGradient id="pl_a_bird" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#33495a"/><stop offset="0.55" stop-color="#1c2c39"/><stop offset="1" stop-color="#0e1920"/></linearGradient><linearGradient id="pl_a_birdWing" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3f5a6e"/><stop offset="1" stop-color="#16242e"/></linearGradient><radialGradient id="pl_a_ball" cx="0.38" cy="0.34" r="0.75"><stop offset="0" stop-color="#fff"/><stop offset="0.7" stop-color="#eef2f4"/><stop offset="1" stop-color="#c7d0d6"/></radialGradient><clipPath id="pl_a_clip"><ellipse cx="300" cy="232" rx="196" ry="150"/></clipPath></defs><g filter="url(#pl_a_ds)"><path d="M300 36 C 470 36 560 130 560 232 C 560 300 520 352 470 380 C 520 330 532 268 510 214 C 478 132 398 86 300 86 C 250 86 206 100 170 124 C 210 70 250 36 300 36 Z" fill="url(#pl_a_ribB)"/><path d="M300 428 C 130 428 40 334 40 232 C 40 164 80 112 130 84 C 80 134 68 196 90 250 C 122 332 202 378 300 378 C 350 378 394 364 430 340 C 390 394 350 428 300 428 Z" fill="url(#pl_a_ribG)"/></g><g clip-path="url(#pl_a_clip)"><rect x="100" y="78" width="400" height="200" fill="url(#pl_a_sky)"/><path d="M104 250 C 200 210 330 214 496 246 L 496 390 L 104 390 Z" fill="url(#pl_a_green)"/><line x1="388" y1="196" x2="388" y2="286" stroke="#3a3a3a" stroke-width="4" stroke-linecap="round"/><path d="M388 198 L 430 210 L 388 224 Z" fill="#e8403a"/><circle cx="250" cy="300" r="26" fill="url(#pl_a_ball)"/><circle cx="243" cy="294" r="3" fill="#d3dade"/><circle cx="255" cy="300" r="3" fill="#d3dade"/><circle cx="248" cy="308" r="3" fill="#d3dade"/><g filter="url(#pl_a_ds)"><path d="M286 168 C 250 120 214 92 168 84 C 206 110 232 146 256 192 Z" fill="url(#pl_a_birdWing)"/><path d="M300 166 C 286 116 300 70 332 40 C 330 92 330 140 318 178 Z" fill="url(#pl_a_bird)"/><path d="M256 196 C 270 176 300 168 332 178 C 360 186 372 200 366 214 C 360 230 332 236 300 230 C 280 226 262 216 256 196 Z" fill="url(#pl_a_bird)"/><circle cx="360" cy="190" r="17" fill="url(#pl_a_bird)"/><path d="M375 186 L 396 191 L 375 199 Z" fill="#f3a51f"/><circle cx="365" cy="187" r="3" fill="#fff"/><circle cx="366" cy="187" r="1.5" fill="#0e1920"/><path d="M262 214 C 240 226 218 228 200 222 C 222 218 240 208 256 196 Z" fill="url(#pl_a_birdWing)"/></g></g><ellipse cx="300" cy="232" rx="196" ry="150" fill="none" stroke="#fff" stroke-width="6" opacity="0.85"/><g transform="translate(300,470)"><rect x="-132" y="-34" width="264" height="60" rx="30" fill="#0e1920" filter="url(#pl_a_ds)"/><rect x="-132" y="-34" width="264" height="60" rx="30" fill="none" stroke="url(#pl_g1gold)" stroke-width="2.5"/><rect x="-126" y="-28" width="252" height="48" rx="24" fill="none" stroke="url(#pl_g1gold)" stroke-width="0.8" opacity="0.5"/><text x="-20" y="9" text-anchor="middle" font-family="'Archivo',sans-serif" font-weight="800" font-size="40" letter-spacing="-1"><tspan fill="#ffffff">Bird</tspan><tspan fill="#8ad13a">ino</tspan></text><text x="92" y="8" text-anchor="middle" font-family="'Archivo',sans-serif" font-weight="900" font-size="28" fill="url(#pl_g1gold)" letter-spacing="1">PRO</text></g><g transform="translate(300,46)"><circle r="17" fill="#0e1920"/><circle r="17" fill="none" stroke="url(#pl_g1gold)" stroke-width="2.5"/><path d="M-8 3 L-5 -6 L0 0 L5 -6 L8 3 Z" fill="url(#pl_g1gold)"/></g></svg></div>
     <div class="lobby-title">Bird<span>ino</span></div>
     <div class="lobby-sub">Turniere organisieren · live mitspielen</div>
-    <div style="font-size:10px;color:#9aa7b2;margin-top:4px">Build 2026-07-19j</div>
+    <div style="font-size:10px;color:#9aa7b2;margin-top:4px">Build 2026-07-28a</div>
     <div style="font-size:10px;color:#9aa7b2;margin-top:2px" id="snap-diag"></div>
     <div id="beta-badge" style="display:none;margin:8px auto 0;width:fit-content;padding:3px 12px;border-radius:12px;background:linear-gradient(135deg,#ff9800,#f57c00);color:#fff;font-size:11px;font-weight:800;letter-spacing:1.5px;box-shadow:0 2px 8px rgba(245,124,0,.35)">BETA-VERSION</div>
   </div>
@@ -486,6 +511,7 @@ input,select,button{font-family:'DM Sans',sans-serif}
       <button class="ibtn" style="margin-left:auto" id="btn-result"><span class="ibtn-ico">📊</span><span class="ibtn-lbl">Ergebnis</span></button>
       <button class="ibtn" id="btn-total" style="display:none;background:linear-gradient(135deg,#e65100,#f57c00);border-color:#e65100"><span class="ibtn-ico">🏆</span><span class="ibtn-lbl" style="color:#fff">Gesamt</span></button>
       <button class="ibtn" id="btn-setup"><span class="ibtn-ico">⚙️</span><span class="ibtn-lbl">Setup</span></button>
+      <button class="ibtn" id="btn-tv" style="background:linear-gradient(135deg,#0f2027,#203a43);border-color:#0f2027"><span class="ibtn-ico">📺</span><span class="ibtn-lbl">TV</span></button>
       <button class="ibtn" id="btn-home"><span class="ibtn-ico">🏠</span><span class="ibtn-lbl">Lobby</span></button>
     </div>
   </div>
@@ -562,6 +588,12 @@ input,select,button{font-family:'DM Sans',sans-serif}
         <div class="qrow"><button class="qbtn" id="btn-std">Standard Par 72</button><button class="qbtn" id="btn-par4">Alle Par 4</button><button class="qbtn" id="btn-si-leer">SI leer</button></div>
         <div class="heh"><span>LOCH</span><span>PAR</span><span>STROKE-IDX</span></div>
         <div id="hole-rows"></div>
+        <div style="margin-top:14px">
+          <div class="slabel" style="margin-bottom:6px">⛳ ABSCHLÄGE · CR &amp; SLOPE (optional)</div>
+          <div class="shint" style="margin-bottom:8px">Nur nötig, wenn Spielvorgaben aus dem HCP gerechnet werden sollen. Leer lassen ist in Ordnung.</div>
+          <div style="display:grid;grid-template-columns:64px 46px 1fr 1fr;gap:6px;margin-bottom:4px;font-size:9px;color:var(--txt3);letter-spacing:1px"><span>ABSCHLAG</span><span style="text-align:center">H/D</span><span style="text-align:center">CR</span><span style="text-align:center">SLOPE</span></div>
+          <div id="tee-rows"></div>
+        </div>
         <button class="save-course-btn" id="btn-save-course" style="margin-top:10px">💾 Diesen Platz speichern</button>
       </div>
       <div id="tab-api" style="display:none">
@@ -599,7 +631,7 @@ input,select,button{font-family:'DM Sans',sans-serif}
       <div class="slabel">SPIELER & SPIELVORGABE</div>
       <div class="shint" id="player-hint">Spielvorgabe direkt eingeben. Negativ = Plus-Vorgabe. 📊 = Spielanalyse aktivieren.</div>
       <div id="p-list"></div>
-      <div class="addrow"><input class="inp" id="new-name" placeholder="Name"><input class="inp" id="new-hcp" type="number" step="0.1" min="-10" max="54" placeholder="Vorgabe" style="text-align:center;padding-left:4px;padding-right:4px"><button class="addbtn" id="btn-add-player">+</button></div>
+      <div class="addrow"><input class="inp" id="new-name" placeholder="Name"><input class="inp" id="new-hcp" type="number" step="0.1" min="-10" max="54" placeholder="Vorgabe" style="text-align:center;padding-left:4px;padding-right:4px;flex:0 0 66px"><button class="addbtn" id="btn-add-mode" style="flex:0 0 auto;background:#ccc;font-size:11px;padding:0 8px" title="Vorgabe oder HCP">Vorg.</button><button class="addbtn" id="btn-add-player">+</button></div>
     </section>
     <section>
       <div class="slabel">⚙️ OPTIONALE FEATURES</div>
@@ -686,6 +718,22 @@ input,select,button{font-family:'DM Sans',sans-serif}
       <div style="font-size:11px;color:var(--txt2);margin-bottom:12px;line-height:1.5">Wer ein Turnier erstellt, kommt immer ohne Code in die Einstellungen. Bei aktiver Sperre brauchen alle anderen Teilnehmer den Setup-Code.</div>
       <button id="dev-setup-load" style="width:100%;padding:12px;background:linear-gradient(135deg,var(--accent),#1976d2);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">Liste laden</button>
       <div id="dev-setup-list" style="margin-top:10px"></div>
+    </div>
+
+    <div class="dev-sec">PLATZ-DATENBANK</div>
+    <div class="lcard">
+      <div class="lcard-title">⛳ PLÄTZE ZUR PRÜFUNG</div>
+      <div style="font-size:11px;color:var(--txt2);margin-bottom:12px;line-height:1.5">Neu angelegte Plätze sind zunächst nur für ihren Ersteller sichtbar. Hier prüfen und für alle freigeben.</div>
+      <button id="dev-courses-load" style="width:100%;padding:12px;background:linear-gradient(135deg,var(--accent),#1976d2);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">Liste laden</button>
+      <div id="dev-courses-list" style="margin-top:10px"></div>
+    </div>
+    <div class="lcard">
+      <div class="lcard-title">📥 PLÄTZE IMPORTIEREN</div>
+      <div style="font-size:11px;color:var(--txt2);margin-bottom:8px;line-height:1.5">Zeilenformat, mehrere Plätze durch Leerzeile trennen. Importierte Plätze sind sofort freigegeben.</div>
+      <div style="font-size:10px;font-family:monospace;color:var(--txt3);background:var(--bg2);border-radius:8px;padding:8px;margin-bottom:8px;line-height:1.6">Name: Musterplatz Gelb<br>Par: 4 5 3 4 4 3 5 4 4 4 4 3 5 4 3 4 5 4<br>SI: 7 1 15 11 5 17 3 9 13 8 2 16 12 6 18 4 10 14<br>Tee: Gelb H 71.2 132<br>Tee: Rot D 73.5 128</div>
+      <textarea id="dev-import-txt" placeholder="Hier einfügen…" style="width:100%;min-height:120px;padding:10px;border:2px solid var(--border-light);border-radius:8px;font-family:monospace;font-size:12px;box-sizing:border-box"></textarea>
+      <button id="dev-import-check" style="width:100%;padding:12px;margin-top:8px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">🔍 Prüfen</button>
+      <div id="dev-import-preview" style="margin-top:10px"></div>
     </div>
 
     <div class="dev-sec">TURNIER-VERWALTUNG</div>
@@ -846,7 +894,7 @@ var CLEANUP_DAYS=30;
 var CLEANUP_PROTECT='';
 var IS_ADMIN_VIEW=false;
 var CMARK=Array(18).fill(null),MARK_ID=null,Z_SLOT='self';
-console.log('BUILD 2026-07-19j');
+console.log('BUILD 2026-07-28a');
 // ==== SERVICE WORKER: network-first Auslieferung + Offline-Start ====
 (function(){
   if(!('serviceWorker' in navigator))return;
@@ -1069,6 +1117,10 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('btn-setup').addEventListener('click',async function(){if(await canOpenSetup()){showView('setup');renderSetupAccess();}});
   document.getElementById('btn-close-round-setup').addEventListener('click',async function(){await closeRound();initSetup();});
   document.getElementById('btn-home').addEventListener('click',goLobby);
+  document.getElementById('btn-tv').addEventListener('click',tvOpen);
+  document.getElementById('tv-back-btn').addEventListener('click',tvClose);
+  document.getElementById('tv-stage').addEventListener('click',tvShowBack);
+  document.getElementById('tv-screen').addEventListener('click',function(e){if(e.target.id==='tv-screen')tvShowBack();});
   document.getElementById('btn-close-round').addEventListener('click',function(){if(!IS_ADMIN_VIEW){toast('⚠️ Nur über die Admin-Seite möglich');return;}closeRound();});
   ['brutto','netto','stableford'].forEach(function(m){document.getElementById('mb-'+m).addEventListener('click',function(){setLbMode(m);});});
   document.getElementById('tab-einzel').addEventListener('click',function(){setLbView('einzel');});
@@ -1105,7 +1157,7 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('saved-courses-list').addEventListener('change',function(){loadCourseFromDrop(this.value);});
   document.getElementById('api-search').addEventListener('input',function(){onCourseSearch(this.value);});
   document.getElementById('r-mode').addEventListener('change',function(){document.getElementById('max-score-wrap').style.display=this.value==='zaehlen_fix'?'block':'none';});
-  document.getElementById('btn-add-player').addEventListener('click',addPlayer);
+  document.getElementById('btn-add-player').addEventListener('click',addPlayer);(function(){var mb=document.getElementById('btn-add-mode');if(!mb)return;function sync(){var on=ADD_HCP&&hcpAvailable();mb.style.background=on?'var(--accent)':'#ccc';mb.style.color='#fff';mb.textContent=on?'HCP':'Vorg.';var inp=document.getElementById('new-hcp');if(inp)inp.placeholder=on?'HCP':'Vorg.';}mb.addEventListener('click',function(){if(!hcpAvailable()){toast('\u26a0\ufe0f HCP braucht CR/Slope am Platz');ADD_HCP=false;sync();return;}ADD_HCP=!ADD_HCP;sync();});window._syncAddMode=sync;sync();})();
   document.getElementById('new-name').addEventListener('keydown',function(e){if(e.key==='Enter')addPlayer();});
   document.getElementById('new-hcp').addEventListener('keydown',function(e){if(e.key==='Enter')addPlayer();});
   document.getElementById('btn-reset').addEventListener('click',resetScores);
@@ -1134,6 +1186,8 @@ document.addEventListener('DOMContentLoaded',function(){
   var clDays=document.getElementById('dev-cleanup-days');if(clDays)clDays.addEventListener('change',function(){var d=parseInt(this.value);if(d>0&&d<=365)saveCleanupCfg('days',d);});
   var clProt=document.getElementById('dev-cleanup-protect');if(clProt)clProt.addEventListener('change',function(){saveCleanupCfg('protect',this.value.trim());});
   var clCheck=document.getElementById('dev-cleanup-check');if(clCheck)clCheck.addEventListener('click',cleanupPreview);
+  var cRev=document.getElementById('dev-courses-load');if(cRev)cRev.addEventListener('click',renderCourseReview);
+  var cImp=document.getElementById('dev-import-check');if(cImp)cImp.addEventListener('click',checkCourseImport);
   var regBtn=document.getElementById('dev-registry-load');if(regBtn)regBtn.addEventListener('click',loadRegistry);
   initLogoUpload();
   initGlassesScale();
@@ -1689,7 +1743,80 @@ window.addEventListener('offline',function(){syncDot('off');});
 function setLbMode(m){LBM=m;['brutto','netto','stableford'].forEach(function(x){document.getElementById('mb-'+x).classList.toggle('active',x===m);});document.getElementById('lb-score-head').textContent={brutto:'BRUTTO',netto:'NETTO',stableford:'STBL.'}[m];renderLB();}
 function setLbView(v){LBV=v;document.getElementById('tab-einzel').classList.toggle('active',v==='einzel');document.getElementById('tab-team').classList.toggle('active',v==='team');document.getElementById('lb-col-head').style.display=v==='einzel'?'grid':'none';document.getElementById('lb-list').style.display=v==='einzel'?'block':'none';document.getElementById('team-view').style.display=v==='team'?'block':'none';if(v==='team')renderTeamView();}
 function setTM(m){TM=m;document.getElementById('tmt-bb').classList.toggle('active',m==='bestball');document.getElementById('tmt-agg').classList.toggle('active',m==='aggregat');renderTeamView();}
-function renderLB(){
+// ================= LIVE-TV-SCREEN =================
+var TV_ON=false, TV_TIMER=null, TV_PAGE=0, TV_BACK_TIMER=null, TV_PER=6;
+function tvOpen(){
+  if(!CODE){toast("\u26a0\ufe0f Erst einem Turnier beitreten");return;}
+  TV_ON=true;TV_PAGE=0;
+  document.getElementById("tv-screen").classList.add("on");
+  tvRender();
+  if(TV_TIMER)clearInterval(TV_TIMER);
+  TV_TIMER=setInterval(tvRotate,9000);
+  tvShowBack();
+  if(document.documentElement.requestFullscreen)document.documentElement.requestFullscreen().catch(function(){});
+}
+function tvClose(){
+  TV_ON=false;
+  if(TV_TIMER){clearInterval(TV_TIMER);TV_TIMER=null;}
+  document.getElementById("tv-screen").classList.remove("on");
+  if(document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen().catch(function(){});
+}
+function tvShowBack(){
+  var b=document.getElementById("tv-back");if(!b)return;
+  b.classList.add("show");
+  if(TV_BACK_TIMER)clearTimeout(TV_BACK_TIMER);
+  TV_BACK_TIMER=setTimeout(function(){b.classList.remove("show");},3500);
+}
+function tvRotate(){
+  var stage=document.getElementById("tv-stage");if(!stage)return;
+  stage.classList.add("fade");
+  setTimeout(function(){TV_PAGE++;tvRender();stage.classList.remove("fade");},500);
+}
+function tvSorted(){
+  var r=G.round||{},isSB=(r.mode==="stableford_brutto");
+  return G.players.map(enrich).sort(function(a,b){
+    if(LBM==="stableford"||isSB){var av=isSB?a.stpB:a.stp,bv=isSB?b.stpB:b.stp;if(av==null&&bv==null)return 0;if(av==null)return 1;if(bv==null)return -1;return bv-av;}
+    if(LBM==="netto"){if(a.nvp==null&&b.nvp==null)return 0;if(a.nvp==null)return 1;if(b.nvp==null)return -1;return a.nvp-b.nvp;}
+    if(a.bvp==null&&b.bvp==null)return 0;if(a.bvp==null)return 1;if(b.bvp==null)return -1;return a.bvp-b.bvp;
+  });
+}
+function tvScoreVal(p){
+  var r=G.round||{},isSB=(r.mode==="stableford_brutto");
+  if(LBM==="stableford"||isSB){var v=isSB?p.stpB:p.stp;return v!=null?v+"":"\u2013";}
+  if(LBM==="netto")return p.nvp!=null?fmt(p.nvp):"\u2013";
+  return p.bvp!=null?fmt(p.bvp):"\u2013";
+}
+function tvModeLabel(){var r=G.round||{};if(r.mode==="stableford_brutto")return "Stableford Brutto";return LBM==="netto"?"Netto":(LBM==="stableford"?"Stableford":"Brutto");}
+function tvRender(){
+  if(!TV_ON)return;
+  var stage=document.getElementById("tv-stage");if(!stage)return;
+  var r=G.round||{},par=(r.par||DPAR);
+  var sorted=tvSorted();
+  var pages=Math.max(1,Math.ceil(sorted.length/TV_PER));
+  if(TV_PAGE>=pages)TV_PAGE=0;
+  var slice=sorted.slice(TV_PAGE*TV_PER,TV_PAGE*TV_PER+TV_PER);
+  var parSum=par.reduce(function(a,b){return a+(Number(b)||0);},0);
+  var rows=slice.map(function(p,idx){
+    var rank=TV_PAGE*TV_PER+idx+1;
+    var medal=rank===1?"\ud83e\udd47":rank===2?"\ud83e\udd48":rank===3?"\ud83e\udd49":null;
+    var sub=[];if(p.pl>0)sub.push(p.pl+"/18 Loch");
+    return '<div class="tv-row'+(rank===1?" lead":"")+'">'
+      +'<div class="tv-rank">'+(medal?'<span class="medal">'+medal+'</span>':rank)+'</div>'
+      +'<div><div class="tv-name">'+esc(p.name)+'</div>'+(sub.length?'<div class="tv-namesub">'+sub.join(" \u00b7 ")+'</div>':'')+'</div>'
+      +'<div class="tv-score">'+tvScoreVal(p)+'</div>'
+    +'</div>';
+  }).join("");
+  if(!slice.length)rows='<div style="flex:1;display:flex;align-items:center;justify-content:center;font-size:clamp(20px,3vw,40px);color:#8fa8b2">Noch keine Ergebnisse</div>';
+  stage.innerHTML='<div class="tv-eyebrow"><span class="tv-live-dot"></span>Live \u00b7 '+tvModeLabel()+(pages>1?' \u00b7 Seite '+(TV_PAGE+1)+'/'+pages:'')+'</div>'
+    +'<div class="tv-title">'+esc(r.courseName||"Turnier")+'</div>'
+    +'<div class="tv-meta">Par '+parSum+' \u00b7 '+(G.players.length)+' Spieler \u00b7 Code '+(CODE||"")+'</div>'
+    +'<div class="tv-lb">'+rows+'</div>';
+  var dots=document.getElementById("tv-dots");
+  if(dots)dots.innerHTML=pages>1?Array.apply(null,{length:pages}).map(function(_,i){return '<span class="'+(i===TV_PAGE?"on":"")+'"></span>';}).join(""):"";
+}
+function tvLiveRefresh(){if(TV_ON)tvRender();}
+
+function renderLB(){ if(typeof TV_ON!=='undefined'&&TV_ON)setTimeout(tvLiveRefresh,0);
   var r=G.round,par=r.par||DPAR;
   document.getElementById('lb-course-name').textContent=r.courseName||'–';applyTournamentLogo();
   document.getElementById('lb-course-meta').textContent=(r.date||'')+' · Par '+par.reduce(function(a,b){return a+b;},0)+' · '+modeName(r)+(r.tee?' · '+r.tee:'')+(r.teamMode&&r.teamMode!=='none'?' · '+(r.teamMode==='americans'?'Americans':'Teams'):'');
@@ -2515,6 +2642,7 @@ function copyText(text){if(navigator.clipboard){navigator.clipboard.writeText(te
 
 // ════ SETUP ════
 function initSetup(){
+  STEES=migrateTees(G.round.tees||[]);
   SP=G.players.map(function(p){return ensurePid(Object.assign({},p));});SPAR=(G.round.par||DPAR).slice();SSI=(G.round.strokeIndex||DSI).slice();SAC=null;SAT=null;STM=G.round.teamMode||'none';
   var hint=document.getElementById('setup-trn-hint'),titleEl=document.getElementById('setup-title');
   if(G.tournament&&G.tournament.totalRounds>1){
@@ -2599,10 +2727,49 @@ function assignMarkersRandom(){
   renderFlightSummary();toast('🎲 Zähler zugeordnet');
 }
 function switchCourseTab(t){CTM=t;document.getElementById('stab-manual').classList.toggle('active',t==='manual');document.getElementById('stab-api').classList.toggle('active',t==='api');document.getElementById('tab-manual').style.display=t==='manual'?'block':'none';document.getElementById('tab-api').style.display=t==='api'?'block':'none';}
+var TEE_COLORS=["Wei\u00df","Gelb","Blau","Rot"];
+var STEES=[];
+// Abwaertskompatibel: altes Format {name,gender,cr,slope} -> {name,hcr,hslope,dcr,dslope}
+function normTee(t){
+  if(!t)return null;
+  if(t.hcr!==undefined||t.dcr!==undefined||t.hslope!==undefined||t.dslope!==undefined){
+    return {name:t.name,hcr:t.hcr!=null?t.hcr:null,hslope:t.hslope!=null?t.hslope:null,dcr:t.dcr!=null?t.dcr:null,dslope:t.dslope!=null?t.dslope:null};
+  }
+  // altes Ein-Geschlecht-Format migrieren
+  var o={name:t.name,hcr:null,hslope:null,dcr:null,dslope:null};
+  if(t.gender==="D"){o.dcr=t.cr!=null?t.cr:null;o.dslope=t.slope!=null?t.slope:null;}
+  else{o.hcr=t.cr!=null?t.cr:null;o.hslope=t.slope!=null?t.slope:null;}
+  return o;
+}
+function migrateTees(arr){return (arr||[]).map(normTee).filter(Boolean);}
+function renderTeeRows(){
+  var box=document.getElementById("tee-rows");if(!box)return;
+  var head='<div style="display:grid;grid-template-columns:52px 1fr 1fr 1fr 1fr;gap:5px;margin-bottom:4px;font-size:9px;color:var(--txt3);letter-spacing:.5px;text-align:center"><span></span><span style="color:#1565c0">\u2642 CR</span><span style="color:#1565c0">\u2642 SL</span><span style="color:#c2185b">\u2640 CR</span><span style="color:#c2185b">\u2640 SL</span></div>';
+  box.innerHTML=head+TEE_COLORS.map(function(name,i){
+    var cur=normTee((STEES||[]).find(function(x){return x&&x.name===name;}))||{};
+    return '<div style="display:grid;grid-template-columns:52px 1fr 1fr 1fr 1fr;gap:5px;align-items:center;margin-bottom:5px">'
+      +'<div style="font-size:12px;font-weight:600">'+name+'</div>'
+      +'<input class="hinp" type="number" step="0.1" min="50" max="85" id="hcr-'+i+'" value="'+(cur.hcr!=null?cur.hcr:"")+'" placeholder="\u2013" style="background:#eef4fb">'
+      +'<input class="hinp" type="number" min="55" max="155" id="hsl-'+i+'" value="'+(cur.hslope!=null?cur.hslope:"")+'" placeholder="\u2013" style="background:#eef4fb">'
+      +'<input class="hinp" type="number" step="0.1" min="50" max="85" id="dcr-'+i+'" value="'+(cur.dcr!=null?cur.dcr:"")+'" placeholder="\u2013" style="background:#fdeef4">'
+      +'<input class="hinp" type="number" min="55" max="155" id="dsl-'+i+'" value="'+(cur.dslope!=null?cur.dslope:"")+'" placeholder="\u2013" style="background:#fdeef4">'
+      +'</div>';
+  }).join("");
+}
+function collectTees(){
+  var res=[];
+  function num(id,int){var el=document.getElementById(id);if(!el||el.value==="")return null;var v=int?parseInt(el.value):parseFloat(String(el.value).replace(",","."));return isNaN(v)?null:v;}
+  TEE_COLORS.forEach(function(name,i){
+    var hcr=num("hcr-"+i),hsl=num("hsl-"+i,1),dcr=num("dcr-"+i),dsl=num("dsl-"+i,1);
+    if(hcr!=null||hsl!=null||dcr!=null||dsl!=null)res.push({name:name,hcr:hcr,hslope:hsl,dcr:dcr,dslope:dsl});
+  });
+  STEES=res;return res;
+}
 function renderHoleRows(){
   document.getElementById('hole-rows').innerHTML=Array.from({length:18},function(_,i){return'<div class="heg"><div style="font-size:11px;color:var(--txt2);text-align:center;font-family:\'Cormorant Garamond\',serif">'+(i+1)+'</div><input class="hinp" type="number" min="3" max="5" id="par-'+i+'" value="'+(SPAR[i]||4)+'"><input class="hinp" type="number" min="1" max="18" id="si-'+i+'" value="'+(SSI[i]!=null&&SSI[i]!==''?SSI[i]:'')+'" placeholder="–"></div>';}).join('');
   document.querySelectorAll('[id^="par-"]').forEach(function(el){el.addEventListener('input',function(){SPAR[parseInt(this.id.split('-')[1])]=Number(this.value)||4;});});
   document.querySelectorAll('[id^="si-"]').forEach(function(el){el.addEventListener('input',function(){SSI[parseInt(this.id.split('-')[1])]=Number(this.value)||parseInt(this.id.split('-')[1])+1;});});
+  renderTeeRows();
 }
 function fillStd(){SPAR=DPAR.slice();SSI=DSI.slice();renderHoleRows();}
 function fillPar4(){SPAR=Array(18).fill(4);SPAR.forEach(function(_,i){var e=document.getElementById('par-'+i);if(e)e.value=4;});}
@@ -2616,7 +2783,32 @@ function renderAmPrev(){
   var names=SP.length>=4?SP.slice(0,4).map(function(p){return p.name;}):['A','B','C','D'];
   document.getElementById('am-prev-rows').innerHTML=AMROT.map(function(rot,ri){return'<div class="ap-row"><div class="ap-hole">'+(ri===0?'1–3':ri===1?'4–6':'7–9')+'</div><div style="display:flex;gap:4px">'+rot[0].map(function(i){return'<span class="ap-p" style="background:'+TC[0]+'">'+(names[i]||'?')+'</span>';}).join('')+'<span style="margin:0 4px;color:var(--txt3);font-size:10px">vs</span>'+rot[1].map(function(i){return'<span class="ap-p" style="background:'+TC[1]+'">'+(names[i]||'?')+'</span>';}).join('')+'</div></div>';}).join('');
 }
-function renderPList(){
+// ==== HCP-BASIERTE SPIELVORGABE ====
+function coursePar(){return (SPAR&&SPAR.length?SPAR:DPAR).reduce(function(a,b){return a+(Number(b)||0);},0);}
+// CR/Slope eines Abschlags fuer ein Geschlecht (g="H" oder "D")
+function teeVals(t,g){if(!t)return null;t=normTee(t);if(g==="D")return (t.dcr!=null&&t.dslope!=null)?{cr:t.dcr,slope:t.dslope}:null;return (t.hcr!=null&&t.hslope!=null)?{cr:t.hcr,slope:t.hslope}:null;}
+// Ein Abschlag ist fuer ein Geschlecht nutzbar, wenn das passende Wertepaar existiert
+function availTees(g){return (STEES||[]).filter(function(t){return teeVals(t,g||"H")!=null;});}
+// HCP moeglich, sobald IRGENDEIN Abschlag fuer irgendein Geschlecht Werte hat
+function hcpAvailable(){return (STEES||[]).some(function(t){return teeVals(t,"H")!=null||teeVals(t,"D")!=null;});}
+function findTee(color){return (STEES||[]).find(function(t){return t&&t.name===color;});}
+// WHS: Spielvorgabe = HCPI * Slope/113 + (CR - Par), kaufmaennisch gerundet
+function calcPlayingHcp(hcpIndex,tee,gender){
+  if(hcpIndex==null||isNaN(hcpIndex)||!tee)return null;
+  var v=teeVals(tee,gender||"H");if(!v)return null;
+  var par=coursePar()||72;
+  var ph=Number(hcpIndex)*(Number(v.slope)/113)+(Number(v.cr)-par);
+  return Math.round(ph);
+}
+// Aus einem Spieler die effektive Vorgabe ableiten (HCP-Modus rechnet, sonst p.handicap)
+function playerVorgabe(p){
+  if(p&&p.hcpMode&&p.hcpIndex!=null){
+    var t=findTee(p.teeColor);var ph=calcPlayingHcp(p.hcpIndex,t,p.gender||"H");
+    if(ph!=null)return ph;
+  }
+  return p&&p.handicap!=null?p.handicap:0;
+}
+function renderPList(){if(window._syncAddMode)window._syncAddMode();
   var showT=STM==='fixed',showO=STM==='americans';
   document.getElementById('p-list').innerHTML=SP.map(function(p,idx){
     ensureTrack(p);
@@ -2627,7 +2819,28 @@ function renderPList(){
     var zChk=document.getElementById('opt-zaehler');var zaehlerAn=zChk&&zChk.checked;
     var patBtn=(PRO_ON&&!zaehlerAn)?'<button class="tdot" style="background:'+(isGuard?'#8e44ad':(isW?'#b39ddb':'#ccc'))+';color:#fff;font-size:11px;flex-shrink:0" title="Patenschaft (handyloser Spieler)" data-patid="'+esc(p.id)+'">🤝</button>':'';
     var nameTag=isW?' <span style="font-size:9px;color:#8e44ad;font-weight:700">📵 handylos</span>':(isGuard?' <span style="font-size:9px;color:#8e44ad;font-weight:700">🤝 Pate</span>':'');
-    var row='<div class="pli"><div class="pname serif">'+esc(p.name)+nameTag+'</div><input class="inp" type="number" step="0.1" min="-10" max="54" value="'+(p.handicap!=null?p.handicap:'')+'" placeholder="HCP" style="text-align:center;padding-left:4px;padding-right:4px" data-hid="'+esc(p.id)+'">'+anBtn+patBtn+extra+'<button class="rmbtn" data-rmid="'+esc(p.id)+'">×</button></div>';
+    // Vorgabe-Eingabe: entweder direkte Vorgabe ODER HCP-Modus (rechnet aus HCP+CR/Slope)
+    var canHcp=hcpAvailable();
+    var inHcp=!!p.hcpMode&&canHcp;
+    var vorInput;
+    if(inHcp){
+      var ph=playerVorgabe(p);
+      vorInput='<div class="inp" style="text-align:center;display:flex;align-items:center;justify-content:center;background:#eef4fb;color:#1565c0;font-weight:700" title="berechnete Spielvorgabe">'+(ph!=null?ph:'?')+'</div>';
+    }else{
+      vorInput='<input class="inp" type="number" step="0.1" min="-10" max="54" value="'+(p.handicap!=null?p.handicap:'')+'" placeholder="Vorg." style="text-align:center;padding-left:4px;padding-right:4px" data-hid="'+esc(p.id)+'">';
+    }
+    var modeBtn='<button class="tdot" style="background:'+(inHcp?'var(--accent)':'#ccc')+';color:#fff;font-size:9px;flex-shrink:0;width:auto;padding:0 7px" title="'+(canHcp?'Umschalten Vorgabe / HCP':'HCP braucht CR/Slope am Platz')+'" data-hcpmode="'+esc(p.id)+'"'+(canHcp?'':' disabled')+'>'+(inHcp?'HCP':'Vorg.')+'</button>';
+    var row='<div class="pli"><div class="pname serif">'+esc(p.name)+nameTag+'</div>'+vorInput+modeBtn+anBtn+patBtn+extra+'<button class="rmbtn" data-rmid="'+esc(p.id)+'">×</button></div>';
+    // Aufklappbare HCP-Detailzeile (Index, Geschlecht, Abschlagsfarbe)
+    if(inHcp){
+      var pg=p.gender||'H';
+      var tees=availTees(pg);
+      var teeChips=tees.length?tees.map(function(t){var sel=(p.teeColor===t.name);var v=teeVals(t,pg);return '<div class="tchip'+(sel?' on':'')+'" data-teecolor="'+esc(t.name)+'" data-teepid="'+esc(p.id)+'">'+(sel?'\u2713 ':'')+esc(t.name)+' <span style="font-size:8px;opacity:.7">CR'+v.cr+'/'+v.slope+'</span></div>';}).join(''):'<span style="font-size:11px;color:var(--txt3)">Kein Abschlag mit '+(pg==='D'?'Damen':'Herren')+'-Werten \u2013 bitte im Platz erg\u00e4nzen oder Vorgabe direkt eingeben</span>';
+      var g=p.gender||'H';
+      row+='<div class="track-menu"><div style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><span style="font-size:11px;color:var(--txt2);width:64px">HCP-Index</span><input class="inp" type="number" step="0.1" min="-10" max="54" value="'+(p.hcpIndex!=null?p.hcpIndex:'')+'" placeholder="z.B. 18,4" style="flex:1;text-align:center" data-hcpidx="'+esc(p.id)+'"></div>';
+      row+='<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><span style="font-size:11px;color:var(--txt2);width:64px">Geschlecht</span><button class="tchip'+(g==='H'?' on':'')+'" data-gender="H" data-gpid="'+esc(p.id)+'">\u2642 Herren</button><button class="tchip'+(g==='D'?' on':'')+'" data-gender="D" data-gpid="'+esc(p.id)+'">\u2640 Damen</button></div>';
+      row+='<div class="track-menu-title">Abschlag</div><div class="track-chips">'+teeChips+'</div></div>';
+    }
     // Aufklappbares Erfassen-Menü
     if(TRACK_OPEN===p.id){
       var labels={putts:'🏌️ Putts',fir:'🎯 Fairway',gir:'🟢 Grün i.R. (GIR)',ann:'📍 Annäherung',absch:'↔️ Abschlag'};
@@ -2648,6 +2861,10 @@ function renderPList(){
     return row;
   }).join('');
   document.querySelectorAll('[data-hid]').forEach(function(el){el.addEventListener('input',function(){var p=SP.find(function(p){return p.id===this.dataset.hid;}.bind(this));if(p)p.handicap=this.value===''?0:Number(this.value);}.bind(el));});
+  document.querySelectorAll('[data-hcpmode]').forEach(function(el){el.addEventListener('click',function(){var p=SP.find(function(x){return x.id===this.dataset.hcpmode;}.bind(this));if(p){if(!hcpAvailable()){toast('\u26a0\ufe0f F\u00fcr HCP-Berechnung fehlen CR/Slope am Platz');return;}p.hcpMode=!p.hcpMode;if(p.hcpMode){if(p.hcpIndex==null&&p.handicap!=null)p.hcpIndex=p.handicap;if(!p.gender)p.gender='H';if(!p.teeColor){var av=availTees(p.gender||'H')[0];if(av)p.teeColor=av.name;}}renderPList();}}.bind(el));});
+  document.querySelectorAll('[data-hcpidx]').forEach(function(el){el.addEventListener('input',function(){var p=SP.find(function(x){return x.id===this.dataset.hcpidx;}.bind(this));if(p){p.hcpIndex=this.value===''?null:Number(this.value);var f=document.querySelector('.pli [data-hid]');}}.bind(el));el.addEventListener('change',function(){renderPList();}.bind(el));});
+  document.querySelectorAll('[data-gender]').forEach(function(el){el.addEventListener('click',function(){var p=SP.find(function(x){return x.id===this.dataset.gpid;}.bind(this));if(p){p.gender=this.dataset.gender;var avl=availTees(p.gender);if(!avl.some(function(t){return t.name===p.teeColor;}))p.teeColor=avl.length?avl[0].name:null;renderPList();}}.bind(el));});
+  document.querySelectorAll('[data-teecolor]').forEach(function(el){el.addEventListener('click',function(){var p=SP.find(function(x){return x.id===this.dataset.teepid;}.bind(this));if(p){p.teeColor=this.dataset.teecolor;renderPList();}}.bind(el));});
   document.querySelectorAll('[data-anid]').forEach(function(el){el.addEventListener('click',function(){var id=this.dataset.anid;TRACK_OPEN=(TRACK_OPEN===id)?null:id;renderPList();}.bind(el));});
   document.querySelectorAll('[data-track]').forEach(function(el){el.addEventListener('click',function(){var p=SP.find(function(x){return x.id===this.dataset.tid;}.bind(this));if(p){ensureTrack(p);p.track[this.dataset.track]=!p.track[this.dataset.track];renderPList();}}.bind(el));});
   document.querySelectorAll('[data-patid]').forEach(function(el){el.addEventListener('click',function(){var id=this.dataset.patid;PAT_OPEN=(PAT_OPEN===id)?null:id;TRACK_OPEN=null;renderPList();}.bind(el));});
@@ -2658,18 +2875,22 @@ function renderPList(){
   if(showT){document.querySelectorAll('.tdot').forEach(function(el){if(el.dataset.id)el.addEventListener('click',function(){var p=SP.find(function(p){return p.id===this.dataset.id;}.bind(this));if(p){p.team=parseInt(this.dataset.t);renderPList();}}.bind(el));});}
   if(STM==='americans'&&SP.length>=4)renderAmPrev();
 }
-function addPlayer(){var name=document.getElementById('new-name').value.trim();if(!name)return;var hcp=document.getElementById('new-hcp').value;SP.push({id:Date.now().toString(),pid:genPid(),name:name,handicap:hcp!==''?Number(hcp):0,scores:Array(18).fill(null),team:SP.length%2,flight:1,gps:false,track:{putts:false,fir:false,gir:false,ann:false,absch:false}});document.getElementById('new-name').value='';document.getElementById('new-hcp').value='';renderPList();renderFlights();}
+var ADD_HCP=false;function addPlayer(){var name=document.getElementById('new-name').value.trim();if(!name)return;var val=document.getElementById('new-hcp').value;var useHcp=ADD_HCP&&hcpAvailable();var p={id:Date.now().toString(),pid:genPid(),name:name,hcpMode:useHcp,hcpIndex:null,gender:null,teeColor:null,handicap:0,scores:Array(18).fill(null),team:SP.length%2,flight:1,gps:false,track:{putts:false,fir:false,gir:false,ann:false,absch:false}};if(useHcp){p.hcpIndex=val!==''?Number(val):null;p.gender='H';var av=availTees('H')[0];if(!av){av=availTees('D')[0];if(av)p.gender='D';}if(av)p.teeColor=av.name;}else{p.handicap=val!==''?Number(val):0;}SP.push(p);document.getElementById('new-name').value='';document.getElementById('new-hcp').value='';renderPList();renderFlights();}
 async function resetScores(){var ok=await askConfirm('Alle Scores zurücksetzen?','Zurücksetzen','var(--red)');if(!ok)return;SP=SP.map(function(p){return Object.assign({},p,{scores:Array(18).fill(null)});});renderPList();if(CODE)try{await Promise.all(SP.map(function(p){return fbSet(fp('players/'+p.id),p);}));toast('✅ Scores zurückgesetzt');}catch(e){toast('📶 Lokal zurückgesetzt');}}
 async function saveSetup(){
   if(VIEW_RND!==null){await askConfirm('Du siehst gerade eine abgeschlossene Runde (R'+VIEW_RND+'). Einstellungen koennen hier nicht gespeichert werden. Tippe oben auf die laufende Runde und versuche es erneut.','Verstanden','#e65100');return;}
   if(!navigator.onLine){await askConfirm('\ud83d\udcf5 Offline \u2013 Einstellungen k\u00f6nnen erst mit Verbindung gespeichert werden.','Verstanden','#e65100');return;}
   for(var i=0;i<18;i++){var pe=document.getElementById('par-'+i),se=document.getElementById('si-'+i);if(pe)SPAR[i]=Number(pe.value)||4;if(se)SSI[i]=se.value!==''?Number(se.value)||i+1:i+1;}
+  // HCP-Modus: berechnete Spielvorgabe in handicap fixieren (die ganze Wertung nutzt handicap).
+  // hcpIndex/gender/teeColor bleiben als Herkunft am Spieler erhalten (fuer Longest Drive, Login spaeter).
+  SP.forEach(function(p){if(p.hcpMode&&p.hcpIndex!=null){var t=findTee(p.teeColor);var ph=calcPlayingHcp(p.hcpIndex,t,p.gender||'H');if(ph!=null)p.handicap=ph;}});
   var cname=CTM==='api'&&SAC?(SAC.club_name||SAC.name||'–'):(document.getElementById('man-name').value||'–');
   var tee=CTM==='api'&&SAT?SAT.teeName:'';var rMode=document.getElementById('r-mode').value;var maxScore=null;
   if(rMode==='zaehlen_fix'){var msv=document.getElementById('max-score-val');maxScore=parseInt(msv&&msv.value)||8;}
   var gv=function(id){var el=document.getElementById(id);return el?el.checked:false;};
   var notifSettings={hio:gv('notif-hio'),eagle:gv('notif-eagle'),birdie:gv('notif-birdie'),par:gv('notif-par'),bogey:gv('notif-bogey'),double:gv('notif-double'),bv:gv('notif-bv'),lady:gv('notif-lady'),putt3:gv('notif-putt3'),scorelog:gv('notif-scorelog')};
-  G.round={courseName:cname,par:SPAR,strokeIndex:SSI,tee:tee,date:document.getElementById('r-date').value||tod(),mode:rMode,maxScore:maxScore,teamMode:STM,longestDrive:(parseInt(document.getElementById('longest-drive-hole').value)||0),options:{ballverlust:gv('opt-ballverlust'),ladies:gv('opt-ladies'),notif:gv('opt-notif'),notifSettings:notifSettings,zaehler:gv('opt-zaehler')}};
+  var roundTees=collectTees();
+  G.round={courseName:cname,par:SPAR,strokeIndex:SSI,tees:roundTees,tee:tee,date:document.getElementById('r-date').value||tod(),mode:rMode,maxScore:maxScore,teamMode:STM,longestDrive:(parseInt(document.getElementById('longest-drive-hole').value)||0),options:{ballverlust:gv('opt-ballverlust'),ladies:gv('opt-ladies'),notif:gv('opt-notif'),notifSettings:notifSettings,zaehler:gv('opt-zaehler')}};
   // FIX Fund 1: Live-Stand synchron uebernehmen. SP kann veraltet sein (Setup war offen, waehrend live gespielt wurde).
   var liveNow=LIVE_PLAYERS||[];
   SP=SP.map(function(sp){
@@ -2715,21 +2936,197 @@ async function saveSetup(){
 
 // ════ SUPABASE ════
 async function sbF(method,path,body){var h={'apikey':SBK,'Authorization':'Bearer '+SBK,'Content-Type':'application/json'};if(method==='POST')h['Prefer']='return=representation';var res=await fetch(SBU+'/rest/v1/'+path,{method:method,headers:h,body:body?JSON.stringify(body):undefined});if(!res.ok)throw new Error('SB '+res.status);var text=await res.text();return text?JSON.parse(text):[];}
-async function sbLoad(){try{return await sbF('GET','courses?select=*&order=name');}catch(e){return[];}}
-async function sbSave(c){try{var ex=await sbF('GET','courses?name=eq.'+encodeURIComponent(c.name)+'&select=id');if(ex&&ex.length>0)await sbF('PATCH','courses?id=eq.'+ex[0].id,c);else await sbF('POST','courses',c);return true;}catch(e){return false;}}
-async function sbDel(name){try{await sbF('DELETE','courses?name=eq.'+encodeURIComponent(name));return true;}catch(e){return false;}}
+// PLATZ-MODERATION: sichtbar sind freigegebene Plaetze + eigene private (owner = Geraete-ID)
+function myDev(){return DEVICE_ID||getDeviceId();}
+// ==== PLATZ-IMPORT (nur Dev-Seite) ====
+function normGender(g){var s=String(g||"H").toUpperCase().charAt(0);return (s==="D"||s==="W"||s==="F")?"D":"H";}
+function parseCourseImport(txt){
+  var blocks=String(txt||"").split(/\r?\n\s*\r?\n/);
+  var res=[];
+  blocks.forEach(function(b){
+    var lines=b.split(/\r?\n/).map(function(l){return l.trim();}).filter(Boolean);
+    if(!lines.length)return;
+    var c={name:"",par:[],si:[],tees:[],errs:[]};
+    lines.forEach(function(l){
+      var m=l.match(/^([A-Za-z\u00c4\u00d6\u00dc\u00e4\u00f6\u00fc]+)\s*:\s*(.*)$/);
+      if(!m){c.errs.push("Zeile unklar: "+l.slice(0,30));return;}
+      var k=m[1].toLowerCase(),v=m[2].trim();
+      if(k==="name")c.name=v;
+      else if(k==="par")c.par=v.split(/[\s,;]+/).map(Number).filter(function(n){return !isNaN(n);});
+      else if(k==="si"||k==="stroke")c.si=v.split(/[\s,;]+/).map(Number).filter(function(n){return !isNaN(n);});
+      else if(k==="tee"){
+        var p=v.split(/\s+/);
+        if(p.length<4){c.errs.push("Tee unvollst\u00e4ndig: "+v);return;}
+        var slope=parseInt(p[p.length-1]);
+        var cr=parseFloat(String(p[p.length-2]).replace(",","."));
+        var g=normGender(p[p.length-3]);
+        var nm=p.slice(0,p.length-3).join(" ");
+        if(isNaN(slope)||isNaN(cr)||!nm){c.errs.push("Tee unlesbar: "+v);return;}
+        if(cr<50||cr>85)c.errs.push("CR unplausibel bei "+nm+": "+cr);
+        if(slope<55||slope>155)c.errs.push("Slope unplausibel bei "+nm+": "+slope);
+        var ex=c.tees.find(function(x){return x.name===nm;});
+        if(!ex){ex={name:nm,hcr:null,hslope:null,dcr:null,dslope:null};c.tees.push(ex);}
+        if(g==="D"){ex.dcr=cr;ex.dslope=slope;}else{ex.hcr=cr;ex.hslope=slope;}
+      }
+    });
+    if(!c.name)c.errs.push("Name fehlt");
+    if(c.par.length!==18&&c.par.length!==9)c.errs.push("Par: "+c.par.length+" Werte (erwartet 9 oder 18)");
+    if(c.par.some(function(p){return p<3||p>6;}))c.errs.push("Par-Wert au\u00dferhalb 3\u20136");
+    if(c.si.length&&c.si.length!==c.par.length)c.errs.push("SI: "+c.si.length+" Werte, Par: "+c.par.length);
+    if(c.si.length){var seen={},dup=false;c.si.forEach(function(s){if(seen[s])dup=true;seen[s]=1;});if(dup)c.errs.push("SI enth\u00e4lt doppelte Werte");}
+    res.push(c);
+  });
+  return res;
+}
+function courseGridHtml(par,si){
+  var out="",n=par.length>9?18:9;
+  var ranges=n>9?[[0,9],[9,18]]:[[0,9]];
+  ranges.forEach(function(rg){
+    out+='<div style="display:grid;grid-template-columns:30px repeat(9,1fr);gap:1px;background:var(--border-light);border-radius:6px;overflow:hidden;margin-top:5px">';
+    out+='<div style="background:var(--bg3);font-size:8px;color:var(--txt3);padding:3px 2px;text-align:center">L</div>';
+    for(var i=rg[0];i<rg[1];i++)out+='<div style="background:var(--bg3);font-size:9px;color:var(--txt3);padding:3px 0;text-align:center">'+(i+1)+'</div>';
+    out+='<div style="background:#f7faf9;font-size:8px;color:var(--txt3);padding:3px 2px;text-align:center">Par</div>';
+    for(var j=rg[0];j<rg[1];j++)out+='<div style="background:#fff;font-size:12px;font-weight:700;padding:3px 0;text-align:center">'+(par[j]!=null?par[j]:"\u2013")+'</div>';
+    out+='<div style="background:#f7faf9;font-size:8px;color:var(--txt3);padding:3px 2px;text-align:center">SI</div>';
+    for(var k=rg[0];k<rg[1];k++)out+='<div style="background:#fff;font-size:10px;color:var(--txt2);padding:3px 0;text-align:center">'+(si&&si[k]!=null?si[k]:"\u2013")+'</div>';
+    out+='</div>';
+  });
+  return out;
+}
+function teesHtml(tees){
+  tees=migrateTees(tees);
+  if(!tees||!tees.length)return '<div style="font-size:10px;color:var(--txt3);margin-top:5px">Keine Abschlagsdaten (CR/Slope)</div>';
+  var chips=[];
+  tees.forEach(function(t){
+    if(t.hcr!=null&&t.hslope!=null)chips.push('<span style="font-size:10px;font-weight:600;padding:3px 8px;border-radius:12px;background:#e3f2fd;color:#1565c0">\u2642 '+esc(t.name)+' \u00b7 CR '+t.hcr+' / SL '+t.hslope+'</span>');
+    if(t.dcr!=null&&t.dslope!=null)chips.push('<span style="font-size:10px;font-weight:600;padding:3px 8px;border-radius:12px;background:#fce4ec;color:#c2185b">\u2640 '+esc(t.name)+' \u00b7 CR '+t.dcr+' / SL '+t.dslope+'</span>');
+  });
+  if(!chips.length)return '<div style="font-size:10px;color:var(--txt3);margin-top:5px">Keine Abschlagsdaten (CR/Slope)</div>';
+  return '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:6px">'+chips.join("")+'</div>';
+}
+var IMPORT_READY=null;
+async function checkCourseImport(){
+  var box=document.getElementById("dev-import-preview");if(!box)return;
+  var txt=(document.getElementById("dev-import-txt")||{}).value||"";
+  if(!txt.trim()){box.innerHTML='<div style="font-size:12px;color:var(--txt3);text-align:center;padding:10px">Nichts eingef\u00fcgt.</div>';IMPORT_READY=null;return;}
+  box.innerHTML='<div style="font-size:12px;color:var(--txt3);text-align:center;padding:10px">\u23f3 Pr\u00fcfe\u2026</div>';
+  var parsed=parseCourseImport(txt);
+  var all=[];try{all=await sbLoadAll();}catch(e){}
+  var okList=[];
+  var html=parsed.map(function(c){
+    var exists=all.find(function(x){return x.name===c.name&&isPublic(x);});
+    var bad=c.errs.length>0;
+    if(!bad)okList.push(c);
+    return '<div style="border:2px solid '+(bad?"var(--red)":"var(--border-light)")+';border-radius:10px;padding:10px;margin-bottom:8px">'
+      +'<div style="font-size:14px;font-weight:700">'+esc(c.name||"(ohne Namen)")+' '+(bad?'<span style="font-size:10px;color:var(--red)">FEHLER</span>':(exists?'<span style="font-size:10px;color:#e65100">\u21bb aktualisiert</span>':'<span style="font-size:10px;color:var(--green)">+ neu</span>'))+'</div>'
+      +'<div style="font-size:10px;color:var(--txt3);margin-top:2px">Par '+c.par.reduce(function(a,b){return a+b;},0)+' \u00b7 '+c.par.length+' Bahnen</div>'
+      +(bad?'<div style="font-size:11px;color:var(--red);margin-top:6px">\u26a0\ufe0f '+c.errs.map(esc).join("<br>\u26a0\ufe0f ")+'</div>':courseGridHtml(c.par,c.si)+teesHtml(c.tees))
+      +'</div>';
+  }).join("");
+  IMPORT_READY=okList;
+  box.innerHTML=html+(okList.length?'<button id="dev-import-go" style="width:100%;padding:12px;background:var(--green);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">\u2705 '+okList.length+' Platz/Pl\u00e4tze importieren</button>':'');
+  var go=document.getElementById("dev-import-go");
+  if(go)go.addEventListener("click",runCourseImport);
+}
+async function runCourseImport(){
+  if(!IMPORT_READY||!IMPORT_READY.length)return;
+  var btn=document.getElementById("dev-import-go");
+  if(btn){btn.textContent="\u23f3 Importiere\u2026";btn.disabled=true;}
+  var ok=0,fail=0;
+  for(var i=0;i<IMPORT_READY.length;i++){
+    var c=IMPORT_READY[i];
+    var payload={name:c.name,par:JSON.stringify(c.par),stroke_index:JSON.stringify(c.si&&c.si.length?c.si:c.par.map(function(_,k){return k+1;})),tee:"",tees:JSON.stringify(c.tees||[])};
+    var r=await sbSave(payload,true);
+    if(r)ok++;else fail++;
+  }
+  toast("\ud83d\udce5 "+ok+" importiert"+(fail?", "+fail+" fehlgeschlagen":""));
+  document.getElementById("dev-import-txt").value="";
+  document.getElementById("dev-import-preview").innerHTML='<div style="font-size:12px;color:var(--green);text-align:center;padding:10px">\u2713 '+ok+' Pl\u00e4tze gespeichert.</div>';
+  IMPORT_READY=null;renderSavedCourses();
+}
+async function renderCourseReview(){
+  var box=document.getElementById("dev-courses-list");if(!box)return;
+  box.innerHTML='<div style="text-align:center;padding:14px;color:var(--txt3);font-size:12px">⏳ Lade…</div>';
+  try{
+    var all=await sbLoadAll();
+    var priv=all.filter(function(c){return c.status==="private";});
+    var pubNames={};all.forEach(function(c){if(isPublic(c))pubNames[c.name]=true;});
+    if(!priv.length){box.innerHTML='<div style="text-align:center;padding:14px;color:var(--txt3);font-size:12px">Keine Plätze zur Prüfung. Alle freigegeben.</div>';return;}
+    box.innerHTML='<div style="font-size:11px;color:var(--txt3);margin-bottom:8px">'+priv.length+' Platz/Plätze warten auf Freigabe</div>'+priv.map(function(c){
+      var par=[],si=[],tees=[];try{par=JSON.parse(c.par||"[]");}catch(e){}try{si=JSON.parse(c.stroke_index||"[]");}catch(e){}try{tees=JSON.parse(c.tees||"[]");}catch(e){}
+      var sum=par.reduce(function(a,b){return a+(Number(b)||0);},0);
+      var dup=pubNames[c.name];
+      return '<div style="border:2px solid var(--border-light);border-radius:10px;padding:10px;margin-bottom:8px">'
+        +'<div style="font-size:14px;font-weight:700">'+esc(c.name)+(c.tee?' <span style="font-weight:400;color:var(--txt3)">('+esc(c.tee)+')</span>':'')+'</div>'
+        +'<div style="font-size:10px;color:var(--txt3);margin-top:2px">Par '+sum+' · '+par.length+' Bahnen · Gerät …'+esc(String(c.owner||"?").slice(-6))+(dup?' · <b style="color:#e65100">Name bereits freigegeben!</b>':'')+'</div>'
+        +courseGridHtml(par,si)+teesHtml(tees)
+        +'<div style="display:flex;gap:6px;margin-top:8px">'
+        +'<button class="dev-course-ok" data-id="'+esc(String(c.id))+'" style="flex:1;padding:9px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:12px;font-weight:700;cursor:pointer">✅ Freigeben</button>'
+        +'<button class="dev-course-del" data-id="'+esc(String(c.id))+'" data-name="'+esc(c.name)+'" style="padding:9px 14px;border-radius:8px;border:2px solid var(--red);background:var(--card);color:var(--red);font-size:12px;font-weight:700;cursor:pointer">🗑</button>'
+        +'</div></div>';
+    }).join("");
+    box.querySelectorAll(".dev-course-ok").forEach(function(b){b.addEventListener("click",async function(){
+      var id=this.dataset.id;this.textContent="⏳";this.disabled=true;
+      try{await sbF("PATCH","courses?id=eq."+encodeURIComponent(id),{status:"approved"});toast("✅ Platz freigegeben");renderCourseReview();renderSavedCourses();}
+      catch(e){toast("⚠️ Fehler bei der Freigabe");renderCourseReview();}
+    });});
+    box.querySelectorAll(".dev-course-del").forEach(function(b){b.addEventListener("click",async function(){
+      var id=this.dataset.id,nm=this.dataset.name;
+      var ok=await askConfirm('"'+nm+'" endgültig löschen?',"Löschen","var(--red)");if(!ok)return;
+      if(await sbDelId(id)){toast("🗑 Gelöscht");renderCourseReview();}else toast("⚠️ Fehler beim Löschen");
+    });});
+  }catch(e){box.innerHTML='<div style="text-align:center;padding:14px;color:var(--red);font-size:12px">⚠️ Fehler beim Laden</div>';}
+}
+async function sbLoad(){try{var d=encodeURIComponent(myDev());return await sbF('GET','courses?select=*&order=name&or=(status.is.null,status.eq.approved,owner.eq.'+d+')');}catch(e){return[];}}
+async function sbLoadAll(){try{return await sbF('GET','courses?select=*&order=name');}catch(e){return[];}}
+function isMine(c){return c&&c.status==='private'&&c.owner===myDev();}
+function isPublic(c){return!c||!c.status||c.status==='approved';}
+async function sbSave(c,asPublic){
+  try{
+    var all=await sbLoadAll();
+    if(asPublic){
+      var pub=all.find(function(x){return x.name===c.name&&isPublic(x);});
+      var body=Object.assign({},c,{status:'approved'});
+      if(pub)await sbF('PATCH','courses?id=eq.'+pub.id,body);else await sbF('POST','courses',body);
+    }else{
+      var mine=all.find(function(x){return x.name===c.name&&isMine(x);});
+      var body2=Object.assign({},c,{status:'private',owner:myDev()});
+      if(mine)await sbF('PATCH','courses?id=eq.'+mine.id,body2);else await sbF('POST','courses',body2);
+    }
+    return true;
+  }catch(e){return false;}
+}
+async function sbDelId(id){try{await sbF('DELETE','courses?id=eq.'+encodeURIComponent(id));return true;}catch(e){return false;}}
 async function refreshCoursePin(){try{await initFB();var s=await DB.ref('config/course_pin').get();if(s&&s.exists()&&s.val()){COURSE_PIN=String(s.val());localStorage.setItem(LS_COURSE_PIN,COURSE_PIN);}}catch(e){}}
 async function saveCourse(){
-  await refreshCoursePin();
-  var pin=await askPin('PLATZ-PIN EINGEBEN');if(pin===null)return;if(pin.trim().toLowerCase()!==COURSE_PIN.toLowerCase()){toast('⚠️ Falscher PIN');return;}
   for(var i=0;i<18;i++){var pe=document.getElementById('par-'+i),se=document.getElementById('si-'+i);if(pe)SPAR[i]=parseInt(pe.value)||4;if(se)SSI[i]=parseInt(se.value)||i+1;}
   var name='';if(CTM==='api'&&SAC)name=SAC.club_name||SAC.name||'';if(!name)name=(document.getElementById('man-name').value||'').trim();if(!name){toast('⚠️ Bitte Platzname eingeben');return;}
-  var ok=await sbSave({name:name,par:JSON.stringify(SPAR),stroke_index:JSON.stringify(SSI),tee:(SAT&&SAT.teeName)?SAT.teeName:''});
-  if(ok){toast('💾 '+name+' gespeichert');renderSavedCourses();}else toast('⚠️ Speichern fehlgeschlagen');
+  var teeList=collectTees();
+  var payload={name:name,par:JSON.stringify(SPAR),stroke_index:JSON.stringify(SSI),tee:(SAT&&SAT.teeName)?SAT.teeName:'',tees:JSON.stringify(teeList)};
+  var all=await sbLoadAll();
+  var pub=all.find(function(x){return x.name===name&&isPublic(x);});
+  var asPublic=false;
+  if(pub){
+    var wantPub=await askConfirm('Es gibt bereits einen freigegebenen Platz "'+name+'".\n\nMit Platz-PIN kannst du diesen f\u00fcr alle \u00e4ndern.\nOhne PIN wird deine Fassung als eigener Platz gespeichert.','Freigegebenen \u00e4ndern (PIN)','#8e44ad');
+    if(wantPub){
+      await refreshCoursePin();
+      var pin=await askPin('PLATZ-PIN EINGEBEN');if(pin===null)return;
+      if(pin.trim().toLowerCase()!==COURSE_PIN.toLowerCase()){toast('⚠️ Falscher PIN');return;}
+      asPublic=true;
+    }
+  }
+  var ok=await sbSave(payload,asPublic);
+  if(ok){toast(asPublic?('💾 '+name+' f\u00fcr alle aktualisiert'):('💾 '+name+' als eigener Platz gespeichert \u2013 wird nach Pr\u00fcfung freigegeben'));renderSavedCourses();}else toast('⚠️ Speichern fehlgeschlagen');
 }
-async function loadCourse(name){var cs=await sbLoad(),c=cs.find(function(x){return x.name===name;});if(!c){toast('⚠️ Nicht gefunden');return;}try{SPAR=JSON.parse(c.par||'[]');}catch(e){SPAR=[];}try{SSI=JSON.parse(c.stroke_index||'[]');}catch(e){SSI=[];}if(!SPAR.length)SPAR=DPAR.slice();if(!SSI.length)SSI=DSI.slice();SAC=null;SAT=null;switchCourseTab('manual');document.getElementById('man-name').value=c.name;renderHoleRows();toast('✓ '+c.name+' geladen');}
-async function delCourse(name){await refreshCoursePin();var pin=await askPin('PLATZ-PIN EINGEBEN');if(pin===null)return;if(pin.trim().toLowerCase()!==COURSE_PIN.toLowerCase()){toast('⚠️ Falscher PIN');return;}var ok2=await askConfirm('"'+name+'" wirklich löschen?','Löschen','var(--red)');if(!ok2)return;var ok=await sbDel(name);if(ok){toast('🗑 '+name+' gelöscht');await renderSavedCourses();}}
-async function renderSavedCourses(){var sec=document.getElementById('saved-courses-section'),sel=document.getElementById('saved-courses-list');if(!sec||!sel)return;var cs=await sbLoad();if(!cs.length){sec.style.display='none';return;}sec.style.display='block';var cur=sel.value;sel.innerHTML='<option value="">— Platz auswählen —</option>'+cs.map(function(c){var par=[];try{par=JSON.parse(c.par||'[]');}catch(e){}return'<option value="'+esc(c.name)+'">'+esc(c.name)+' · Par '+par.reduce(function(a,b){return a+b;},0)+(c.tee?' ('+esc(c.tee)+')':'')+'</option>';}).join('');if(cur)sel.value=cur;var del=document.getElementById('del-course-btn');if(del)del.style.display=sel.value?'block':'none';}
+async function loadCourse(id){var cs=await sbLoad(),c=cs.find(function(x){return String(x.id)===String(id);});if(!c){toast('⚠️ Nicht gefunden');return;}try{SPAR=JSON.parse(c.par||'[]');}catch(e){SPAR=[];}try{SSI=JSON.parse(c.stroke_index||'[]');}catch(e){SSI=[];}try{STEES=migrateTees(JSON.parse(c.tees||'[]'));}catch(e){STEES=[];}if(!SPAR.length)SPAR=DPAR.slice();if(!SSI.length)SSI=DSI.slice();SAC=null;SAT=null;switchCourseTab('manual');document.getElementById('man-name').value=c.name;renderHoleRows();toast('✓ '+c.name+' geladen');}
+async function delCourse(id){
+  var all=await sbLoadAll();var t=all.find(function(x){return String(x.id)===String(id);});
+  if(!t){toast('⚠️ Nicht gefunden');return;}
+  if(!isMine(t)){await refreshCoursePin();var pin=await askPin('PLATZ-PIN EINGEBEN');if(pin===null)return;if(pin.trim().toLowerCase()!==COURSE_PIN.toLowerCase()){toast('⚠️ Falscher PIN');return;}}
+  var ok2=await askConfirm('"'+t.name+'" wirklich löschen?','Löschen','var(--red)');if(!ok2)return;
+  var ok=await sbDelId(t.id);if(ok){toast('🗑 '+t.name+' gelöscht');await renderSavedCourses();}
+}
+async function renderSavedCourses(){var sec=document.getElementById('saved-courses-section'),sel=document.getElementById('saved-courses-list');if(!sec||!sel)return;var cs=await sbLoad();if(!cs.length){sec.style.display='none';return;}sec.style.display='block';var cur=sel.value;sel.innerHTML='<option value="">— Platz auswählen —</option>'+cs.map(function(c){var par=[];try{par=JSON.parse(c.par||'[]');}catch(e){}return'<option value="'+esc(String(c.id))+'">'+(isMine(c)?'\ud83d\udd12 ':'')+esc(c.name)+' · Par '+par.reduce(function(a,b){return a+b;},0)+(c.tee?' ('+esc(c.tee)+')':'')+'</option>';}).join('');if(cur)sel.value=cur;var del=document.getElementById('del-course-btn');if(del)del.style.display=sel.value?'block':'none';}
 function loadCourseFromDrop(name){var del=document.getElementById('del-course-btn');if(del)del.style.display=name?'block':'none';if(name)loadCourse(name);}
 async function delCourseFromDrop(){var sel=document.getElementById('saved-courses-list');if(!sel||!sel.value)return;await delCourse(sel.value);var del=document.getElementById('del-course-btn');if(del)del.style.display='none';}
 
@@ -3531,5 +3928,10 @@ async function shareAnalyseImage(d,fallbackText,pname){
 }
 function roundRectC(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
 </script>
+<div id="tv-screen">
+  <div id="tv-back"><button id="tv-back-btn">← Zurück</button></div>
+  <div id="tv-stage"></div>
+  <div class="tv-dots" id="tv-dots"></div>
+</div>
 </body>
 </html>
